@@ -1,0 +1,1286 @@
+openapi: 3.1.0
+info:
+  title: File Storage API
+  description: |-
+    Scaleway File Storage provides network-attached storage that can be attached to cloud products such as Instances. File Storage can be accessed simultaneously by multiple Instances in the same region.
+
+    <Message type="important">
+    This API documentation is for File Storage Service. File Storage can only be accessed through Private Networks.
+    </Message>
+
+    ## Quickstart
+
+    1. Configure environment:
+
+        ```bash
+        export SCW_SECRET_KEY="<API secret key>"
+        export SCW_DEFAULT_REGION="<Scaleway Region>"
+        export SCW_PROJECT_ID="<Scaleway Project ID>"
+        ```
+
+    2. Create a Scaleway File Storage:
+
+        ```bash
+        curl -X POST \
+          -H "X-Auth-Token: $SCW_SECRET_KEY" \
+          -H "Content-Type: application/json" \
+          https://api.scaleway.com/file/v1alpha1/regions/$SCW_DEFAULT_REGION/filesystems \
+          -d '{
+            "project_id": "'"$SCW_PROJECT_ID"'",
+            "name": "my-fs",
+            "size": 30000000000,
+          }'
+        ```
+
+    3. Attach a Scaleway File Storage:
+
+        ```bash
+        curl -X POST 'https://api.scaleway.com/instance/v1/zones/$SCW_DEFAULT_REGION/servers/<instance-id>/attach-filesystem' \
+          -H "X-Auth-Token: $SCW_SECRET_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"filesystem_id": "<my-fs-id>"}'
+        ```
+
+    4. Delete a Scaleway File Storage:
+
+        ```bash
+        curl -X DELETE 'https://api.scaleway.com/file/v1alpha1/regions/$SCW_DEFAULT_REGION/filesystems/<filesystem-id>' \
+        -H "x-Auth-Token: $SCW_SECRET_KEY"
+        ```
+
+    5. Update a Scaleway File Storage:
+
+        ```bash
+        curl --request PATCH https://api.scaleway.com/file/v1alpha1/regions/$SCW_DEFAULT_REGION/filesystems/<filesystem-id>' \
+        --header 'Content-Type: application/json' \
+        --header "x-Auth-Token: $SCW_SECRET_KEY" \
+        --data '{
+          "name": "my-new-fs-name",
+          "size": 200000000000,
+          "tags": []
+          }'
+        ```
+
+    \<Message type="requirement">
+
+    - You have a [Scaleway account](https://console.scaleway.com/)
+    - You have created an [API key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) and that the API key has sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/) to perform the actions described on this page
+    - You have [installed `curl`](https://curl.se/download.html)
+    \</Message>
+  version: v1alpha1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: FileSystem
+  description: |
+    A filesystem is a network-attached shared storage system that can be connected to multiple Instances simultaneously. Filesystems are accessible in read/write modes, and can be created with different sizes.
+- name: Snapshot
+  description: |
+    A snapshot is a read-only copy of a filesystem, taken at a specific point in time.
+    Snapshots are stored in the same region as the filesystem they originate from, and can be used to create a new filesystem.
+- name: Attachment
+  description: |
+    An attachment links a filesystem and a Scaleway resource (such as an Instance).
+    An attachment is created when a filesystem is mounted to a resource, and is deleted when a filesystem is unmounted from a resource.
+- name: FileSystem Type
+  description: |
+    Filesystem type are determined by their storage class, performances and resiliency levels
+components:
+  schemas:
+    google.type.Money:
+      type: object
+      properties:
+        currency_code:
+          type: string
+        units:
+          type: integer
+          format: int64
+        nanos:
+          type: integer
+          format: int32
+      x-properties-order:
+      - currency_code
+      - units
+      - nanos
+    scaleway.file.v1alpha1.Attachment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of the attachment. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        filesystem_id:
+          type: string
+          description: UUID of the filesystem. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        resource_id:
+          type: string
+          description: UUID of the attached resource. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        resource_type:
+          description: The type of the attached resource.
+          $ref: '#/components/schemas/scaleway.file.v1alpha1.Attachment.ResourceType'
+        zone:
+          type:
+          - string
+          - "null"
+          description: The zone where the resource is located.
+        region:
+          type: string
+          description: The region where the attachment is located.
+        srn:
+          type: string
+          description: The SRN of the attachment.
+          pattern: ^srn://file\.[^/]+/regions/[^/]+/attachments/[^/]+$
+      x-properties-order:
+      - id
+      - filesystem_id
+      - resource_id
+      - resource_type
+      - zone
+      - region
+      - srn
+    scaleway.file.v1alpha1.Attachment.ResourceType:
+      type: string
+      enum:
+      - unknown_resource_type
+      - instance_server
+      default: unknown_resource_type
+    scaleway.file.v1alpha1.CreateFileSystemRequest.FromEmpty:
+      type: object
+      properties:
+        size:
+          type: integer
+          description: |-
+            Filesystem size in bytes, with a granularity in GB (10^9 bytes).
+            Must be compliant with the minimum (25 GB) and maximum (50 TB) allowed size. (in bytes)
+          format: uint64
+      required:
+      - size
+      x-properties-order:
+      - size
+    scaleway.file.v1alpha1.CreateFileSystemRequest.FromSnapshot:
+      type: object
+      properties:
+        size:
+          type:
+          - integer
+          - "null"
+          description: |-
+            Filesystem size in bytes, with a granularity in GB (10^9 bytes).
+            Must be compliant with the minimum (25 GB) and maximum (50 TB) allowed size.
+            Size is optional. When not set, the current size of the parent filesystem is used.
+            When set, it must be greater than or equal to the snapshot size. (in bytes)
+          format: uint64
+        snapshot_id:
+          type: string
+          description: Source snapshot from which the filesystem will be created.
+      required:
+      - snapshot_id
+      x-properties-order:
+      - size
+      - snapshot_id
+    scaleway.file.v1alpha1.FileSystem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of the filesystem. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the filesystem.
+        size:
+          type: integer
+          description: Filesystem size in bytes. (in bytes)
+          format: uint64
+        status:
+          description: Current status of the filesystem (e.g. creating, available,
+            ...).
+          $ref: '#/components/schemas/scaleway.file.v1alpha1.FileSystem.Status'
+        project_id:
+          type: string
+          description: UUID of the project to which the filesystem belongs. (UUID
+            format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        organization_id:
+          type: string
+          description: UUID of the organization to which the filesystem belongs. (UUID
+            format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        tags:
+          type: array
+          description: List of tags assigned to the filesystem.
+          items:
+            type: string
+        number_of_attachments:
+          type: integer
+          description: The current number of attachments (mounts) that the filesystem
+            has.
+          format: uint32
+        region:
+          type: string
+          description: Region where the filesystem is located.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the filesystem. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last update date of the properties of the filesystem. (RFC
+            3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        filesystem_type_id:
+          type: string
+          description: UUID of the filesystem type. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        srn:
+          type: string
+          description: The SRN of the filesystem.
+          pattern: ^srn://file\.[^/]+/regions/[^/]+/file-systems/[^/]+$
+      x-properties-order:
+      - id
+      - name
+      - size
+      - status
+      - project_id
+      - organization_id
+      - tags
+      - number_of_attachments
+      - region
+      - created_at
+      - updated_at
+      - filesystem_type_id
+      - srn
+    scaleway.file.v1alpha1.FileSystem.Status:
+      type: string
+      enum:
+      - unknown_status
+      - available
+      - error
+      - creating
+      - updating
+      - snapshotting
+      x-enum-descriptions:
+        values:
+          unknown_status: If unspecified, the filesystem status is unknown by default
+          available: The filesystem is created and available
+          error: The filesystem is in error state
+          creating: The filesystem is under creation (transient)
+          updating: The filesystem is being updated (transient)
+          snapshotting: The filesystem is undergoing snapshotting operation (transient)
+      default: unknown_status
+    scaleway.file.v1alpha1.FileSystemType:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Filesystem type name.
+        filesystem_price_gb_per_hour:
+          description: Price of the filesystem billed in GB/hour.
+          $ref: '#/components/schemas/google.type.Money'
+        snapshot_price_gb_per_hour:
+          description: Price of the snapshot billed in GB/hour.
+          $ref: '#/components/schemas/google.type.Money'
+      x-properties-order:
+      - name
+      - filesystem_price_gb_per_hour
+      - snapshot_price_gb_per_hour
+    scaleway.file.v1alpha1.ListAttachmentsResponse:
+      type: object
+      properties:
+        attachments:
+          type: array
+          description: List of filesystem attachments matching the request criteria.
+          items:
+            $ref: '#/components/schemas/scaleway.file.v1alpha1.Attachment'
+        total_count:
+          type: integer
+          description: Total number of filesystem attachments matching the criteria.
+          format: uint64
+      x-properties-order:
+      - attachments
+      - total_count
+    scaleway.file.v1alpha1.ListFileSystemTypesResponse:
+      type: object
+      properties:
+        filesystem_types:
+          type: array
+          description: Returns paginated list of filesystem-types.
+          items:
+            $ref: '#/components/schemas/scaleway.file.v1alpha1.FileSystemType'
+        total_count:
+          type: integer
+          description: Total number of file system types.
+          format: uint64
+      x-properties-order:
+      - filesystem_types
+      - total_count
+    scaleway.file.v1alpha1.ListFileSystemsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - name_asc
+      - name_desc
+      x-enum-descriptions:
+        values:
+          created_at_asc: Order by creation date (ascending)
+          created_at_desc: Order by creation date (descending)
+          name_asc: Order by name (ascending)
+          name_desc: Order by name (descending)
+      default: created_at_asc
+    scaleway.file.v1alpha1.ListFileSystemsResponse:
+      type: object
+      properties:
+        filesystems:
+          type: array
+          description: List of filesystems matching the request criteria.
+          items:
+            $ref: '#/components/schemas/scaleway.file.v1alpha1.FileSystem'
+        total_count:
+          type: integer
+          description: Total number of filesystems matching the criteria.
+          format: uint64
+      x-properties-order:
+      - filesystems
+      - total_count
+    scaleway.file.v1alpha1.ListSnapshotsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - name_asc
+      - name_desc
+      x-enum-descriptions:
+        values:
+          created_at_asc: Order by creation date (ascending)
+          created_at_desc: Order by creation date (descending)
+          name_asc: Order by name (ascending)
+          name_desc: Order by name (descending)
+      default: created_at_asc
+    scaleway.file.v1alpha1.ListSnapshotsResponse:
+      type: object
+      properties:
+        snapshots:
+          type: array
+          description: List of snapshots matching the request criteria.
+          items:
+            $ref: '#/components/schemas/scaleway.file.v1alpha1.Snapshot'
+        total_count:
+          type: integer
+          description: Total number of snapshots matching the criteria.
+          format: uint64
+      x-properties-order:
+      - snapshots
+      - total_count
+    scaleway.file.v1alpha1.Snapshot:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of the snapshot. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the snapshot.
+        parent_filesystem:
+          description: |-
+            Information about the parent filesystem.
+            If the parent filesystem was deleted, value is null.
+          $ref: '#/components/schemas/scaleway.file.v1alpha1.Snapshot.ParentFilesystem'
+        size:
+          type:
+          - integer
+          - "null"
+          description: Snapshot size in bytes. (in bytes)
+          format: uint64
+        status:
+          description: Current status of the snapshot (e.g. creating, available, ...).
+          $ref: '#/components/schemas/scaleway.file.v1alpha1.Snapshot.Status'
+        project_id:
+          type: string
+          description: UUID of the project to which the snapshot belongs. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        organization_id:
+          type: string
+          description: UUID of the organization to which the snapshot belongs. (UUID
+            format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        tags:
+          type: array
+          description: List of tags assigned to the snapshot.
+          items:
+            type: string
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the snapshot. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last update date of the properties of the snapshot. (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        region:
+          type: string
+          description: Region where the snapshot is located.
+        srn:
+          type: string
+          description: The SRN of the snapshot.
+          pattern: ^srn://file\.[^/]+/regions/[^/]+/snapshots/[^/]+$
+      x-properties-order:
+      - id
+      - name
+      - parent_filesystem
+      - size
+      - status
+      - project_id
+      - organization_id
+      - tags
+      - created_at
+      - updated_at
+      - region
+      - srn
+    scaleway.file.v1alpha1.Snapshot.ParentFilesystem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Parent filesystem UUID (filesystem from which the snapshot
+            originates). (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the parent filesystem.
+      x-properties-order:
+      - id
+      - name
+    scaleway.file.v1alpha1.Snapshot.Status:
+      type: string
+      enum:
+      - unknown_status
+      - available
+      - error
+      - creating
+      - deleting
+      - deleted
+      - locked
+      - cloning
+      x-enum-descriptions:
+        values:
+          unknown_status: If unspecified, the snapshot status is unknown by default
+          available: The snapshot is created and available
+          error: The snapshot is in error state
+          creating: The snapshot is under creation (transient)
+          deleting: The snapshot is being deleted (transient)
+          deleted: The snapshot was deleted
+          locked: The snapshot is locked
+          cloning: The snapshot is being cloned (transient)
+      default: unknown_status
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /file/v1alpha1/regions/{region}/attachments:
+    get:
+      tags:
+      - Attachment
+      operationId: ListAttachments
+      summary: List filesystems attachments
+      description: |-
+        List all existing attachments in a specified region.
+        By default, the attachments listed are ordered by creation date in ascending order. This can be modified using the `order_by` field.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: filesystem_id
+        description: UUID of the File Storage volume. (UUID format)
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      - in: query
+        name: resource_id
+        description: Filter by resource ID. (UUID format)
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      - in: query
+        name: resource_type
+        description: Filter by resource type.
+        schema:
+          $ref: '#/components/schemas/scaleway.file.v1alpha1.Attachment.ResourceType'
+      - in: query
+        name: zone
+        description: Filter by resource zone.
+        schema:
+          type: string
+      - in: query
+        name: page
+        description: Page number (starting at 1).
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: 'Number of entries per page (default: 20, max: 100).'
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.ListAttachmentsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/attachments"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/file/v1alpha1/regions/{region}/attachments" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /file/v1alpha1/regions/{region}/filesystem-types:
+    get:
+      tags:
+      - FileSystem Type
+      operationId: ListFileSystemTypes
+      summary: List filesystems types
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: page
+        description: Page number (starts at 1).
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: 'Number of entries per page (default: 50, max: 100).'
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.ListFileSystemTypesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystem-types"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystem-types" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /file/v1alpha1/regions/{region}/filesystems:
+    get:
+      tags:
+      - FileSystem
+      operationId: ListFileSystems
+      summary: List all filesystems
+      description: Retrieve all filesystems in the specified region. By default, the
+        filesystems listed are ordered by creation date in ascending order. This can
+        be modified using the `order_by` field.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: order_by
+        description: Criteria to use when ordering the list.
+        schema:
+          $ref: '#/components/schemas/scaleway.file.v1alpha1.ListFileSystemsRequest.OrderBy'
+      - in: query
+        name: project_id
+        description: Filter by project ID.
+        schema:
+          type: string
+      - in: query
+        name: organization_id
+        description: Filter by organization ID.
+        schema:
+          type: string
+      - in: query
+        name: page
+        description: Page number (starting at 1).
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: 'Number of entries per page (default: 20, max: 100).'
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: name
+        description: Filter the returned filesystems by their names.
+        schema:
+          type: string
+      - in: query
+        name: filesystem_type
+        description: Type of the filesystem.
+        schema:
+          type: string
+      - in: query
+        name: tags
+        description: Filter by tags. Only filesystems with one or more matching tags
+          will be returned.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: filesystem_ids
+        description: Filter by filesystem IDs. Only filesystems with one or more matching
+          IDs will be returned.
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.ListFileSystemsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - FileSystem
+      operationId: CreateFileSystem
+      summary: Create a new filesystem
+      description: To create a new filesystem, you must specify a name, a project
+        ID, and either a size (`from_empty`) or a source snapshot (`from_snapshot`).
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.FileSystem'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the filesystem.
+                project_id:
+                  type: string
+                  description: UUID of the project the filesystem belongs to. (UUID
+                    format)
+                  example: 6170692e-7363-616c-6577-61792e636f6d
+                size:
+                  type: integer
+                  description: |-
+                    Deprecated: use `from_empty.size` instead.
+                    Filesystem size in bytes, with a granularity in GB (10^9 bytes).
+                    Must be compliant with the minimum (25 GB) and maximum (50 TB) allowed size.
+                    Must not be set along with `from_empty` or `from_snapshot`.
+                  deprecated: true
+                  format: uint64
+                from_empty:
+                  description: |-
+                    Specify the size of the new filesystem if creating a new one from scratch.
+                    Precisely one of from_empty, from_snapshot can be set.
+                  x-one-of: from
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.file.v1alpha1.CreateFileSystemRequest.FromEmpty'
+                  - type: "null"
+                from_snapshot:
+                  description: |-
+                    Specify the snapshot ID of the original snapshot to create the filesystem from.
+                    Precisely one of from_empty, from_snapshot can be set.
+                  x-one-of: from
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.file.v1alpha1.CreateFileSystemRequest.FromSnapshot'
+                  - type: "null"
+                type:
+                  type:
+                  - string
+                  - "null"
+                  description: Type of the filesystem.
+                tags:
+                  type: array
+                  description: List of tags assigned to the filesystem.
+                  items:
+                    type: string
+              required:
+              - name
+              - project_id
+              x-properties-order:
+              - name
+              - project_id
+              - size
+              - from_empty
+              - from_snapshot
+              - type
+              - tags
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "string",
+              "project_id": "6170692e-7363-616c-6577-61792e636f6d",
+              "size": 42
+            }' \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            name="string" \
+            project_id="6170692e-7363-616c-6577-61792e636f6d" \
+            size:=42
+  /file/v1alpha1/regions/{region}/filesystems/{filesystem_id}:
+    get:
+      tags:
+      - FileSystem
+      operationId: GetFileSystem
+      summary: Get filesystem details
+      description: Retrieve all properties and current status of a specific filesystem
+        identified by its ID.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: filesystem_id
+        description: UUID of the filesystem. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.FileSystem'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems/{filesystem_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems/{filesystem_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - FileSystem
+      operationId: UpdateFileSystem
+      summary: Update filesystem properties
+      description: Update the technical details of a filesystem, such as its name,
+        tags or its new size.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: filesystem_id
+        description: UUID of the filesystem. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.FileSystem'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: When defined, is the new name of the filesystem.
+                size:
+                  type:
+                  - integer
+                  - "null"
+                  description: |-
+                    Optional field for increasing the size of the filesystem (must be larger than the current size).
+                    Size in bytes, with a granularity in GB (10^9 bytes).
+                    Must be compliant with the minimum (25 GB) and maximum (50 TB) allowed size.
+                  format: uint64
+                tags:
+                  type:
+                  - array
+                  - "null"
+                  description: List of tags assigned to the filesystem.
+              x-properties-order:
+              - name
+              - size
+              - tags
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems/{filesystem_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems/{filesystem_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - FileSystem
+      operationId: DeleteFileSystem
+      summary: Delete a detached filesystem
+      description: You must specify the `filesystem_id` of the filesystem you want
+        to delete.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: filesystem_id
+        description: UUID of the filesystem. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems/{filesystem_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/file/v1alpha1/regions/{region}/filesystems/{filesystem_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /file/v1alpha1/regions/{region}/snapshots:
+    get:
+      tags:
+      - Snapshot
+      operationId: ListSnapshots
+      summary: List all snapshots
+      description: Retrieve all snapshots in the specified region. By default, the
+        snapshots listed are ordered by creation date in ascending order. This can
+        be modified using the `order_by` field.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: order_by
+        description: Criteria to use when ordering the list.
+        schema:
+          $ref: '#/components/schemas/scaleway.file.v1alpha1.ListSnapshotsRequest.OrderBy'
+      - in: query
+        name: page
+        description: Page number (starting at 1).
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: 'Number of entries per page (default: 20, max: 100).'
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: name
+        description: Filter the returned snapshots by their names.
+        schema:
+          type: string
+      - in: query
+        name: tags
+        description: Filter by tags. Only snapshots with one or more matching tags
+          will be returned.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: filesystem_id
+        description: Filter the returned snapshots by the ID of the original filesystem.
+        schema:
+          type: string
+      - in: query
+        name: snapshot_ids
+        description: Filter by snapshot IDs. Only snapshots with one or more matching
+          IDs will be returned.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: project_id
+        description: |-
+          Filter by project ID.
+          One of project_id, organization_id is required.
+        schema:
+          type: string
+          x-one-of: scope
+      - in: query
+        name: organization_id
+        description: |-
+          Filter by organization ID.
+          One of project_id, organization_id is required.
+        schema:
+          type: string
+          x-one-of: scope
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.ListSnapshotsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Snapshot
+      operationId: CreateSnapshot
+      summary: Create a snapshot of a filesystem
+      description: |-
+        To create a snapshot, the filesystem must be in the `available` status.
+        If your filesystem is in a transient state, you need to wait until the end of the current operation.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.Snapshot'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filesystem_id:
+                  type: string
+                  description: UUID of the filesystem to snapshot. (UUID format)
+                  example: 6170692e-7363-616c-6577-61792e636f6d
+                name:
+                  type: string
+                  description: Name of the snapshot.
+                project_id:
+                  type: string
+                  description: UUID of the project to which the filesystem and the
+                    snapshot belong. (UUID format)
+                  example: 6170692e-7363-616c-6577-61792e636f6d
+                tags:
+                  type: array
+                  description: List of tags assigned to the snapshot.
+                  items:
+                    type: string
+              required:
+              - filesystem_id
+              - name
+              - project_id
+              x-properties-order:
+              - filesystem_id
+              - name
+              - project_id
+              - tags
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "filesystem_id": "6170692e-7363-616c-6577-61792e636f6d",
+              "name": "string",
+              "project_id": "6170692e-7363-616c-6577-61792e636f6d"
+            }' \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            filesystem_id="6170692e-7363-616c-6577-61792e636f6d" \
+            name="string" \
+            project_id="6170692e-7363-616c-6577-61792e636f6d"
+  /file/v1alpha1/regions/{region}/snapshots/{snapshot_id}:
+    get:
+      tags:
+      - Snapshot
+      operationId: GetSnapshot
+      summary: Get snapshot details
+      description: Retrieve all properties and current status of a specific snapshot
+        identified by its ID.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: snapshot_id
+        description: UUID of the snapshot. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.Snapshot'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Snapshot
+      operationId: UpdateSnapshot
+      summary: Update snapshot properties
+      description: Update the name or tags of a snapshot.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: snapshot_id
+        description: UUID of the snapshot. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.Snapshot'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: When defined, is the new name of the snapshot.
+                tags:
+                  type:
+                  - array
+                  - "null"
+                  description: List of tags assigned to the snapshot.
+              x-properties-order:
+              - name
+              - tags
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Snapshot
+      operationId: DeleteSnapshot
+      summary: Delete a snapshot
+      description: You must specify the `snapshot_id` of the snapshot you want to
+        delete.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: snapshot_id
+        description: UUID of the snapshot. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.file.v1alpha1.Snapshot'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/file/v1alpha1/regions/{region}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY

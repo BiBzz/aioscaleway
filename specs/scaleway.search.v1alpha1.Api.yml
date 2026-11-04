@@ -1,0 +1,564 @@
+openapi: 3.1.0
+info:
+  title: Search API
+  description: |-
+    The Scaleway Search API enables you to locate products and resources across an organization.
+
+    **Search by**:
+
+    - Product name or resource type
+    - Resource ID
+    - Resource name
+
+    **Returned metadata**:
+
+    - Resource location
+    - Associated project (name and ID)
+    - Creation and last modified date
+
+    ## Concepts
+
+    Refer to the [Organizations and Projects - Glossary](https://www.scaleway.com/en/docs/organizations-and-projects/concepts/glossary/), or [Use the Resource Explorer](https://www.scaleway.com/en/docs/organizations-and-projects/project/use-resource-explorer/) to find definitions and information on all Search API related terminology.
+
+    ## Quickstart
+
+    Note that the Search is also integrated in the [Scaleway CLI](https://www.scaleway.com/en/developers/cli). Refer to [scw search](https://www.scaleway.com/en/developers/cli/search) in CLI documentation for more details.
+
+    <Message type="requirement">
+    - You have a [Scaleway account](https://console.scaleway.com/)
+    - You have created an [API key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) and that the API key has sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/) to perform the actions described on this page
+    - You have [installed `curl`](https://curl.se/download.html)
+    </Message>
+
+    1. Configure your environment variables:
+
+       <Message type="note">
+       This is an optional step that seeks to simplify your usage of the Search API.
+       </Message>
+
+        ```bash
+        export SCW_SECRET_KEY="<YOUR_API_SECRET_KEY>"
+        export SCW_ORGANIZATION_ID="<YOUR_ORGANIZATION_ID>"
+        ```
+
+    2. Run the following command to perform a basic search query and get the list of the resources attached to your organization:
+
+        ```bash
+        curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/search/v1alpha1/resources?organization_id=$SCW_ORGANIZATION_ID"
+        ```
+
+       Example response:
+
+        ```json
+        {
+        "resources": [
+            {
+            "id": "0dac255c-83e7-483a-895c-73a6e1bdaca4",
+            "name": "my-cpu-instance-example",
+            "organization_id": "13280ed3-afff-4abc-9a8c-eb972589c821",
+            "project_id": "13270ed5-afff-4abc-8a7c-eb972389c821",
+            "type": "sbs_volume",
+            "zone": "fr-par-1",
+            "created_at": "2026-10-09T11:54:21.593179Z",
+            "updated_at": "2026-10-09T11:54:22.438089Z"
+            }
+        ],
+        "next_page_token": ""
+        }
+        ```
+
+    ## Technical information
+
+    ### Availability Zones / Regions
+
+    Scaleway Search API is a global service. It can search for Scaleway products and resources on whatever locality (zone, region or global as well) they are in.
+
+    ## Technical limitations
+
+    Refer to the [Resource explorer - Supported resource types](https://www.scaleway.com/en/docs/organizations-and-projects/project/use-resource-explorer/#supported-resource-types) documentation for the complete list of resources supported by the Search API.
+
+    ## Going further
+
+    For more help using Scaleway Search API, check out the following resources:
+
+    - The [`search` CLI documentation](https://www.scaleway.com/en/developers/cli/search#documentation-for-scw-search)
+    - Scaleway [main documentation](https://www.scaleway.com/en/docs/)
+    - The [Slack Community](https://www.scaleway.com/en/docs/tutorials/scaleway-slack-community/)
+    - The Scaleway [support ticketing system](https://www.scaleway.com/en/docs/account/how-to/open-a-support-ticket/).
+  version: v1alpha1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Resources
+components:
+  schemas:
+    scaleway.search.v1alpha1.BrmServerInfo:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: IP address of the Baremetal server.
+      x-properties-order:
+      - ip
+    scaleway.search.v1alpha1.ObsDatasourceInfo:
+      type: object
+      properties:
+        type:
+          description: Type of data handled by the OBS datasource.
+          $ref: '#/components/schemas/scaleway.search.v1alpha1.ObsDatasourceInfo.DataType'
+      x-properties-order:
+      - type
+    scaleway.search.v1alpha1.ObsDatasourceInfo.DataType:
+      type: string
+      enum:
+      - unknown_data_type
+      - metrics
+      - logs
+      - traces
+      x-enum-descriptions:
+        values:
+          unknown_data_type: Unknown data type
+          metrics: Metrics data
+          logs: Logs data
+          traces: Traces data
+      default: unknown_data_type
+    scaleway.search.v1alpha1.ObsExporterInfo:
+      type: object
+      properties:
+        destination_type:
+          description: Destination type of the OBS exporter.
+          $ref: '#/components/schemas/scaleway.search.v1alpha1.ObsExporterInfo.DestinationType'
+      x-properties-order:
+      - destination_type
+    scaleway.search.v1alpha1.ObsExporterInfo.DestinationType:
+      type: string
+      enum:
+      - unknown_destination_type
+      - datadog
+      - otlp
+      x-enum-descriptions:
+        values:
+          unknown_destination_type: Unknown destination type
+          datadog: Datadog destination
+          otlp: OTLP destination
+      default: unknown_destination_type
+    scaleway.search.v1alpha1.Resource:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the resource.
+        name:
+          type:
+          - string
+          - "null"
+          description: Name of the resource.
+        project_id:
+          type:
+          - string
+          - "null"
+          description: ID of the Project the resource belongs to. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        organization_id:
+          type: string
+          description: ID of the Organization the resource belongs to. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        type:
+          description: Type of the resource.
+          $ref: '#/components/schemas/scaleway.search.v1alpha1.Resource.Type'
+        global:
+          type:
+          - boolean
+          - "null"
+          description: |-
+            Locality the resource is in if this is a global resource.
+            Precisely one of global, zone, region can be set.
+          x-one-of: locality
+        zone:
+          type:
+          - string
+          - "null"
+          description: |-
+            Locality the resource is in if this is a zonal resource.
+            Precisely one of global, zone, region can be set.
+          x-one-of: locality
+        region:
+          type:
+          - string
+          - "null"
+          description: |-
+            Locality the resource is in if this is a regional resource.
+            Precisely one of global, zone, region can be set.
+          x-one-of: locality
+        vpc_private_network_info:
+          description: |-
+            Additional information for a VPC Private Network.
+            Precisely one of vpc_private_network_info, serverless_functions_function_info, serverless_containers_container_info, serverless_sqldb_backup_info, baremetal_server_info, obs_datasource_info, obs_exporter_info can be set.
+          x-one-of: info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.search.v1alpha1.VpcPrivateNetworkInfo'
+          - type: "null"
+        serverless_functions_function_info:
+          description: |-
+            Additional information for a Serverless Function.
+            Precisely one of vpc_private_network_info, serverless_functions_function_info, serverless_containers_container_info, serverless_sqldb_backup_info, baremetal_server_info, obs_datasource_info, obs_exporter_info can be set.
+          x-one-of: info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.search.v1alpha1.ServerlessFunctionsFunctionInfo'
+          - type: "null"
+        serverless_containers_container_info:
+          description: |-
+            Additional information for a Serverless Container.
+            Precisely one of vpc_private_network_info, serverless_functions_function_info, serverless_containers_container_info, serverless_sqldb_backup_info, baremetal_server_info, obs_datasource_info, obs_exporter_info can be set.
+          x-one-of: info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.search.v1alpha1.ServerlessContainersContainerInfo'
+          - type: "null"
+        serverless_sqldb_backup_info:
+          description: |-
+            Additional information for a Serverless SQL database backup.
+            Precisely one of vpc_private_network_info, serverless_functions_function_info, serverless_containers_container_info, serverless_sqldb_backup_info, baremetal_server_info, obs_datasource_info, obs_exporter_info can be set.
+          x-one-of: info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.search.v1alpha1.ServerlessSqldbBackupInfo'
+          - type: "null"
+        baremetal_server_info:
+          description: |-
+            Additional information for a Baremetal server.
+            Precisely one of vpc_private_network_info, serverless_functions_function_info, serverless_containers_container_info, serverless_sqldb_backup_info, baremetal_server_info, obs_datasource_info, obs_exporter_info can be set.
+          x-one-of: info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.search.v1alpha1.BrmServerInfo'
+          - type: "null"
+        obs_datasource_info:
+          description: |-
+            Additional information for an OBS datasource.
+            Precisely one of vpc_private_network_info, serverless_functions_function_info, serverless_containers_container_info, serverless_sqldb_backup_info, baremetal_server_info, obs_datasource_info, obs_exporter_info can be set.
+          x-one-of: info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.search.v1alpha1.ObsDatasourceInfo'
+          - type: "null"
+        obs_exporter_info:
+          description: |-
+            Additional information for an OBS exporter.
+            Precisely one of vpc_private_network_info, serverless_functions_function_info, serverless_containers_container_info, serverless_sqldb_backup_info, baremetal_server_info, obs_datasource_info, obs_exporter_info can be set.
+          x-one-of: info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.search.v1alpha1.ObsExporterInfo'
+          - type: "null"
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last update date. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - id
+      - name
+      - project_id
+      - organization_id
+      - type
+      - global
+      - zone
+      - region
+      - vpc_private_network_info
+      - serverless_functions_function_info
+      - serverless_containers_container_info
+      - serverless_sqldb_backup_info
+      - baremetal_server_info
+      - obs_datasource_info
+      - obs_exporter_info
+      - created_at
+      - updated_at
+    scaleway.search.v1alpha1.Resource.Type:
+      type: string
+      enum:
+      - unknown_type
+      - instance_server
+      - instance_volume
+      - instance_image
+      - instance_security_group
+      - instance_private_nic
+      - instance_snapshot
+      - instance_placement_group
+      - instance_template
+      - k8s_cluster
+      - k8s_pool
+      - k8s_node
+      - domain_domain
+      - dns_zone
+      - vpc_private_network
+      - vpc_vpc
+      - vpg_gateway
+      - apple_silicon_server
+      - rdb_instance
+      - rdb_snapshot
+      - rdb_backup
+      - baremetal_server
+      - tem_domain
+      - lb_server
+      - serverless_functions_function
+      - serverless_containers_container
+      - serverless_containers_namespace
+      - serverless_containers_domain
+      - serverless_containers_trigger
+      - wbh_hosting
+      - redis_cluster
+      - sm_secret
+      - kms_key
+      - edg_pipeline
+      - mnq_nats_account
+      - sbs_volume
+      - sbs_snapshot
+      - serverless_job_definition
+      - serverless_sqldb_database
+      - serverless_sqldb_backup
+      - datalab
+      - mgdb_instance
+      - mgdb_snapshot
+      - ifr_deployment
+      - ifr_model
+      - gapi_batch
+      - dtwh_deployment
+      - obs_datasource
+      - obs_exporter
+      - svpn_vpn_gateway
+      - svpn_customer_gateway
+      - svpn_connection
+      - svpn_routing_policy
+      - kafk_cluster
+      - sedb_cluster
+      - autoscaling_group
+      - wofl_definition
+      - wofl_run
+      - kvdb_instance
+      - kvdb_snapshot
+      x-enum-descriptions:
+        values:
+          unknown_type: Unknown type
+          instance_server: Instance server
+          instance_volume: Instance volume
+          instance_image: Instance image
+          k8s_cluster: K8S cluster
+          k8s_pool: K8S pool
+          k8s_node: K8S node
+          domain_domain: Domain
+          dns_zone: DNS zone
+          vpc_private_network: VPC private network
+          vpc_vpc: VPC
+          vpg_gateway: VPG
+          apple_silicon_server: Apple Silicon server
+          rdb_instance: RDB instance
+          rdb_snapshot: RDB snapshot
+          rdb_backup: RDB backup
+          baremetal_server: Baremetal server
+          lb_server: LB server
+          serverless_functions_function: Serverless functions function
+          serverless_containers_container: Serverless containers container
+          wbh_hosting: Web Hosting
+          redis_cluster: Redis cluster
+          sm_secret: Secret manager secret
+          kms_key: Key manager key
+          mnq_nats_account: Messaging and Queuing NATS Account
+          sbs_volume: Block storage volume
+          sbs_snapshot: Block storage snapshot
+          datalab: Distributed Data Lab
+          ifr_deployment: Managed inference deployment
+          ifr_model: Managed inference model
+          dtwh_deployment: DataWarehouse for Clickhouse deployment
+      default: unknown_type
+    scaleway.search.v1alpha1.SearchResourcesRequest.OrderBy:
+      type: string
+      enum:
+      - relevance
+      - created_at_asc
+      - created_at_desc
+      - modified_at_asc
+      - modified_at_desc
+      - name_asc
+      - name_desc
+      - type_asc
+      - type_desc
+      x-enum-descriptions:
+        values:
+          created_at_asc: Sort by creation date in ascending order
+          created_at_desc: Sort by creation date in descending order
+          modified_at_asc: Sort by modification date in ascending order
+          modified_at_desc: Sort by modification date in descending order
+          name_asc: Sort by resource name in alphabetical order
+          name_desc: Sort by resource name in reverse alphabetical order
+          type_asc: Sort by resource type in alphabetical order
+          type_desc: Sort by resource type in reverse alphabetical order
+      default: relevance
+    scaleway.search.v1alpha1.SearchResourcesResponse:
+      type: object
+      properties:
+        resources:
+          type: array
+          description: Top resources found.
+          items:
+            $ref: '#/components/schemas/scaleway.search.v1alpha1.Resource'
+        next_page_token:
+          type: string
+          description: |-
+            Opaque token to retrieve the next page of results.
+            If this string is empty, it means there are no more pages available.
+      x-properties-order:
+      - resources
+      - next_page_token
+    scaleway.search.v1alpha1.ServerlessContainersContainerInfo:
+      type: object
+      properties:
+        namespace_id:
+          type: string
+          description: ID of the Namespace the Serverless Container belongs to.
+      x-properties-order:
+      - namespace_id
+    scaleway.search.v1alpha1.ServerlessFunctionsFunctionInfo:
+      type: object
+      properties:
+        namespace_id:
+          type: string
+          description: ID of the Namespace the Serverless Function belongs to.
+      x-properties-order:
+      - namespace_id
+    scaleway.search.v1alpha1.ServerlessSqldbBackupInfo:
+      type: object
+      properties:
+        database_id:
+          type: string
+          description: ID of the Serverless SQL Database the backup belongs to.
+      x-properties-order:
+      - database_id
+    scaleway.search.v1alpha1.VpcPrivateNetworkInfo:
+      type: object
+      properties:
+        vpc_id:
+          type: string
+          description: ID of the VPC the Private Network belongs to.
+      x-properties-order:
+      - vpc_id
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /search/v1alpha1/resources:
+    get:
+      tags:
+      - Resources
+      operationId: SearchResources
+      summary: Search API
+      parameters:
+      - in: query
+        name: query
+        description: Search query.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: organization_id
+        description: ID of the Organization to search in.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: project_ids
+        description: List of Project IDs to filter the resources by.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: types
+        description: List of resource types to filter the resources by.
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.search.v1alpha1.Resource.Type'
+      - in: query
+        name: localities
+        description: List of scopes (zones, regions, or global) to filter the resources
+          by.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: created_after
+        description: Filter resources created after this timestamp. (RFC 3339 format)
+        schema:
+          type: string
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      - in: query
+        name: created_before
+        description: Filter resources created before this timestamp. (RFC 3339 format)
+        schema:
+          type: string
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      - in: query
+        name: modified_after
+        description: Filter resources modified after this timestamp. (RFC 3339 format)
+        schema:
+          type: string
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      - in: query
+        name: modified_before
+        description: Filter resources modified before this timestamp. (RFC 3339 format)
+        schema:
+          type: string
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      - in: query
+        name: page_token
+        description: |-
+          Opaque token used to retrieve the next page of results (cursor-based pagination).
+          Leave empty or omit to fetch the first page.
+        schema:
+          type: string
+      - in: query
+        name: page_size
+        description: Number of resources to retrieve per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Sort order in the response.
+        schema:
+          $ref: '#/components/schemas/scaleway.search.v1alpha1.SearchResourcesRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.search.v1alpha1.SearchResourcesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/search/v1alpha1/resources?organization_id=string&query=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/search/v1alpha1/resources" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            organization_id==string \
+            query==string

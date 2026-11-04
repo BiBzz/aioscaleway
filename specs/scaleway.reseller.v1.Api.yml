@@ -1,0 +1,826 @@
+openapi: 3.1.0
+info:
+  title: Reseller API
+  description: |-
+    As a reseller, this API allows you to create and manage Scaleway organizations (accounts) for your customers.
+    Access to this API is reserved for official Scaleway Resellers.
+    As a Scaleway Reseller, you will receive a unique `reseller_id` that allows you to create organizations.
+
+    <Message type="important">
+     This API has been deprecated and is replaced by the [Partner API](https://www.scaleway.com/en/developers/api/partner-api).
+    </Message>
+
+    ## Endpoint
+
+    Scaleway reseller API is available at `https://api.scaleway.com`
+
+    ## Authentication
+
+    To access this API, you need to create a unique [API secret key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/). Ensure that you have the correct permission set: `ResellerFullAccess`. If you are the owner of the Organization and thus the creator of the API key, this permission is enabled by default.
+    Be very careful as this secret key allows management access to all Scaleway organizations attached to your account.
+    You MUST pass the secret key in an `X-Auth-Token` HTTP header along with all your requests.
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Organizations
+  description: |
+    All organizations created with this API are considered standard Scaleway organizations, with a few differences:
+      - Special quotas will automatically be applied to all organizations
+        without needing them to go through standard account verification.
+      - Organizations will not be billed at the end of the month.
+        Instead, you will receive an invoice with the aggregated consumption of all your organizations.
+    When you create an organization, you will be able to attach a custom `customer_id` identifier.
+    You can use this identifier to associate a customer's ID in your infrastructure with the corresponding Scaleway organization.
+- name: Consumptions
+  description: |
+    Consumption allows you to retrieve the current consumption of all your customers for a given period.
+    Be aware that there might be a 48/72h delay before all consumption is present in this API.
+- name: Locks
+  description: |
+    Depending on your customer's management process, you might need to lock one of your customers' organizations temporarily.
+    When locked, a customer will no longer be able to perform any actions on the Scaleway ecosystem.
+    Please note that a lock:
+      - will NOT delete any customer data.
+      - will NOT stop already started resources.
+components:
+  schemas:
+    google.protobuf.Int32Value:
+      type:
+      - integer
+      - "null"
+      format: int32
+    google.type.Decimal:
+      type: object
+      properties:
+        value:
+          type: string
+      x-properties-order:
+      - value
+    google.type.Money:
+      type: object
+      properties:
+        currency_code:
+          type: string
+        units:
+          type: integer
+          format: int64
+        nanos:
+          type: integer
+          format: int32
+      x-properties-order:
+      - currency_code
+      - units
+      - nanos
+    scaleway.reseller.v1.Consumption:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique Consumption ID.
+        status:
+          description: Status of this consumption.
+          $ref: '#/components/schemas/scaleway.reseller.v1.Consumption.Status'
+        start_date:
+          type:
+          - string
+          - "null"
+          description: Start date for the consumption (usually the first of the month).
+            (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        stop_date:
+          type:
+          - string
+          - "null"
+          description: End date for the consumption (usually the end of the month).
+            (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        organization_id:
+          type: string
+          description: The organization ID.
+        customer_id:
+          type: string
+          description: The customer ID associated to the organization.
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last update date for this consumption. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        total_price:
+          description: Total price (Exc Taxes).
+          $ref: '#/components/schemas/google.type.Money'
+        lines:
+          type: array
+          description: Detailed lines for this consumption.
+          items:
+            $ref: '#/components/schemas/scaleway.reseller.v1.Consumption.Line'
+        discount_rate:
+          description: Discount rate decimal value (e.g., returns '20' for a 20% discount
+            rate).
+          $ref: '#/components/schemas/google.type.Decimal'
+      x-properties-order:
+      - id
+      - status
+      - start_date
+      - stop_date
+      - organization_id
+      - customer_id
+      - updated_at
+      - total_price
+      - lines
+      - discount_rate
+    scaleway.reseller.v1.Consumption.Line:
+      type: object
+      properties:
+        sku:
+          type: string
+          description: Unique product identifier.
+        product_name:
+          type: string
+          description: Product code.
+        quantity:
+          type: integer
+          description: Quantity.
+          format: uint32
+        start_date:
+          type:
+          - string
+          - "null"
+          description: Start date of the consumption for the given SKU. (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        end_date:
+          type:
+          - string
+          - "null"
+          description: End date of the consumption for the given SKU. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        unit_price:
+          description: Unit price (excl. taxes).
+          $ref: '#/components/schemas/google.type.Money'
+        total_price:
+          description: Total price (excl. taxes).
+          $ref: '#/components/schemas/google.type.Money'
+        unit:
+          description: The unit used for the given SKU.
+          $ref: '#/components/schemas/scaleway.reseller.v1.Consumption.Unit'
+        project_id:
+          type: string
+          description: The project ID.
+      x-properties-order:
+      - sku
+      - product_name
+      - quantity
+      - start_date
+      - end_date
+      - unit_price
+      - total_price
+      - unit
+      - project_id
+    scaleway.reseller.v1.Consumption.Status:
+      type: string
+      enum:
+      - unknown_status
+      - pending
+      - completed
+      default: unknown_status
+    scaleway.reseller.v1.Consumption.Unit:
+      type: string
+      enum:
+      - unknown_unit
+      - year
+      - hour
+      - messages
+      - minute
+      - eur
+      - month
+      - query
+      - request
+      - currency
+      - device_hour
+      - gigabyte
+      - gigabyte_hour
+      - gigabyte_month
+      - gigabyte_minute
+      - iops_gigabyte
+      - iops_gigabyte_hour
+      - object_hour
+      - ip
+      - ip_minute
+      - ip_hour
+      - ip_day
+      - ip_month
+      - node
+      - node_hour
+      - node_month
+      - node_minute
+      - plan
+      - session
+      - domain
+      - zone
+      - mb_s
+      - gb_s
+      - vcpu_s
+      - mvcpu_s
+      - core
+      - email
+      - email_month
+      - version
+      - version_hour
+      - version_minute
+      - sample
+      - sample_day
+      - gigabyte_day
+      - day
+      - token
+      - second
+      - mvcpu_minute
+      default: unknown_unit
+    scaleway.reseller.v1.ListConsumptionsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total number of results.
+          format: uint32
+        consumptions:
+          type: array
+          description: List of consumptions.
+          items:
+            $ref: '#/components/schemas/scaleway.reseller.v1.Consumption'
+      x-properties-order:
+      - total_count
+      - consumptions
+    scaleway.reseller.v1.ListOrganizationsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      default: created_at_asc
+    scaleway.reseller.v1.ListOrganizationsResponse:
+      type: object
+      properties:
+        organizations:
+          type: array
+          description: List of organizations.
+          items:
+            $ref: '#/components/schemas/scaleway.reseller.v1.Organization'
+        total_count:
+          type: integer
+          description: Total number of organizations.
+          format: uint32
+      x-properties-order:
+      - organizations
+      - total_count
+    scaleway.reseller.v1.Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the organization.
+        name:
+          type: string
+          description: Name of the organization.
+        email:
+          type: string
+          description: Organization owner's email.
+        status:
+          description: The current status of the organization.
+          $ref: '#/components/schemas/scaleway.reseller.v1.Organization.Status'
+        owner_firstname:
+          type: string
+          description: Organization owner's first name.
+        owner_lastname:
+          type: string
+          description: Organization owner's last name.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Date of organization creation. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        phone_number:
+          type:
+          - string
+          - "null"
+          description: Organization owner's phone number.
+        customer_id:
+          type: string
+          description: Customer ID associated with this organization.
+        lock_reason_message:
+          type: string
+          description: If the organization is locked, this field will contain a human-readable
+            reason.
+        locked_by:
+          description: Originator of the lock. Can be one of "reseller" or "scaleway".
+          $ref: '#/components/schemas/scaleway.reseller.v1.Organization.LockedBy'
+        locked_at:
+          type:
+          - string
+          - "null"
+          description: Date of lock. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        picture_link:
+          type:
+          - string
+          - "null"
+          description: Link to the Organization's picture.
+      x-properties-order:
+      - id
+      - name
+      - email
+      - status
+      - owner_firstname
+      - owner_lastname
+      - created_at
+      - phone_number
+      - customer_id
+      - lock_reason_message
+      - locked_by
+      - locked_at
+      - picture_link
+    scaleway.reseller.v1.Organization.LockedBy:
+      type: string
+      enum:
+      - unknown_organization_locked_by
+      - reseller
+      - scaleway
+      default: unknown_organization_locked_by
+    scaleway.reseller.v1.Organization.Status:
+      type: string
+      enum:
+      - unknown_organization_status
+      - open
+      - locked
+      - closed
+      default: unknown_organization_status
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /reseller/v1/consumptions:
+    get:
+      tags:
+      - Consumptions
+      operationId: ListConsumptions
+      summary: List the consumptions
+      description: |-
+        List the consumption of organizations attached to your reseller account.
+        You can get the consumption for a specific month.
+      parameters:
+      - in: query
+        name: page
+        schema:
+          $ref: '#/components/schemas/google.protobuf.Int32Value'
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: organization_id
+        description: Only list consumption of this organization.
+        schema:
+          type: string
+      - in: query
+        name: customer_id
+        description: Only list consumption of organization attached to this customer_id.
+        schema:
+          type: string
+      - in: query
+        name: month
+        description: Number corresponding to the month of consumption (between 1 and
+          12).
+        required: true
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: year
+        description: Year of the consumption.
+        required: true
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.reseller.v1.ListConsumptionsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/reseller/v1/consumptions?month=42&year=42"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/reseller/v1/consumptions" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            month==42 \
+            year==42
+  /reseller/v1/organizations:
+    get:
+      tags:
+      - Organizations
+      operationId: ListOrganizations
+      summary: Deprecated. Please use equivalent endpoint in partner API
+      parameters:
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page
+        schema:
+          $ref: '#/components/schemas/google.protobuf.Int32Value'
+      - in: query
+        name: order_by
+        schema:
+          $ref: '#/components/schemas/scaleway.reseller.v1.ListOrganizationsRequest.OrderBy'
+      - in: query
+        name: status
+        description: Only list organizations with this status.
+        schema:
+          $ref: '#/components/schemas/scaleway.reseller.v1.Organization.Status'
+      - in: query
+        name: email
+        description: Only list organizations created with this email.
+        schema:
+          type: string
+      - in: query
+        name: customer_id
+        description: |-
+          Only list organizations attached to this Customer ID.
+          Only list organizations attached to this Customer ID.
+          If the customer ID was changed only the last one can be used.
+        schema:
+          type: string
+      - in: query
+        name: locked_by
+        description: Only list organizations locked by a certain entity.
+        schema:
+          $ref: '#/components/schemas/scaleway.reseller.v1.Organization.LockedBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.reseller.v1.ListOrganizationsResponse'
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/reseller/v1/organizations"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/reseller/v1/organizations" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Organizations
+      operationId: CreateOrganization
+      summary: Deprecated. Please use equivalent endpoint in partner API
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.reseller.v1.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reseller_id:
+                  type: string
+                  description: Your personal `reseller_id`. This is the same as your
+                    Organization ID.
+                email:
+                  type: string
+                  description: The email of the new organization owner.
+                organization_name:
+                  type: string
+                  description: The name of the organization you want to create. Usually
+                    the company name.
+                owner_firstname:
+                  type: string
+                  description: The first name of the new organization owner.
+                owner_lastname:
+                  type: string
+                  description: The last name of the new organization owner.
+                phone_number:
+                  type:
+                  - string
+                  - "null"
+                  description: The phone number of the new organization owner.
+                customer_id:
+                  type: string
+                  description: A custom ID for the customer in your own infrastructure.
+              required:
+              - reseller_id
+              - email
+              - organization_name
+              - owner_firstname
+              - owner_lastname
+              - customer_id
+              x-properties-order:
+              - reseller_id
+              - email
+              - organization_name
+              - owner_firstname
+              - owner_lastname
+              - phone_number
+              - customer_id
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "customer_id": "string",
+              "email": "string",
+              "organization_name": "string",
+              "owner_firstname": "string",
+              "owner_lastname": "string",
+              "reseller_id": "string"
+            }' \
+            "https://api.scaleway.com/reseller/v1/organizations"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/reseller/v1/organizations" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            customer_id="string" \
+            email="string" \
+            organization_name="string" \
+            owner_firstname="string" \
+            owner_lastname="string" \
+            reseller_id="string"
+  /reseller/v1/organizations/{organization_id}:
+    get:
+      tags:
+      - Organizations
+      operationId: GetOrganization
+      summary: Deprecated. Please use equivalent endpoint in partner API
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to GET.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.reseller.v1.Organization'
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/reseller/v1/organizations/{organization_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/reseller/v1/organizations/{organization_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Organizations
+      operationId: UpdateOrganization
+      summary: Deprecated. Please use equivalent endpoint in partner API
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.reseller.v1.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type:
+                  - string
+                  - "null"
+                  description: The new email.
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: The new name.
+                owner_firstname:
+                  type:
+                  - string
+                  - "null"
+                  description: The first name of the new owner.
+                owner_lastname:
+                  type:
+                  - string
+                  - "null"
+                  description: The last name of the new owner.
+                phone_number:
+                  type:
+                  - string
+                  - "null"
+                  description: The phone number of the new owner.
+                customer_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    Customer ID associated with this organization.
+                    Customer ID associated with this organization.
+                    Warning: Changing this value will only affect future invoices.
+                    If you try to change this value after the 25th of the month, we cannot guarantee that this will take effect on the invoice issued for the current month.
+              x-properties-order:
+              - email
+              - name
+              - owner_firstname
+              - owner_lastname
+              - phone_number
+              - customer_id
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/reseller/v1/organizations/{organization_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/reseller/v1/organizations/{organization_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /reseller/v1/organizations/{organization_id}/lock:
+    post:
+      tags:
+      - Locks
+      operationId: LockOrganization
+      summary: Deprecated. Please use equivalent endpoint in partner API
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to lock.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.reseller.v1.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/reseller/v1/organizations/{organization_id}/lock"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/reseller/v1/organizations/{organization_id}/lock" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /reseller/v1/organizations/{organization_id}/request-admin-role:
+    post:
+      tags:
+      - Organizations
+      operationId: RequestAdminRole
+      summary: Deprecated. Please use equivalent endpoint in partner API
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to be invited to.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                account_root_user_id:
+                  type: string
+                  description: The ID of the user you want to invite to the organization.
+              x-properties-order:
+              - account_root_user_id
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"account_root_user_id":"string"}' \
+            "https://api.scaleway.com/reseller/v1/organizations/{organization_id}/request-admin-role"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/reseller/v1/organizations/{organization_id}/request-admin-role" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            account_root_user_id="string"
+  /reseller/v1/organizations/{organization_id}/unlock:
+    post:
+      tags:
+      - Locks
+      operationId: UnlockOrganization
+      summary: Deprecated. Please use equivalent endpoint in partner API
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to unlock.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.reseller.v1.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/reseller/v1/organizations/{organization_id}/unlock"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/reseller/v1/organizations/{organization_id}/unlock" \
+            X-Auth-Token:$SCW_SECRET_KEY

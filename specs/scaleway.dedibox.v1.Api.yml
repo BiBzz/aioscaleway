@@ -1,0 +1,4508 @@
+openapi: 3.1.0
+info:
+  title: Dedibox Phoenix API
+  description: Dedibox Phoenix API.
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Servers
+- name: Services
+- name: Install
+- name: BMC Management
+- name: Offers
+- name: Operating System
+- name: Network
+- name: Raid
+- name: Rescue
+- name: Failover IPs
+- name: Quotas
+components:
+  schemas:
+    google.protobuf.StringValue:
+      type:
+      - string
+      - "null"
+    google.protobuf.UInt32Value:
+      type:
+      - integer
+      - "null"
+      format: uint32
+    google.type.Money:
+      type: object
+      properties:
+        currency_code:
+          type: string
+        units:
+          type: integer
+          format: int64
+        nanos:
+          type: integer
+          format: int32
+      x-properties-order:
+      - currency_code
+      - units
+      - nanos
+    scaleway.dedibox.v1.AttachFailoverIPToMacAddressRequest.MacType:
+      type: string
+      enum:
+      - mac_type_unknown
+      - vmware
+      - kvm
+      - xen
+      default: mac_type_unknown
+    scaleway.dedibox.v1.BMCAccess:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL to access to the server console.
+        login:
+          type: string
+          description: The login to use for the BMC (Baseboard Management Controller)
+            access authentication.
+        password:
+          type: string
+          description: The password to use for the BMC (Baseboard Management Controller)
+            access authentication.
+        expires_at:
+          type:
+          - string
+          - "null"
+          description: The date after which the BMC (Baseboard Management Controller)
+            access will be closed. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        status:
+          description: Status of the connection.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.BMCAccess.Status'
+      x-properties-order:
+      - url
+      - login
+      - password
+      - expires_at
+      - status
+    scaleway.dedibox.v1.BMCAccess.Status:
+      type: string
+      enum:
+      - unknown
+      - creating
+      - created
+      - deleting
+      default: unknown
+    scaleway.dedibox.v1.Backup:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the backup.
+          format: uint64
+        login:
+          type: string
+          description: Login of the backup.
+        server:
+          type: string
+          description: Server of the backup.
+        status:
+          description: Status of the backup.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Backup.Status'
+        acl_enabled:
+          type: boolean
+          description: ACL enable boolean of the backup.
+        autologin:
+          type: boolean
+          description: Autologin boolean of the backup.
+        quota_space:
+          type: integer
+          description: Total quota space of the backup.
+          format: uint64
+        quota_space_used:
+          type: integer
+          description: Quota space used of the backup.
+          format: uint64
+        quota_files:
+          type: integer
+          description: Total quota files of the backup.
+          format: uint64
+        quota_files_used:
+          type: integer
+          description: Quota files used of the backup.
+          format: uint64
+      x-properties-order:
+      - id
+      - login
+      - server
+      - status
+      - acl_enabled
+      - autologin
+      - quota_space
+      - quota_space_used
+      - quota_files
+      - quota_files_used
+    scaleway.dedibox.v1.Backup.Status:
+      type: string
+      enum:
+      - unknown_backup_status
+      - uninitialized
+      - inactive
+      - ready
+      default: unknown_backup_status
+    scaleway.dedibox.v1.CPU:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of CPU.
+        core_count:
+          type: integer
+          description: Number of cores of the CPU.
+          format: uint32
+        thread_count:
+          type: integer
+          description: Number of threads of the CPU.
+          format: uint32
+        frequency:
+          type: integer
+          description: Frequency of the CPU.
+          format: uint32
+        bench:
+          type: integer
+          description: Bench of the CPU.
+          format: uint32
+      x-properties-order:
+      - name
+      - core_count
+      - thread_count
+      - frequency
+      - bench
+    scaleway.dedibox.v1.CreateFailoverIPsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          format: uint32
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Service'
+      x-properties-order:
+      - total_count
+      - services
+    scaleway.dedibox.v1.Disk:
+      type: object
+      properties:
+        capacity:
+          type: integer
+          description: Capacity of the disk. (in bytes)
+          format: uint64
+        type:
+          description: Type of the disk.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Disk.Type'
+      x-properties-order:
+      - capacity
+      - type
+    scaleway.dedibox.v1.FailoverBlock:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the failover block.
+          format: uint64
+        address:
+          type: string
+          description: IP of the failover block. (IP address)
+          example: 1.2.3.4
+        nameservers:
+          type: array
+          description: Name servers.
+          items:
+            type: string
+        ip_version:
+          description: IP version of the failover block.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.FailoverBlock.Version'
+        cidr:
+          type: integer
+          description: Classless InterDomain Routing notation of the failover block.
+          format: uint32
+        netmask:
+          type: string
+          description: Netmask of the failover block. (IP address)
+          example: 1.2.3.4
+        gateway_ip:
+          type: string
+          description: Gateway IP of the failover block. (IP address)
+          example: 1.2.3.4
+      x-properties-order:
+      - id
+      - address
+      - nameservers
+      - ip_version
+      - cidr
+      - netmask
+      - gateway_ip
+    scaleway.dedibox.v1.FailoverBlock.Version:
+      type: string
+      enum:
+      - unknown_version
+      - ipv4
+      - ipv6
+      default: unknown_version
+    scaleway.dedibox.v1.FailoverIP:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the failover IP.
+          format: uint64
+        address:
+          type: string
+          description: IP of the failover IP. (IP address)
+          example: 1.2.3.4
+        reverse:
+          type: string
+          description: Reverse IP value.
+        ip_version:
+          description: IP version of the failover IP.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.FailoverIP.Version'
+        cidr:
+          type: integer
+          description: Classless InterDomain Routing notation of the failover IP.
+          format: uint32
+        netmask:
+          type: string
+          description: Netmask of the failover IP. (IP address)
+          example: 1.2.3.4
+        gateway_ip:
+          type: string
+          description: Gateway IP of the failover IP. (IP address)
+          example: 1.2.3.4
+        mac:
+          type:
+          - string
+          - "null"
+          description: MAC address of the IP failover.
+        server_id:
+          type:
+          - integer
+          - "null"
+          description: Server ID linked to the IP failover.
+          format: uint64
+        status:
+          description: Status of the IP failover.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.FailoverIP.Status'
+        block:
+          description: Block of the IP failover.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.FailoverBlock'
+        type:
+          description: The interface type.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.FailoverIP.InterfaceType'
+        server_zone:
+          type:
+          - string
+          - "null"
+          description: The server zone (if assigned).
+      x-properties-order:
+      - id
+      - address
+      - reverse
+      - ip_version
+      - cidr
+      - netmask
+      - gateway_ip
+      - mac
+      - server_id
+      - status
+      - block
+      - type
+      - server_zone
+    scaleway.dedibox.v1.FailoverIP.InterfaceType:
+      type: string
+      enum:
+      - unknown
+      - normal
+      - ipmi
+      - virtual
+      default: unknown
+    scaleway.dedibox.v1.FailoverIP.Status:
+      type: string
+      enum:
+      - unknown_status
+      - ready
+      - busy
+      - locked
+      default: unknown_status
+    scaleway.dedibox.v1.FailoverIP.Version:
+      type: string
+      enum:
+      - unknown_version
+      - ipv4
+      - ipv6
+      default: unknown_version
+    scaleway.dedibox.v1.GetRemainingQuotaResponse:
+      type: object
+      properties:
+        failover_ip_quota:
+          type: integer
+          description: Current failover IP quota.
+          format: uint32
+        failover_ip_remaining_quota:
+          type: integer
+          description: Remaining failover IP quota.
+          format: uint32
+        failover_block_quota:
+          type: integer
+          description: Current failover block quota.
+          format: uint32
+        failover_block_remaining_quota:
+          type: integer
+          description: Remaining failover block quota.
+          format: uint32
+      x-properties-order:
+      - failover_ip_quota
+      - failover_ip_remaining_quota
+      - failover_block_quota
+      - failover_block_remaining_quota
+    scaleway.dedibox.v1.IP:
+      type: object
+      properties:
+        ip_id:
+          type: integer
+          description: ID of the IP.
+          format: uint64
+        address:
+          type: string
+          description: Address of the IP. (IP address)
+          example: 1.2.3.4
+        reverse:
+          type: string
+          description: Reverse IP value.
+        version:
+          description: Version of IP (v4 or v6).
+          $ref: '#/components/schemas/scaleway.dedibox.v1.IP.Version'
+        cidr:
+          type: integer
+          description: Classless InterDomain Routing notation of the IP.
+          format: uint32
+        netmask:
+          type: string
+          description: Network mask of IP. (IP address)
+          example: 1.2.3.4
+        semantic:
+          description: Semantic of IP.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.IP.Semantic'
+        gateway:
+          type: string
+          description: Gateway of IP. (IP address)
+          example: 1.2.3.4
+        status:
+          description: Status of the IP.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.IP.Status'
+      x-properties-order:
+      - ip_id
+      - address
+      - reverse
+      - version
+      - cidr
+      - netmask
+      - semantic
+      - gateway
+      - status
+    scaleway.dedibox.v1.IP.Semantic:
+      type: string
+      enum:
+      - unknown
+      - proxad
+      - ext
+      - public
+      - private
+      - ipmi
+      - adm
+      - redirect
+      - migration
+      default: unknown
+    scaleway.dedibox.v1.IP.Status:
+      type: string
+      enum:
+      - unknown_status
+      - ready
+      - busy
+      - locked
+      default: unknown_status
+    scaleway.dedibox.v1.IP.Version:
+      type: string
+      enum:
+      - ipv4
+      - ipv6
+      default: ipv4
+    scaleway.dedibox.v1.InstallPartition:
+      type: object
+      properties:
+        file_system:
+          description: File system of the installation partition.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Partition.FileSystem'
+        mount_point:
+          type:
+          - string
+          - "null"
+          description: Mount point of the installation partition.
+        raid_level:
+          description: RAID level of the installation partition.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.RaidArray.RaidLevel'
+        capacity:
+          type: integer
+          description: Capacity of the installation partition. (in bytes)
+          format: uint64
+        connectors:
+          type: array
+          description: Connectors of the installation partition.
+          items:
+            type: string
+      x-properties-order:
+      - file_system
+      - mount_point
+      - raid_level
+      - capacity
+      - connectors
+    scaleway.dedibox.v1.ListFailoverIPsRequest.OrderBy:
+      type: string
+      enum:
+      - ip_asc
+      - ip_desc
+      default: ip_asc
+    scaleway.dedibox.v1.ListFailoverIPsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of matching failovers IP.
+          format: uint32
+        failover_ips:
+          type: array
+          description: List of failover IPs that match filters.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.FailoverIP'
+      x-properties-order:
+      - total_count
+      - failover_ips
+    scaleway.dedibox.v1.ListOSRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - released_at_asc
+      - released_at_desc
+      default: created_at_asc
+    scaleway.dedibox.v1.ListOSResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of matching OS.
+          format: uint32
+        os:
+          type: array
+          description: OS that match filters.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.OS'
+      x-properties-order:
+      - total_count
+      - os
+    scaleway.dedibox.v1.ListOffersRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - name_asc
+      - name_desc
+      - price_asc
+      - price_desc
+      default: created_at_asc
+    scaleway.dedibox.v1.ListOffersResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of matching offers.
+          format: uint32
+        offers:
+          type: array
+          description: Offers that match filters.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+      x-properties-order:
+      - total_count
+      - offers
+    scaleway.dedibox.v1.ListServerDisksRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      default: created_at_asc
+    scaleway.dedibox.v1.ListServerDisksResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of matching server disks.
+          format: uint32
+        disks:
+          type: array
+          description: Server disks that match filters.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Disk'
+      x-properties-order:
+      - total_count
+      - disks
+    scaleway.dedibox.v1.ListServerEventsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      default: created_at_asc
+    scaleway.dedibox.v1.ListServerEventsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of matching server events.
+          format: uint32
+        events:
+          type: array
+          description: Server events that match filters.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.ServerEvent'
+      x-properties-order:
+      - total_count
+      - events
+    scaleway.dedibox.v1.ListServersRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      default: created_at_asc
+    scaleway.dedibox.v1.ListServersResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of matching servers.
+          format: uint32
+        servers:
+          type: array
+          description: Servers that match filters.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.ServerSummary'
+      x-properties-order:
+      - total_count
+      - servers
+    scaleway.dedibox.v1.ListServicesRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      default: created_at_asc
+    scaleway.dedibox.v1.ListServicesResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of matching services.
+          format: uint32
+        services:
+          type: array
+          description: Services that match filters.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Service'
+      x-properties-order:
+      - total_count
+      - services
+    scaleway.dedibox.v1.ListSubscribableServerOptionsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of matching subscribable server options.
+          format: uint32
+        server_options:
+          type: array
+          description: Server options that match filters.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+      x-properties-order:
+      - total_count
+      - server_options
+    scaleway.dedibox.v1.Memory:
+      type: object
+      properties:
+        capacity:
+          type: integer
+          description: Capacity of the memory. (in bytes)
+          format: uint64
+        type:
+          description: Type of the memory.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Memory.Type'
+        frequency:
+          type: integer
+          description: Frequency of the memory.
+          format: uint32
+        is_ecc:
+          type: boolean
+          description: True if the memory is an error-correcting code memory.
+      x-properties-order:
+      - capacity
+      - type
+      - frequency
+      - is_ecc
+    scaleway.dedibox.v1.Memory.Type:
+      type: string
+      enum:
+      - ddr2
+      - ddr3
+      - ddr4
+      - ddr5
+      default: ddr2
+    scaleway.dedibox.v1.NetworkInterface:
+      type: object
+      properties:
+        card_id:
+          type: integer
+          description: Card ID of the network interface.
+          format: uint64
+        device_id:
+          type: integer
+          description: Device ID of the network interface.
+          format: uint64
+        mac:
+          type: string
+          description: MAC address of the network interface.
+        type:
+          description: Network interface type.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.NetworkInterface.InterfaceType'
+        ips:
+          type: array
+          description: IPs of the network interface.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.IP'
+      x-properties-order:
+      - card_id
+      - device_id
+      - mac
+      - type
+      - ips
+    scaleway.dedibox.v1.NetworkInterface.InterfaceType:
+      type: string
+      enum:
+      - unknown
+      - normal
+      - ipmi
+      - virtual
+      default: unknown
+    scaleway.dedibox.v1.OS:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the OS.
+          format: uint64
+        name:
+          type: string
+          description: Name of the OS.
+        type:
+          description: Type of the OS.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.OS.Type'
+        version:
+          type: string
+          description: Version of the OS.
+        arch:
+          description: Architecture of the OS.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.OS.Arch'
+        allow_custom_partitioning:
+          type: boolean
+          description: True if the OS allow custom partitioning.
+        allow_ssh_keys:
+          type: boolean
+          description: True if the OS allow SSH Keys.
+        requires_user:
+          type: boolean
+          description: True if the OS requires user.
+        requires_admin_password:
+          type: boolean
+          description: True if the OS requires admin password.
+        requires_panel_password:
+          type: boolean
+          description: True if the OS requires panel password.
+        allowed_filesystems:
+          type: array
+          description: True if the OS allow file systems.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Partition.FileSystem'
+        requires_license:
+          type: boolean
+          description: True if the OS requires license.
+        license_offers:
+          type: array
+          description: License offers available with the OS.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+        max_partitions:
+          type:
+          - integer
+          - "null"
+          description: Maximum number of partitions which can be created.
+          format: uint32
+        display_name:
+          type: string
+          description: Display name of the OS.
+        password_regex:
+          type: string
+          description: Regex used to validate the installation passwords.
+        panel_password_regex:
+          type:
+          - string
+          - "null"
+          description: Regex used to validate the panel installation password.
+        requires_valid_hostname:
+          type:
+          - boolean
+          - "null"
+          description: |-
+            Whether or not the installation requires a valid hostname (ex: my.scaleway.com).
+            If both requires_valid_hostname & hostname_regex are set, it means that at least one of the criteria must be valid.
+        hostname_regex:
+          type:
+          - string
+          - "null"
+          description: |-
+            Regex used to validate the hostname during the installation.
+            If both requires_valid_hostname & hostname_regex are set, it means that at least one of the criteria must be valid.
+        hostname_max_length:
+          type: integer
+          description: Hostname max length.
+          format: uint32
+        released_at:
+          type:
+          - string
+          - "null"
+          description: OS release date. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        beta:
+          type: string
+          description: Is it a beta OS.
+        description:
+          type: string
+          description: Description of the OS.
+        official_website:
+          type: string
+          description: URL to OS official website.
+      x-properties-order:
+      - id
+      - name
+      - type
+      - version
+      - arch
+      - allow_custom_partitioning
+      - allow_ssh_keys
+      - requires_user
+      - requires_admin_password
+      - requires_panel_password
+      - allowed_filesystems
+      - requires_license
+      - license_offers
+      - max_partitions
+      - display_name
+      - password_regex
+      - panel_password_regex
+      - requires_valid_hostname
+      - hostname_regex
+      - hostname_max_length
+      - released_at
+      - beta
+      - description
+      - official_website
+    scaleway.dedibox.v1.OS.Arch:
+      type: string
+      enum:
+      - unknown_arch
+      - amd64
+      - x86
+      - arm
+      - arm64
+      default: unknown_arch
+    scaleway.dedibox.v1.OS.Type:
+      type: string
+      enum:
+      - unknown_type
+      - server
+      - virtu
+      - panel
+      - desktop
+      - custom
+      - rescue
+      default: unknown_type
+    scaleway.dedibox.v1.Offer:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the offer (aka product.id).
+          format: uint64
+        name:
+          type: string
+          description: Name of the offer.
+        catalog:
+          description: Catalog of the offer.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.Catalog'
+        payment_frequency:
+          description: Payment frequency of the offer.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.PaymentFrequency'
+        pricing:
+          description: Price of the offer.
+          $ref: '#/components/schemas/google.type.Money'
+        offer_id:
+          type:
+          - integer
+          - "null"
+          description: Original Dedibox ID of the offer.
+          format: uint64
+        server_info:
+          description: |-
+            Server info if it is a server offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.ServerInfo'
+          - type: "null"
+        service_level_info:
+          description: |-
+            Service level info if it is a service level offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.ServiceLevelInfo'
+          - type: "null"
+        rpn_info:
+          description: |-
+            RPN info if it is a RPN offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.RPNInfo'
+          - type: "null"
+        san_info:
+          description: |-
+            SAN info if it is a SAN offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.SANInfo'
+          - type: "null"
+        antidos_info:
+          description: |-
+            AntiDOS info if it is a antiDOS offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.AntiDosInfo'
+          - type: "null"
+        backup_info:
+          description: |-
+            Backup info if it is a backup offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.BackupInfo'
+          - type: "null"
+        usb_storage_info:
+          description: |-
+            USB storage info if it is a USB storage offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.StorageInfo'
+          - type: "null"
+        storage_info:
+          description: |-
+            Storage info if it is a storage offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.StorageInfo'
+          - type: "null"
+        license_info:
+          description: |-
+            License info if it is a license offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.LicenseInfo'
+          - type: "null"
+        failover_ip_info:
+          description: |-
+            Failover IP info if it is a failover IP offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.FailoverIpInfo'
+          - type: "null"
+        failover_block_info:
+          description: |-
+            Failover block info if it is a failover block offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.FailoverBlockInfo'
+          - type: "null"
+        bandwidth_info:
+          description: |-
+            Bandwidth info if it is a bandwidth offer.
+            Precisely one of server_info, service_level_info, rpn_info, san_info, antidos_info, backup_info, usb_storage_info, storage_info, license_info, failover_ip_info, failover_block_info, bandwidth_info can be set.
+          x-one-of: offer_info
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.BandwidthInfo'
+          - type: "null"
+        commitments:
+          type: array
+          description: Commitment info if it is a commitment offer.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.Commitment'
+        available_os:
+          type: array
+          description: Available OS info if it is a available OS offer.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.OS'
+      x-properties-order:
+      - id
+      - name
+      - catalog
+      - payment_frequency
+      - pricing
+      - offer_id
+      - server_info
+      - service_level_info
+      - rpn_info
+      - san_info
+      - antidos_info
+      - backup_info
+      - usb_storage_info
+      - storage_info
+      - license_info
+      - failover_ip_info
+      - failover_block_info
+      - bandwidth_info
+      - commitments
+      - available_os
+    scaleway.dedibox.v1.Offer.AntiDosInfo:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.AntiDosInfo.Type'
+      x-properties-order:
+      - type
+    scaleway.dedibox.v1.Offer.AntiDosInfo.Type:
+      type: string
+      enum:
+      - minimal
+      - preventive
+      - curative
+      default: minimal
+    scaleway.dedibox.v1.Offer.BackupInfo:
+      type: object
+      properties:
+        size:
+          type: integer
+          description: (in bytes)
+          format: uint64
+      x-properties-order:
+      - size
+    scaleway.dedibox.v1.Offer.BandwidthInfo:
+      type: object
+      properties:
+        speed:
+          type: integer
+          format: uint32
+      x-properties-order:
+      - speed
+    scaleway.dedibox.v1.Offer.Catalog:
+      type: string
+      enum:
+      - all
+      - default
+      - beta
+      - reseller
+      - premium
+      - volume
+      - admin
+      - inactive
+      default: all
+    scaleway.dedibox.v1.Offer.Commitment:
+      type: object
+      properties:
+        unit:
+          type: string
+          description: Unit used for discount.
+        value:
+          type: integer
+          description: Value of the discount.
+          format: uint32
+        free_setup_fees:
+          type: boolean
+          description: Is it free setup fees.
+        duration:
+          type: string
+          description: Commitment's required duration.
+        discounted_price:
+          description: Discounted price of the commitment.
+          $ref: '#/components/schemas/google.type.Money'
+      x-properties-order:
+      - unit
+      - value
+      - free_setup_fees
+      - duration
+      - discounted_price
+    scaleway.dedibox.v1.Offer.FailoverBlockInfo:
+      type: object
+      properties:
+        onetime_fees:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+      x-properties-order:
+      - onetime_fees
+    scaleway.dedibox.v1.Offer.FailoverIpInfo:
+      type: object
+      properties:
+        onetime_fees:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+      x-properties-order:
+      - onetime_fees
+    scaleway.dedibox.v1.Offer.LicenseInfo:
+      type: object
+      properties:
+        bound_to_ip:
+          type: boolean
+      x-properties-order:
+      - bound_to_ip
+    scaleway.dedibox.v1.Offer.PaymentFrequency:
+      type: string
+      enum:
+      - monthly
+      - oneshot
+      default: monthly
+    scaleway.dedibox.v1.Offer.RPNInfo:
+      type: object
+      properties:
+        speed:
+          type: integer
+          format: uint32
+      x-properties-order:
+      - speed
+    scaleway.dedibox.v1.Offer.SANInfo:
+      type: object
+      properties:
+        size:
+          type: integer
+          description: SAN size (in bytes).
+          format: uint64
+        ha:
+          type: boolean
+          description: High availability offer.
+        device_type:
+          description: Type of SAN device (hdd / ssd).
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.SANInfo.Type'
+      x-properties-order:
+      - size
+      - ha
+      - device_type
+    scaleway.dedibox.v1.Offer.SANInfo.Type:
+      type: string
+      enum:
+      - hdd
+      - ssd
+      default: hdd
+    scaleway.dedibox.v1.Offer.ServerInfo:
+      type: object
+      properties:
+        bandwidth:
+          type: integer
+          format: uint64
+        stock:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.ServerInfo.Stock'
+        commercial_range:
+          type: string
+        disks:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Disk'
+        cpus:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.CPU'
+        memories:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Memory'
+        persistent_memories:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.PersistentMemory'
+        raid_controllers:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.RaidController'
+        available_options:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+        rpn_version:
+          $ref: '#/components/schemas/google.protobuf.UInt32Value'
+        connectivity:
+          type: integer
+          format: uint64
+        onetime_fees:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+        stock_by_datacenter:
+          type: object
+          properties:
+            <stock_by_datacenterKey>:
+              $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.ServerInfo.Stock'
+          additionalProperties: true
+        availability_by_datacenter:
+          type: object
+          properties:
+            <availability_by_datacenterKey>:
+              $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.ServerInfo.Availability'
+          additionalProperties: true
+        rpn_speed:
+          type: integer
+          format: uint32
+      x-properties-order:
+      - bandwidth
+      - stock
+      - commercial_range
+      - disks
+      - cpus
+      - memories
+      - persistent_memories
+      - raid_controllers
+      - available_options
+      - rpn_version
+      - connectivity
+      - onetime_fees
+      - stock_by_datacenter
+      - availability_by_datacenter
+      - rpn_speed
+    scaleway.dedibox.v1.Offer.ServerInfo.Availability:
+      type: object
+      properties:
+        stock:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.ServerInfo.Stock'
+        quantity:
+          type: integer
+          format: uint32
+      x-properties-order:
+      - stock
+      - quantity
+    scaleway.dedibox.v1.Offer.ServerInfo.Stock:
+      type: string
+      enum:
+      - empty
+      - low
+      - available
+      default: empty
+    scaleway.dedibox.v1.Offer.ServiceLevelInfo:
+      type: object
+      properties:
+        support_ticket:
+          type: boolean
+        support_phone:
+          type: boolean
+        sales_support:
+          type: boolean
+        git:
+          type: string
+        sla:
+          type: number
+          format: float
+        priority_support:
+          type: boolean
+        high_rpn_bandwidth:
+          type: boolean
+        customization:
+          type: boolean
+        antidos:
+          type: boolean
+        extra_failover_quota:
+          type: integer
+          format: uint32
+        available_options:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+      x-properties-order:
+      - support_ticket
+      - support_phone
+      - sales_support
+      - git
+      - sla
+      - priority_support
+      - high_rpn_bandwidth
+      - customization
+      - antidos
+      - extra_failover_quota
+      - available_options
+    scaleway.dedibox.v1.Offer.StorageInfo:
+      type: object
+      properties:
+        max_quota:
+          type: integer
+          format: uint32
+        size:
+          type: integer
+          description: (in bytes)
+          format: uint64
+      x-properties-order:
+      - max_quota
+      - size
+    scaleway.dedibox.v1.Partition:
+      type: object
+      properties:
+        type:
+          description: Type of the partition.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Partition.Type'
+        file_system:
+          description: File system of the partition.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Partition.FileSystem'
+        mount_point:
+          type:
+          - string
+          - "null"
+          description: Mount point of the partition.
+        raid_level:
+          description: Raid level of the partition.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.RaidArray.RaidLevel'
+        capacity:
+          type: integer
+          description: Capacity of the partition. (in bytes)
+          format: uint64
+        connectors:
+          type: array
+          description: Connectors of the partition.
+          items:
+            type: string
+      x-properties-order:
+      - type
+      - file_system
+      - mount_point
+      - raid_level
+      - capacity
+      - connectors
+    scaleway.dedibox.v1.Partition.FileSystem:
+      type: string
+      enum:
+      - unknown
+      - efi
+      - swap
+      - ext4
+      - ext3
+      - ext2
+      - xfs
+      - ntfs
+      - fat32
+      - ufs
+      default: unknown
+    scaleway.dedibox.v1.Partition.Type:
+      type: string
+      enum:
+      - primary
+      - extended
+      - logical
+      default: primary
+    scaleway.dedibox.v1.PersistentMemory:
+      type: object
+      properties:
+        capacity:
+          type: integer
+          description: Capacity of the persistent memory. (in bytes)
+          format: uint64
+        frequency:
+          type: integer
+          description: Frequency of the persistent memory.
+          format: uint32
+        model:
+          type: string
+          description: Model of the persistent memory.
+      x-properties-order:
+      - capacity
+      - frequency
+      - model
+    scaleway.dedibox.v1.Raid:
+      type: object
+      properties:
+        raid_arrays:
+          type: array
+          description: Details about the RAID controller.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.RaidArray'
+      x-properties-order:
+      - raid_arrays
+    scaleway.dedibox.v1.RaidArray:
+      type: object
+      properties:
+        raid_level:
+          description: The RAID level.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.RaidArray.RaidLevel'
+        disks:
+          type: array
+          description: Disks on the RAID controller.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Disk'
+      x-properties-order:
+      - raid_level
+      - disks
+    scaleway.dedibox.v1.RaidArray.RaidLevel:
+      type: string
+      enum:
+      - no_raid
+      - raid0
+      - raid1
+      - raid5
+      - raid6
+      - raid10
+      default: no_raid
+    scaleway.dedibox.v1.RaidController:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Model of the RAID controller.
+        raid_level:
+          type: array
+          description: RAID level of the RAID controller.
+          items:
+            type: string
+      x-properties-order:
+      - model
+      - raid_level
+    scaleway.dedibox.v1.Rescue:
+      type: object
+      properties:
+        os_id:
+          type: integer
+          description: OS ID of the rescue.
+          format: uint64
+        login:
+          type: string
+          description: Login of the rescue.
+        password:
+          type: string
+          description: Password of the rescue.
+        protocol:
+          description: Protocol of the rescue.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Rescue.Protocol'
+      x-properties-order:
+      - os_id
+      - login
+      - password
+      - protocol
+    scaleway.dedibox.v1.Rescue.Protocol:
+      type: string
+      enum:
+      - vnc
+      - ssh
+      default: vnc
+    scaleway.dedibox.v1.Server:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the server.
+          format: uint64
+        organization_id:
+          type: string
+          description: Organization ID the server is attached to.
+        project_id:
+          type: string
+          description: Project ID the server is attached to.
+        hostname:
+          type: string
+          description: Hostname of the server.
+        rebooted_at:
+          type:
+          - string
+          - "null"
+          description: Date of last reboot of the server. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Date of creation of the server. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Date of last modification of the server. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        expired_at:
+          type:
+          - string
+          - "null"
+          description: Date of release of the server. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        offer:
+          description: Offer of the server.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+        status:
+          description: Status of the server.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Status'
+        location:
+          description: Location of the server.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Location'
+        abuse_contact:
+          type: string
+          description: Abuse contact of the server.
+        os:
+          description: OS installed on the server.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.OS'
+        interfaces:
+          type: array
+          description: Network interfaces of the server.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.NetworkInterface'
+        zone:
+          type: string
+          description: The zone in which is the server.
+        options:
+          type: array
+          description: Options subscribe on the server.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Option'
+        level:
+          description: Service level of the server.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ServiceLevel'
+        has_bmc:
+          type: boolean
+          description: Boolean if the server has a BMC.
+        rescue_os:
+          description: Rescue OS of the server.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.OS'
+        tags:
+          type: array
+          description: Array of customs tags attached to the server.
+          items:
+            type: string
+        is_outsourced:
+          type: boolean
+          description: Whether the server is outsourced or not.
+        ipv6_slaac:
+          type: boolean
+          description: Whether or not you can enable/disable the IPv6.
+        qinq:
+          type: boolean
+          description: Whether the server is compatible with QinQ.
+        is_rpnv2_member:
+          type: boolean
+          description: Whether or not the server is already part of an rpnv2 group.
+        is_hds:
+          type: boolean
+          description: Whether or not the server is HDS.
+      x-properties-order:
+      - id
+      - organization_id
+      - project_id
+      - hostname
+      - rebooted_at
+      - created_at
+      - updated_at
+      - expired_at
+      - offer
+      - status
+      - location
+      - abuse_contact
+      - os
+      - interfaces
+      - zone
+      - options
+      - level
+      - has_bmc
+      - rescue_os
+      - tags
+      - is_outsourced
+      - ipv6_slaac
+      - qinq
+      - is_rpnv2_member
+      - is_hds
+    scaleway.dedibox.v1.Server.Disk:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint64
+        connector:
+          type: string
+        type:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Disk.Type'
+        capacity:
+          type: integer
+          description: (in bytes)
+          format: uint64
+        is_addon:
+          type: boolean
+      x-properties-order:
+      - id
+      - connector
+      - type
+      - capacity
+      - is_addon
+    scaleway.dedibox.v1.Server.Disk.Type:
+      type: string
+      enum:
+      - sata
+      - ssd
+      - sas
+      - sshd
+      - usb
+      - nvme
+      default: sata
+    scaleway.dedibox.v1.Server.Install:
+      type: object
+      properties:
+        os_id:
+          type: integer
+          format: uint64
+        hostname:
+          type: string
+        user_login:
+          $ref: '#/components/schemas/google.protobuf.StringValue'
+        partitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Partition'
+        ssh_key_ids:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Install.Status'
+        panel_url:
+          $ref: '#/components/schemas/google.protobuf.StringValue'
+      x-properties-order:
+      - os_id
+      - hostname
+      - user_login
+      - partitions
+      - ssh_key_ids
+      - status
+      - panel_url
+    scaleway.dedibox.v1.Server.Install.Status:
+      type: string
+      enum:
+      - unknown
+      - booting
+      - setting_up_raid
+      - partitioning
+      - formatting
+      - installing
+      - configuring
+      - configuring_bootloader
+      - rebooting
+      - installed
+      default: unknown
+    scaleway.dedibox.v1.Server.Location:
+      type: object
+      properties:
+        rack:
+          type: string
+        room:
+          type: string
+        datacenter_name:
+          type: string
+      x-properties-order:
+      - rack
+      - room
+      - datacenter_name
+    scaleway.dedibox.v1.Server.Option:
+      type: object
+      properties:
+        offer:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        expired_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Option'
+      x-properties-order:
+      - offer
+      - created_at
+      - updated_at
+      - expired_at
+      - options
+    scaleway.dedibox.v1.Server.Status:
+      type: string
+      enum:
+      - unknown
+      - delivering
+      - installing
+      - ready
+      - stopped
+      - error
+      - locked
+      - rescue
+      - busy
+      default: unknown
+    scaleway.dedibox.v1.ServerDefaultPartitioning:
+      type: object
+      properties:
+        partitions:
+          type: array
+          description: Default partitions.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Partition'
+      x-properties-order:
+      - partitions
+    scaleway.dedibox.v1.ServerEvent:
+      type: object
+      properties:
+        event_id:
+          type: integer
+          description: ID of the event.
+          format: uint64
+        description:
+          type: string
+          description: Description of the event.
+        date:
+          type:
+          - string
+          - "null"
+          description: Date of the event. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - event_id
+      - description
+      - date
+    scaleway.dedibox.v1.ServerSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the server.
+          format: uint64
+        datacenter_name:
+          type: string
+          description: Datacenter of the server.
+        organization_id:
+          type: string
+          description: Organization ID the server is attached to.
+        project_id:
+          type: string
+          description: Project ID the server is attached to.
+        hostname:
+          type: string
+          description: Hostname of the server.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Date of creation of the server. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Date of last modification of the server. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        expired_at:
+          type:
+          - string
+          - "null"
+          description: Date of release of the server. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        offer_id:
+          type: integer
+          description: Offer ID of the server.
+          format: uint64
+        offer_name:
+          type: string
+          description: Offer name of the server.
+        status:
+          description: Status of the server.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Status'
+        os_id:
+          type:
+          - integer
+          - "null"
+          description: OS ID installed on server.
+          format: uint64
+        interfaces:
+          type: array
+          description: Network interfaces of the server.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.NetworkInterface'
+        zone:
+          type: string
+          description: The zone in which is the server.
+        level:
+          description: Service level of the server.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ServiceLevel'
+        is_outsourced:
+          type: boolean
+          description: Whether the server is outsourced or not.
+        qinq:
+          type: boolean
+          description: Whether the server is compatible with QinQ.
+        rpn_version:
+          type:
+          - integer
+          - "null"
+          description: Supported RPN version.
+          format: uint32
+        is_hds:
+          type: boolean
+          description: Whether or not the server is HDS.
+      x-properties-order:
+      - id
+      - datacenter_name
+      - organization_id
+      - project_id
+      - hostname
+      - created_at
+      - updated_at
+      - expired_at
+      - offer_id
+      - offer_name
+      - status
+      - os_id
+      - interfaces
+      - zone
+      - level
+      - is_outsourced
+      - qinq
+      - rpn_version
+      - is_hds
+    scaleway.dedibox.v1.Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the service.
+          format: uint64
+        resource_id:
+          type:
+          - integer
+          - "null"
+          description: Resource ID of the service.
+          format: uint64
+        provisioning_status:
+          description: Provisioning status of the service.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Service.ProvisioningStatus'
+        offer:
+          description: Offer of the service.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the service. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        delivered_at:
+          type:
+          - string
+          - "null"
+          description: Delivery date of the service. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        terminated_at:
+          type:
+          - string
+          - "null"
+          description: Terminatation date of the service. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        expires_at:
+          type:
+          - string
+          - "null"
+          description: Expiration date of the service. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        type:
+          description: Service type, either order or service.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Service.Type'
+      x-properties-order:
+      - id
+      - resource_id
+      - provisioning_status
+      - offer
+      - created_at
+      - delivered_at
+      - terminated_at
+      - expires_at
+      - type
+    scaleway.dedibox.v1.Service.ProvisioningStatus:
+      type: string
+      enum:
+      - unknown
+      - delivering
+      - ready
+      - error
+      - expiring
+      - expired
+      default: unknown
+    scaleway.dedibox.v1.Service.Type:
+      type: string
+      enum:
+      - unknown_type
+      - service
+      - order
+      default: unknown_type
+    scaleway.dedibox.v1.ServiceLevel:
+      type: object
+      properties:
+        offer_id:
+          type: integer
+          description: Offer ID of service level.
+          format: uint32
+        level:
+          description: Level type of service level.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ServiceLevel.Level'
+      x-properties-order:
+      - offer_id
+      - level
+    scaleway.dedibox.v1.ServiceLevel.Level:
+      type: string
+      enum:
+      - unknown
+      - basic
+      - business
+      default: unknown
+    scaleway.dedibox.v1.SubscribeStorageOptionsResponse:
+      type: object
+      properties:
+        services:
+          type: array
+          description: Services subscribe storage options.
+          items:
+            $ref: '#/components/schemas/scaleway.dedibox.v1.Service'
+      x-properties-order:
+      - services
+    scaleway.dedibox.v1.UpdatableRaidArray:
+      type: object
+      properties:
+        raid_level:
+          description: The RAID level.
+          $ref: '#/components/schemas/scaleway.dedibox.v1.RaidArray.RaidLevel'
+        disk_ids:
+          type: array
+          description: The list of Disk ID of the updatable RAID.
+          items:
+            type: integer
+            format: uint64
+      required:
+      - disk_ids
+      x-properties-order:
+      - raid_level
+      - disk_ids
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /dedibox/v1/zones/{zone}/failover-ips:
+    get:
+      tags:
+      - Failover IPs
+      operationId: ListFailoverIPs
+      summary: List failovers for project
+      description: List failovers servers for project.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page_size
+        description: Number of failovers IP per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Order of the failovers IP.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ListFailoverIPsRequest.OrderBy'
+      - in: query
+        name: project_id
+        description: Filter failovers IP by project ID.
+        schema:
+          type: string
+      - in: query
+        name: search
+        description: Filter failovers IP which matching with this field.
+        schema:
+          type: string
+      - in: query
+        name: only_available
+        description: |-
+          True: return all failovers IP not attached on server.
+          True: return all failovers IP not attached on server
+          false: return all failovers IP attached on server.
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ListFailoverIPsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips?project_id=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            project_id==string
+    post:
+      tags:
+      - Failover IPs
+      operationId: CreateFailoverIPs
+      summary: Order failover IPs
+      description: Order X failover IPs.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.CreateFailoverIPsResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                offer_id:
+                  type: integer
+                  description: Failover IP offer ID.
+                  format: uint64
+                project_id:
+                  type: string
+                  description: Project ID.
+                quantity:
+                  type: integer
+                  description: Quantity.
+                  format: uint32
+              x-properties-order:
+              - offer_id
+              - project_id
+              - quantity
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "offer_id": 42,
+              "project_id": "string",
+              "quantity": 42
+            }' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            offer_id:=42 \
+            project_id="string" \
+            quantity:=42
+  /dedibox/v1/zones/{zone}/failover-ips/{ip_id}:
+    get:
+      tags:
+      - Failover IPs
+      operationId: GetFailoverIP
+      summary: Get a specific baremetal server
+      description: Get the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: ip_id
+        description: ID of the failover IP.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.FailoverIP'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/{ip_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/{ip_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Failover IPs
+      operationId: DeleteFailoverIP
+      summary: Delete a failover server
+      description: Delete the failover associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: ip_id
+        description: ID of the failover IP to delete.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/{ip_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/{ip_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/failover-ips/{ip_id}/attach-to-mac-address:
+    post:
+      tags:
+      - Failover IPs
+      operationId: AttachFailoverIPToMacAddress
+      summary: Attach a failover IP to a MAC address
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: ip_id
+        description: ID of the failover IP.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.IP'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  description: A mac type.
+                  $ref: '#/components/schemas/scaleway.dedibox.v1.AttachFailoverIPToMacAddressRequest.MacType'
+                mac:
+                  type:
+                  - string
+                  - "null"
+                  description: A valid mac address (existing or not).
+              x-properties-order:
+              - type
+              - mac
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/{ip_id}/attach-to-mac-address"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/{ip_id}/attach-to-mac-address" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/failover-ips/{ip_id}/detach-from-mac-address:
+    post:
+      tags:
+      - Failover IPs
+      operationId: DetachFailoverIPFromMacAddress
+      summary: Detach a failover IP from a MAC address
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: ip_id
+        description: ID of the failover IP.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.IP'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/{ip_id}/detach-from-mac-address"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/{ip_id}/detach-from-mac-address" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/failover-ips/attach:
+    post:
+      tags:
+      - Failover IPs
+      operationId: AttachFailoverIPs
+      summary: Attach failovers on baremetal server
+      description: Attach failovers on the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                server_id:
+                  type: integer
+                  description: ID of the server.
+                  format: uint64
+                fips_ids:
+                  type: array
+                  description: List of ID of failovers IP to attach.
+                  items:
+                    type: integer
+                    format: uint64
+              required:
+              - fips_ids
+              x-properties-order:
+              - server_id
+              - fips_ids
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"fips_ids":[42],"server_id":42}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/attach"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/attach" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            fips_ids:='[42]' \
+            server_id:=42
+  /dedibox/v1/zones/{zone}/failover-ips/detach:
+    post:
+      tags:
+      - Failover IPs
+      operationId: DetachFailoverIPs
+      summary: Detach failovers on baremetal server
+      description: Detach failovers on the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fips_ids:
+                  type: array
+                  description: List of IDs of failovers IP to detach.
+                  items:
+                    type: integer
+                    format: uint64
+              required:
+              - fips_ids
+              x-properties-order:
+              - fips_ids
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"fips_ids":[42]}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/detach"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/failover-ips/detach" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            fips_ids:='[42]'
+  /dedibox/v1/zones/{zone}/offers:
+    get:
+      tags:
+      - Offers
+      operationId: ListOffers
+      summary: List offers
+      description: List all available server offers.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page_size
+        description: Number of offer per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Order of the offers.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ListOffersRequest.OrderBy'
+      - in: query
+        name: commercial_range
+        description: Filter on commercial range.
+        schema:
+          type: string
+      - in: query
+        name: catalog
+        description: Filter on catalog.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.Offer.Catalog'
+      - in: query
+        name: project_id
+        description: Project ID.
+        schema:
+          type: string
+      - in: query
+        name: is_failover_ip
+        description: Get the current failover IP offer.
+        schema:
+          type: boolean
+      - in: query
+        name: is_failover_block
+        description: Get the current failover IP block offer.
+        schema:
+          type: boolean
+      - in: query
+        name: sold_in
+        description: Filter offers depending on their datacenter.
+        schema:
+          type: string
+      - in: query
+        name: available_only
+        description: Set this filter to true to only return available offers.
+        schema:
+          type: boolean
+      - in: query
+        name: is_rpn_san
+        description: Get the RPN SAN offers.
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ListOffersResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/offers"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/offers" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/offers/{offer_id}:
+    get:
+      tags:
+      - Offers
+      operationId: GetOffer
+      summary: Get offer
+      description: Return specific offer for the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: offer_id
+        description: ID of offer.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      - in: query
+        name: project_id
+        description: Project ID.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Offer'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/offers/{offer_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/offers/{offer_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/ordered-services/{ordered_service_id}:
+    get:
+      operationId: GetOrderedService
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: ordered_service_id
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Service'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/ordered-services/{ordered_service_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/ordered-services/{ordered_service_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/os:
+    get:
+      tags:
+      - Operating System
+      operationId: ListOS
+      summary: List all available OS that can be install on a baremetal server
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page_size
+        description: Number of OS per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Order of the OS.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ListOSRequest.OrderBy'
+      - in: query
+        name: type
+        description: Type of the OS.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.OS.Type'
+      - in: query
+        name: project_id
+        description: Project ID.
+        schema:
+          type: string
+      - in: query
+        name: server_id
+        description: |-
+          Filter OS by compatible server ID.
+          Precisely one of server_id, offer_id can be set.
+        schema:
+          type: integer
+          format: uint64
+          x-one-of: offer
+      - in: query
+        name: offer_id
+        description: |-
+          Filter OS by compatible offer ID.
+          Precisely one of server_id, offer_id can be set.
+        schema:
+          type: integer
+          format: uint64
+          x-one-of: offer
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ListOSResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/os"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/os" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/os/{os_id}:
+    get:
+      tags:
+      - Operating System
+      operationId: GetOS
+      summary: Get an OS with a given ID
+      description: Return specific OS for the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: os_id
+        description: ID of the OS.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      - in: query
+        name: server_id
+        description: ID of the server.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      - in: query
+        name: project_id
+        description: Project ID.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.OS'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/os/{os_id}?server_id=42"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/os/{os_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            server_id==42
+  /dedibox/v1/zones/{zone}/remaining-quota:
+    get:
+      tags:
+      - Quotas
+      operationId: GetRemainingQuota
+      summary: Get remaining quota
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: query
+        name: project_id
+        description: Project ID.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.GetRemainingQuotaResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/remaining-quota"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/remaining-quota" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/reverses/{ip_id}:
+    patch:
+      tags:
+      - Network
+      operationId: UpdateReverse
+      summary: Update reverse of ip
+      description: Update reverse of ip associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: ip_id
+        description: ID of the IP.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.IP'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reverse:
+                  type: string
+                  description: Reverse to apply on the IP.
+              x-properties-order:
+              - reverse
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"reverse":"string"}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/reverses/{ip_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/dedibox/v1/zones/{zone}/reverses/{ip_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            reverse="string"
+  /dedibox/v1/zones/{zone}/servers:
+    get:
+      tags:
+      - Servers
+      operationId: ListServers
+      summary: List baremetal servers for project
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page_size
+        description: Number of server per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Order of the servers.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ListServersRequest.OrderBy'
+      - in: query
+        name: project_id
+        description: Filter servers by project ID.
+        schema:
+          type: string
+      - in: query
+        name: search
+        description: Filter servers by hostname.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ListServersResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers?project_id=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            project_id==string
+    post:
+      tags:
+      - Servers
+      operationId: CreateServer
+      summary: Create a baremetal server
+      description: Create a new baremetal server. The order return you a service ID
+        to follow the provisioning status you could call GetService.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Service'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                offer_id:
+                  type: integer
+                  description: Offer ID of the new server.
+                  format: uint64
+                server_option_ids:
+                  type: array
+                  description: Server option IDs of the new server.
+                  items:
+                    type: integer
+                    format: uint64
+                project_id:
+                  type: string
+                  description: Project ID of the new server.
+                datacenter_name:
+                  type:
+                  - string
+                  - "null"
+                  description: Datacenter name of the new server.
+              required:
+              - server_option_ids
+              x-properties-order:
+              - offer_id
+              - server_option_ids
+              - project_id
+              - datacenter_name
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "offer_id": 42,
+              "project_id": "string",
+              "server_option_ids": [
+                  42
+              ]
+            }' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            offer_id:=42 \
+            project_id="string" \
+            server_option_ids:='[
+              42
+            ]'
+  /dedibox/v1/zones/{zone}/servers/{server_id}:
+    get:
+      tags:
+      - Servers
+      operationId: GetServer
+      summary: Get a specific baremetal server
+      description: Get the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Server'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Servers
+      operationId: UpdateServer
+      summary: Update a baremetal server
+      description: Update the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to update.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Server'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hostname:
+                  type:
+                  - string
+                  - "null"
+                  description: Hostname of the server to update.
+                enable_ipv6:
+                  type:
+                  - boolean
+                  - "null"
+                  description: Flag to enable or not the IPv6 of server.
+              x-properties-order:
+              - hostname
+              - enable_ipv6
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Servers
+      operationId: DeleteServer
+      summary: Delete a baremetal server
+      description: Delete the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to delete.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/backups:
+    get:
+      operationId: GetServerBackup
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID of the backup.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Backup'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/backups"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/backups" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      operationId: UpdateServerBackup
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to update backup.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Backup'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type:
+                  - string
+                  - "null"
+                  description: Password of the server backup.
+                autologin:
+                  type:
+                  - boolean
+                  - "null"
+                  description: Autologin of the server backup.
+                acl_enabled:
+                  type:
+                  - boolean
+                  - "null"
+                  description: Boolean to enable or disable ACL.
+              x-properties-order:
+              - password
+              - autologin
+              - acl_enabled
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/backups"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/backups" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/bmc-access:
+    get:
+      tags:
+      - BMC Management
+      operationId: GetBMCAccess
+      summary: Get BMC (Baseboard Management Controller) access for a given baremetal
+        server
+      description: Get the BMC (Baseboard Management Controller) access associated
+        with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server to get BMC access.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.BMCAccess'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/bmc-access"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/bmc-access" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - BMC Management
+      operationId: StartBMCAccess
+      summary: Start BMC (Baseboard Management Controller) access for a given baremetal
+        server
+      description: |-
+        Start BMC (Baseboard Management Controller) access associated with the given ID.
+        The BMC (Baseboard Management Controller) access is available one hour after the installation of the server.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server to start the BMC access.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ip:
+                  type: string
+                  description: The IP authorized to connect to the given server. (IPv4
+                    address)
+                  example: 1.2.3.4
+              x-properties-order:
+              - ip
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"ip":"1.2.3.4"}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/bmc-access"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/bmc-access" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            ip="1.2.3.4"
+    delete:
+      tags:
+      - BMC Management
+      operationId: StopBMCAccess
+      summary: Stop BMC (Baseboard Management Controller) access for a given baremetal
+        server
+      description: Stop BMC (Baseboard Management Controller) access associated with
+        the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server to stop BMC access.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/bmc-access"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/bmc-access" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/cancel-install:
+    post:
+      tags:
+      - Install
+      operationId: CancelServerInstall
+      summary: Cancels the current (running) server installation
+      description: Cancels the current server installation associated with the given
+        server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID of the server to cancel install.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/cancel-install"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/cancel-install" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/disks:
+    get:
+      tags:
+      - Servers
+      operationId: ListServerDisks
+      summary: List server disks
+      description: List disks associated to the given server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID of the server disks.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page_size
+        description: Number of server disk per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Order of the server disks.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ListServerDisksRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ListServerDisksResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/disks"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/disks" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/events:
+    get:
+      tags:
+      - Servers
+      operationId: ListServerEvents
+      summary: List server events
+      description: List events associated to the given server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID of the server events.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page_size
+        description: Number of server event per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Order of the server events.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ListServerEventsRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ListServerEventsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/events"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/events" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/install:
+    get:
+      tags:
+      - Install
+      operationId: GetServerInstall
+      summary: Get a specific server installation status
+      description: Get the server installation status associated with the given server
+        ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID of the server to install.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Install'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/install"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/install" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Install
+      operationId: InstallServer
+      summary: Install a baremetal server
+      description: Install an OS on the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to install.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Server.Install'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                os_id:
+                  type: integer
+                  description: OS ID to install on the server.
+                  format: uint64
+                hostname:
+                  type: string
+                  description: Hostname of the server.
+                user_login:
+                  type:
+                  - string
+                  - "null"
+                  description: User to install on the server.
+                user_password:
+                  type:
+                  - string
+                  - "null"
+                  description: User password to install on the server.
+                panel_password:
+                  type:
+                  - string
+                  - "null"
+                  description: Panel password to install on the server.
+                root_password:
+                  type:
+                  - string
+                  - "null"
+                  description: Root password to install on the server.
+                partitions:
+                  type: array
+                  description: Partitions to install on the server.
+                  items:
+                    $ref: '#/components/schemas/scaleway.dedibox.v1.InstallPartition'
+                ssh_key_ids:
+                  type: array
+                  description: SSH key IDs authorized on the server.
+                  items:
+                    type: string
+                license_offer_id:
+                  type:
+                  - integer
+                  - "null"
+                  description: Offer ID of license to install on server.
+                  format: uint64
+                ip_id:
+                  type:
+                  - integer
+                  - "null"
+                  description: IP to link at the license to install on server.
+                  format: uint64
+              x-properties-order:
+              - os_id
+              - hostname
+              - user_login
+              - user_password
+              - panel_password
+              - root_password
+              - partitions
+              - ssh_key_ids
+              - license_offer_id
+              - ip_id
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"hostname":"string","os_id":42}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/install"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/install" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            hostname="string" \
+            os_id:=42
+  /dedibox/v1/zones/{zone}/servers/{server_id}/partitioning/{os_id}:
+    get:
+      tags:
+      - Install
+      operationId: GetServerDefaultPartitioning
+      summary: Get server default partitioning
+      description: Get the server default partitioning schema associated with the
+        given server ID and OS ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      - in: path
+        name: os_id
+        description: OS ID of the default partitioning.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ServerDefaultPartitioning'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/partitioning/{os_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/partitioning/{os_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/raid:
+    get:
+      tags:
+      - Raid
+      operationId: GetRaid
+      summary: Get raid
+      description: Return raid for the given server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Raid'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/raid"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/raid" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/reboot:
+    post:
+      tags:
+      - Servers
+      operationId: RebootServer
+      summary: Reboot a baremetal server
+      description: Reboot the server associated with the given ID, use boot param
+        to reboot in rescue.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to reboot.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/reboot"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/reboot" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/rescue:
+    get:
+      tags:
+      - Rescue
+      operationId: GetRescue
+      summary: Get rescue information
+      description: Return rescue information for the given server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server to get rescue.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Rescue'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/rescue"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/rescue" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Rescue
+      operationId: StartRescue
+      summary: Start in rescue baremetal server
+      description: Start in rescue the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server to start rescue.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Rescue'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                os_id:
+                  type: integer
+                  description: OS ID to use to start rescue.
+                  format: uint64
+              x-properties-order:
+              - os_id
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"os_id":42}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/rescue"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/rescue" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            os_id:=42
+    delete:
+      tags:
+      - Rescue
+      operationId: StopRescue
+      summary: Stop rescue on baremetal server
+      description: Stop rescue on the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server to stop rescue.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/rescue"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/rescue" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/start:
+    post:
+      tags:
+      - Servers
+      operationId: StartServer
+      summary: Start a baremetal server
+      description: Start the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to start.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/start"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/start" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/stop:
+    post:
+      tags:
+      - Servers
+      operationId: StopServer
+      summary: Stop a baremetal server
+      description: Stop the server associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to stop.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/stop"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/stop" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/subscribable-server-options:
+    get:
+      tags:
+      - Servers
+      operationId: ListSubscribableServerOptions
+      summary: List subscribable server options
+      description: List subscribable options associated to the given server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID of the subscribable server options.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page_size
+        description: Number of subscribable server option per page.
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ListSubscribableServerOptionsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/subscribable-server-options"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/subscribable-server-options" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/subscribe-server-option:
+    patch:
+      tags:
+      - Servers
+      operationId: SubscribeServerOption
+      summary: Subscribe server option
+      description: Subscribe option for the given server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to subscribe server option.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Service'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                option_id:
+                  type: integer
+                  description: Option ID to subscribe.
+                  format: uint64
+              x-properties-order:
+              - option_id
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"option_id":42}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/subscribe-server-option"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/subscribe-server-option" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            option_id:=42
+  /dedibox/v1/zones/{zone}/servers/{server_id}/subscribe-storage-options:
+    post:
+      tags:
+      - Servers
+      operationId: SubscribeStorageOptions
+      summary: Subscribe storage server option
+      description: Subscribe storage option for the given server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID of the storage options to subscribe.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.SubscribeStorageOptionsResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                options_ids:
+                  type: array
+                  description: Option IDs of the storage options to subscribe.
+                  items:
+                    type: integer
+                    format: uint64
+              required:
+              - options_ids
+              x-properties-order:
+              - options_ids
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"options_ids":[42]}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/subscribe-storage-options"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/subscribe-storage-options" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            options_ids:='[42]'
+  /dedibox/v1/zones/{zone}/servers/{server_id}/tags:
+    post:
+      operationId: UpdateServerTags
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: Server ID to update the tags.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Server'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tags:
+                  type: array
+                  description: Tags of server to update.
+                  items:
+                    type: string
+              x-properties-order:
+              - tags
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/tags"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/tags" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/servers/{server_id}/update-raid:
+    post:
+      tags:
+      - Raid
+      operationId: UpdateRaid
+      summary: Update RAID
+      description: Update RAID associated with the given server ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: server_id
+        description: ID of the server.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                raid_arrays:
+                  type: array
+                  description: RAIDs to update.
+                  items:
+                    $ref: '#/components/schemas/scaleway.dedibox.v1.UpdatableRaidArray'
+              required:
+              - raid_arrays
+              x-properties-order:
+              - raid_arrays
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"raid_arrays":[""]}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/update-raid"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/dedibox/v1/zones/{zone}/servers/{server_id}/update-raid" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            raid_arrays:='[""]'
+  /dedibox/v1/zones/{zone}/services:
+    get:
+      tags:
+      - Services
+      operationId: ListServices
+      summary: List services
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page_size
+        description: Number of service per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Order of the services.
+        schema:
+          $ref: '#/components/schemas/scaleway.dedibox.v1.ListServicesRequest.OrderBy'
+      - in: query
+        name: project_id
+        description: Project ID.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.ListServicesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/services"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/dedibox/v1/zones/{zone}/services" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /dedibox/v1/zones/{zone}/services/{service_id}:
+    patch:
+      tags:
+      - Services
+      operationId: GetService
+      summary: Get a specific service
+      description: Get the service associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: service_id
+        description: ID of the service.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Service'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/services/{service_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/dedibox/v1/zones/{zone}/services/{service_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Services
+      operationId: DeleteService
+      summary: Delete a specific service
+      description: Delete the service associated with the given ID.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - nl-ams-1
+      - in: path
+        name: service_id
+        description: ID of the service.
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.dedibox.v1.Service'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/dedibox/v1/zones/{zone}/services/{service_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/dedibox/v1/zones/{zone}/services/{service_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY

@@ -1,0 +1,964 @@
+openapi: 3.1.0
+info:
+  title: Unauthenticated API
+  description: |-
+    # Introduction
+    This API allows to manage IAM resources available without authentication.
+  version: v1alpha1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: JWTs
+- name: IAM Members Login
+- name: SAML
+  description: Scaleway supports Identity Federation to provide your teams with secure
+    access to their accounts via Single Sign-On (SSO). Depending on your organization's
+    requirements, you can use either built-in OAuth2 providers or configure SAML for
+    centralized identity management.
+components:
+  schemas:
+    scaleway.iam.v1alpha1.CommitLoginResponse:
+      type: object
+      properties:
+        jwt:
+          description: A JWT authenticating the user.
+          $ref: '#/components/schemas/scaleway.iam.v1alpha1.JWT'
+        token:
+          type: string
+          description: The plain text content of the JWT.
+        renew_token:
+          type: string
+          description: A token that can be used to renew the JWT.
+      x-properties-order:
+      - jwt
+      - token
+      - renew_token
+    scaleway.iam.v1alpha1.EncodedJWT:
+      type: object
+      properties:
+        jwt:
+          description: The renewed JWT.
+          $ref: '#/components/schemas/scaleway.iam.v1alpha1.JWT'
+        token:
+          type: string
+          description: The encoded token of the renewed JWT.
+        renew_token:
+          type: string
+          description: The encoded renew token. This token is necessary to renew the
+            JWT.
+      x-properties-order:
+      - jwt
+      - token
+      - renew_token
+    scaleway.iam.v1alpha1.InitiateOAuth2LoginResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL to redirect the user to.
+        security_token:
+          type: string
+          description: Security token to check when receiving a code from the identity
+            provider.
+      x-properties-order:
+      - url
+      - security_token
+    scaleway.iam.v1alpha1.InitiateSamlLoginResponse:
+      type: object
+      properties:
+        saml_request:
+          type: string
+          description: The SAML AuthnRequest to send to the identity provider.
+        relay_state:
+          type: string
+          description: The relay state to send to the identity provider.
+        url:
+          type: string
+          description: URL to redirect the user to for SAML authentication.
+      x-properties-order:
+      - saml_request
+      - relay_state
+      - url
+    scaleway.iam.v1alpha1.JWT:
+      type: object
+      properties:
+        jti:
+          type: string
+          description: JWT ID.
+        issuer_id:
+          type: string
+          description: ID of the user who issued the JWT.
+        audience_id:
+          type: string
+          description: ID of the user targeted by the JWT.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the JWT. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last update date of the JWT. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        expires_at:
+          type:
+          - string
+          - "null"
+          description: Expiration date of the JWT. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        ip:
+          type: string
+          description: IP address used during the creation of the JWT. (IP address)
+          example: 1.2.3.4
+        user_agent:
+          type: string
+          description: User-agent used during the creation of the JWT.
+        srn:
+          type: string
+          description: The SRN of the JWT.
+          pattern: ^srn://iam\.[^/]+/jwts/[^/]+$
+      x-properties-order:
+      - jti
+      - issuer_id
+      - audience_id
+      - created_at
+      - updated_at
+      - expires_at
+      - ip
+      - user_agent
+      - srn
+    scaleway.iam.v1alpha1.Login:
+      type: object
+      properties:
+        id:
+          type: string
+          description: A UUID representing the login attempt.
+        mfa_required:
+          type: boolean
+          description: Whether the login attempt expects a MFA token.
+      x-properties-order:
+      - id
+      - mfa_required
+    scaleway.iam.v1alpha1.OAuth2IdentityProvider:
+      type: string
+      enum:
+      - unknown_identity_provider
+      - google
+      - microsoft
+      - github
+      default: unknown_identity_provider
+    scaleway.iam.v1alpha1.OrganizationSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the organization.
+        name:
+          type: string
+          description: The name of the organization.
+        login_password_enabled:
+          type: boolean
+          description: Defines whether the organization supports login via Password.
+        login_magic_code_enabled:
+          type: boolean
+          description: Defines whether the organization supports login via Magic Code.
+        login_oauth2_enabled:
+          type: boolean
+          description: Defines whether the organization supports login via OAuth2
+            SSO.
+        login_saml_enabled:
+          type: boolean
+          description: Defines whether the organization supports login via SAML SSO.
+      x-properties-order:
+      - id
+      - name
+      - login_password_enabled
+      - login_magic_code_enabled
+      - login_oauth2_enabled
+      - login_saml_enabled
+    scaleway.iam.v1alpha1.StartLoginMFAWebAuthnResponse:
+      type: object
+      properties:
+        ceremony_id:
+          type: string
+          description: ID of the ceremony which will be needed for completion.
+        challenge:
+          type: string
+          description: Random bytes constituting the challenge to solve for the credentials
+            creation.
+        timeout:
+          type:
+          - string
+          - "null"
+          description: Maximum duration of the authentication ceremony (milliseconds).
+            (in seconds)
+          example: 2.5s
+        allow_credentials:
+          type: array
+          description: List of credentials, if any, which can be used to perform the
+            ceremony.
+          items:
+            type: string
+      x-properties-order:
+      - ceremony_id
+      - challenge
+      - timeout
+      - allow_credentials
+    scaleway.std.File:
+      type: object
+      properties:
+        name:
+          type: string
+        content_type:
+          type: string
+        content:
+          type: string
+      x-properties-order:
+      - name
+      - content_type
+      - content
+    scaleway.std.HTTPResponse:
+      type: object
+      properties:
+        status_code:
+          type: integer
+          format: uint32
+        headers:
+          type: object
+          properties:
+            <headerKey>:
+              $ref: '#/components/schemas/scaleway.std.HeaderValues'
+          additionalProperties: true
+        body:
+          type: string
+      x-properties-order:
+      - status_code
+      - headers
+      - body
+    scaleway.std.HeaderValues:
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            type: string
+      x-properties-order:
+      - values
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /iam/v1alpha1/initiate-magic-code-login:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: InitiateMagicCodeLogin
+      summary: Initiate a Magic Code login attempt and send an email with the code
+        to the user
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_id:
+                  type: string
+                  description: The UUID of the organization on which to login.
+                username:
+                  type: string
+                  description: The username of the user that logs in.
+              x-properties-order:
+              - organization_id
+              - username
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"organization_id":"string","username":"string"}' \
+            "https://api.scaleway.com/iam/v1alpha1/initiate-magic-code-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/initiate-magic-code-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            organization_id="string" \
+            username="string"
+  /iam/v1alpha1/initiate-oauth2-login:
+    post:
+      operationId: InitiateOAuth2Login
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.InitiateOAuth2LoginResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_id:
+                  type: string
+                  description: The UUID of the organization on which to login.
+                identity_provider:
+                  description: Identity provider to connect with.
+                  $ref: '#/components/schemas/scaleway.iam.v1alpha1.OAuth2IdentityProvider'
+                local_redirect_uri:
+                  type: string
+                  description: URI to redirect to after login.
+                remote_redirect_uri:
+                  type: string
+                  description: URI to which the identity provider will redirect after
+                    the authentication phase.
+              x-properties-order:
+              - organization_id
+              - identity_provider
+              - local_redirect_uri
+              - remote_redirect_uri
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "local_redirect_uri": "string",
+              "organization_id": "string",
+              "remote_redirect_uri": "string"
+            }' \
+            "https://api.scaleway.com/iam/v1alpha1/initiate-oauth2-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/initiate-oauth2-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            local_redirect_uri="string" \
+            organization_id="string" \
+            remote_redirect_uri="string"
+  /iam/v1alpha1/initiate-saml-login:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: InitiateSamlLogin
+      summary: Initiate a SAML login attempt
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.InitiateSamlLoginResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_id:
+                  type: string
+                  description: The UUID of the organization on which to login.
+                redirect_uri:
+                  type: string
+                  description: URI to redirect to after the SAML authentication phase.
+              x-properties-order:
+              - organization_id
+              - redirect_uri
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"organization_id":"string","redirect_uri":"string"}' \
+            "https://api.scaleway.com/iam/v1alpha1/initiate-saml-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/initiate-saml-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            organization_id="string" \
+            redirect_uri="string"
+  /iam/v1alpha1/jwts/{jti}/renew:
+    post:
+      tags:
+      - JWTs
+      operationId: RenewJWT
+      summary: Renew a JWT
+      parameters:
+      - in: path
+        name: jti
+        description: The JWT ID of the JWT to renew.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.EncodedJWT'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                renew_token:
+                  type: string
+                  description: The renew token associated to the JWT to renew.
+              x-properties-order:
+              - renew_token
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"renew_token":"string"}' \
+            "https://api.scaleway.com/iam/v1alpha1/jwts/{jti}/renew"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/jwts/{jti}/renew" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            renew_token="string"
+  /iam/v1alpha1/login/{login_id}/check-mfa-otp:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: CheckLoginMFAOTP
+      summary: Check MFA OTP for this login
+      parameters:
+      - in: path
+        name: login_id
+        description: The ID of the login object for which to check MFA OTP.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                one_time_password:
+                  type: string
+                  description: Either a one time password or a recovery code for the
+                    OTP method registered.
+                  pattern: ^([0-9]{6})|([A-Z0-9]{32})$
+              x-properties-order:
+              - one_time_password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"one_time_password":"string"}' \
+            "https://api.scaleway.com/iam/v1alpha1/login/{login_id}/check-mfa-otp"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/login/{login_id}/check-mfa-otp" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            one_time_password="string"
+  /iam/v1alpha1/login/{login_id}/commit:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: CommitLogin
+      summary: Finalize a login attempt
+      parameters:
+      - in: path
+        name: login_id
+        description: The ID of the login object to log in on.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.CommitLoginResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/iam/v1alpha1/login/{login_id}/commit"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/login/{login_id}/commit" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /iam/v1alpha1/login/{login_id}/finish-mfa-webauthn:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: FinishLoginMFAWebAuthn
+      summary: Finish a MFA Webauthn ceremony on this login
+      parameters:
+      - in: path
+        name: login_id
+        description: ID of the login object for which to finish a WebAuthn MFA.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ceremony_id:
+                  type: string
+                  description: ID of the authentication ceremony to finish.
+                origin:
+                  type: string
+                  description: The domain on which the authentication is occurring.
+                raw_id:
+                  type: string
+                  description: Unique identifier of the key used by the authenticator.
+                client_data_json:
+                  type: string
+                  description: JSON representation of the client data.
+                authenticator_data:
+                  type: string
+                  description: Data about the authenticator that performed the authentication.
+                signature:
+                  type: string
+                  description: Signature by the authenticator key of the authentication
+                    ceremony data.
+              x-properties-order:
+              - ceremony_id
+              - origin
+              - raw_id
+              - client_data_json
+              - authenticator_data
+              - signature
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "authenticator_data": "string",
+              "ceremony_id": "string",
+              "client_data_json": "string",
+              "origin": "string",
+              "raw_id": "string",
+              "signature": "string"
+            }' \
+            "https://api.scaleway.com/iam/v1alpha1/login/{login_id}/finish-mfa-webauthn"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/login/{login_id}/finish-mfa-webauthn" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            authenticator_data="string" \
+            ceremony_id="string" \
+            client_data_json="string" \
+            origin="string" \
+            raw_id="string" \
+            signature="string"
+  /iam/v1alpha1/login/{login_id}/start-mfa-webauthn:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: StartLoginMFAWebAuthn
+      summary: Start a MFA Webauthn ceremony on this login
+      parameters:
+      - in: path
+        name: login_id
+        description: The ID of the login object for which to start a Webauthn MFA.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.StartLoginMFAWebAuthnResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                origin:
+                  type: string
+                  description: The URL origin of the request.
+              x-properties-order:
+              - origin
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"origin":"string"}' \
+            "https://api.scaleway.com/iam/v1alpha1/login/{login_id}/start-mfa-webauthn"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/login/{login_id}/start-mfa-webauthn" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            origin="string"
+  /iam/v1alpha1/magic-code-login:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: CreateMagicCodeLogin
+      summary: Create a Login object via Magic Code authentication
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.Login'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_id:
+                  type: string
+                  description: The UUID of the organization on which to login.
+                username:
+                  type: string
+                  description: The username of the user that logs in.
+                magic_code:
+                  type: string
+                  description: The magic code received via email.
+              x-properties-order:
+              - organization_id
+              - username
+              - magic_code
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "magic_code": "string",
+              "organization_id": "string",
+              "username": "string"
+            }' \
+            "https://api.scaleway.com/iam/v1alpha1/magic-code-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/magic-code-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            magic_code="string" \
+            organization_id="string" \
+            username="string"
+  /iam/v1alpha1/oauth2-login:
+    post:
+      operationId: CreateOAuth2Login
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.Login'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_id:
+                  type: string
+                  description: The UUID of the organization on which to login.
+                identity_provider:
+                  description: Identity provider to connect with.
+                  $ref: '#/components/schemas/scaleway.iam.v1alpha1.OAuth2IdentityProvider'
+                code:
+                  type: string
+                  description: Code received from the identity provider.
+                remote_redirect_uri:
+                  type: string
+                  description: URI to which the identity provider will redirect after
+                    the authentication phase.
+              x-properties-order:
+              - organization_id
+              - identity_provider
+              - code
+              - remote_redirect_uri
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "code": "string",
+              "organization_id": "string",
+              "remote_redirect_uri": "string"
+            }' \
+            "https://api.scaleway.com/iam/v1alpha1/oauth2-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/oauth2-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            code="string" \
+            organization_id="string" \
+            remote_redirect_uri="string"
+  /iam/v1alpha1/password-login:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: CreatePasswordLogin
+      summary: Create a Login object via Password authentication
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.Login'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_id:
+                  type: string
+                  description: The UUID of the organization on which to login.
+                username:
+                  type: string
+                  description: The username of the user that logs in.
+                password:
+                  type: string
+                  description: The password of the user.
+              x-properties-order:
+              - organization_id
+              - username
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "organization_id": "string",
+              "password": "string",
+              "username": "string"
+            }' \
+            "https://api.scaleway.com/iam/v1alpha1/password-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/password-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            organization_id="string" \
+            password="string" \
+            username="string"
+  /iam/v1alpha1/saml/*/login:
+    post:
+      tags:
+      - IAM Members Login
+      operationId: CreateSamlLogin
+      summary: Create a Login object via SAML authentication
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.std.HTTPResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                url:
+                  type: string
+                http_version:
+                  type: string
+                headers:
+                  type: object
+                  properties:
+                    <headerKey>:
+                      $ref: '#/components/schemas/scaleway.std.HeaderValues'
+                  additionalProperties: true
+                body:
+                  type: string
+              x-properties-order:
+              - method
+              - url
+              - http_version
+              - headers
+              - body
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "body": "string",
+              "headers": {
+                  "<headerKey>": ""
+              },
+              "http_version": "string",
+              "method": "string",
+              "url": "string"
+            }' \
+            "https://api.scaleway.com/iam/v1alpha1/saml/*/login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/iam/v1alpha1/saml/*/login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            body="string" \
+            headers:='{
+              "<headerKey>": ""
+            }' \
+            http_version="string" \
+            method="string" \
+            url="string"
+  /iam/v1alpha1/saml/{saml_id}/metadata:
+    get:
+      tags:
+      - SAML
+      operationId: GetSamlMetadata
+      summary: Get the SAML metadata XML file for a given SAML ID
+      parameters:
+      - in: path
+        name: saml_id
+        description: The ID of the SAML configuration to get the metadata for.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.std.File'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/iam/v1alpha1/saml/{saml_id}/metadata"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/iam/v1alpha1/saml/{saml_id}/metadata" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /iam/v1alpha1/search-organization:
+    get:
+      tags:
+      - IAM Members Login
+      operationId: SearchOrganization
+      summary: Search for an organization
+      parameters:
+      - in: query
+        name: organization_id
+        description: |-
+          Search for an organization using its ID.
+          One of organization_id, organization_alias is required.
+        schema:
+          type: string
+          x-one-of: filter
+      - in: query
+        name: organization_alias
+        description: |-
+          Search for an organization using its alias.
+          One of organization_id, organization_alias is required.
+        schema:
+          type: string
+          pattern: ^[a-z0-9]+$
+          x-one-of: filter
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.iam.v1alpha1.OrganizationSummary'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/iam/v1alpha1/search-organization"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/iam/v1alpha1/search-organization" \
+            X-Auth-Token:$SCW_SECRET_KEY

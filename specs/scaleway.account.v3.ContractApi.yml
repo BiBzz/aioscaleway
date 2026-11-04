@@ -1,0 +1,436 @@
+openapi: 3.1.0
+info:
+  title: Contract API
+  description: The Contract API allows you to manage contracts.
+  version: v3
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Contract signatures
+  description: Methods to manage contract signatures.
+components:
+  schemas:
+    scaleway.account.v3.CheckContractSignatureResponse:
+      type: object
+      properties:
+        created:
+          type: boolean
+          description: Whether a signature has been requested for this contract.
+        validated:
+          type: boolean
+          description: Whether the signature for this contract has been validated.
+      x-properties-order:
+      - created
+      - validated
+    scaleway.account.v3.Contract:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the contract. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        type:
+          description: The type of the contract.
+          $ref: '#/components/schemas/scaleway.account.v3.Contract.Type'
+        name:
+          type: string
+          description: The name of the contract.
+        version:
+          type: integer
+          description: The version of the contract.
+          format: uint32
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation date of the contract. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: The last modification date of the contract. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        srn:
+          type: string
+          description: The SRN of the contract.
+          pattern: ^srn://account\.[^/]+/contracts/[^/]+$
+      x-properties-order:
+      - id
+      - type
+      - name
+      - version
+      - created_at
+      - updated_at
+      - srn
+    scaleway.account.v3.Contract.Type:
+      type: string
+      enum:
+      - unknown_type
+      - global
+      - k8s
+      - instance
+      - container
+      - baremetal
+      - network
+      - core
+      - vps
+      - storage
+      - transactional_email
+      x-enum-descriptions:
+        values:
+          unknown_type: Unknown type
+          global: A global contract
+          k8s: Deprecated. A contract specific to the Kubernetes product
+          instance: A contract specific to the Instance product
+          container: A contract specific to Container products
+          baremetal: A contract specific to Baremetal products
+          network: A contract specific to Network products
+          core: A contract specific to Core products
+          vps: A contract specific to VPS products
+      default: unknown_type
+    scaleway.account.v3.ContractSignature:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the contract signature. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        organization_id:
+          type: string
+          description: The Organization ID which signed the contract. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation date of the contract signature. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        signed_at:
+          type:
+          - string
+          - "null"
+          description: The signing date of the contract signature. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        expires_at:
+          type:
+          - string
+          - "null"
+          description: The expiration date of the contract signature. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        contract:
+          description: The contract signed.
+          $ref: '#/components/schemas/scaleway.account.v3.Contract'
+      x-properties-order:
+      - id
+      - organization_id
+      - created_at
+      - signed_at
+      - expires_at
+      - contract
+    scaleway.account.v3.ListContractSignaturesRequest.OrderBy:
+      type: string
+      enum:
+      - signed_at_asc
+      - signed_at_desc
+      - expires_at_asc
+      - expires_at_desc
+      - name_asc
+      - name_desc
+      x-enum-descriptions:
+        values:
+          signed_at_asc: Signing date ascending
+          signed_at_desc: Signing date descending
+          expires_at_asc: Expiration date ascending
+          expires_at_desc: Expiration date descending
+          name_asc: Name ascending
+          name_desc: Name descending
+      default: signed_at_asc
+    scaleway.account.v3.ListContractSignaturesResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: The total number of contract signatures.
+          format: uint64
+        contract_signatures:
+          type: array
+          description: The paginated returned contract signatures.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.ContractSignature'
+      x-properties-order:
+      - total_count
+      - contract_signatures
+    scaleway.std.File:
+      type: object
+      properties:
+        name:
+          type: string
+        content_type:
+          type: string
+        content:
+          type: string
+      x-properties-order:
+      - name
+      - content_type
+      - content
+    scaleway.std.LanguageCode:
+      type: string
+      enum:
+      - unknown_language_code
+      - en_US
+      - fr_FR
+      - de_DE
+      default: unknown_language_code
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /account/v3/contract-signatures:
+    get:
+      tags:
+      - Contract signatures
+      operationId: ListContractSignatures
+      summary: List contract signatures for an Organization
+      parameters:
+      - in: query
+        name: page
+        description: The page number for the returned contracts.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: The maximum number of contracts per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: How the contracts are ordered in the response.
+        schema:
+          $ref: '#/components/schemas/scaleway.account.v3.ListContractSignaturesRequest.OrderBy'
+      - in: query
+        name: organization_id
+        description: Filter on Organization ID. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ListContractSignaturesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/account/v3/contract-signatures?organization_id=6170692e-7363-616c-6577-61792e636f6d"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/account/v3/contract-signatures" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            organization_id==6170692e-7363-616c-6577-61792e636f6d
+    post:
+      tags:
+      - Contract signatures
+      operationId: CreateContractSignature
+      summary: Create a signature for your Organization for the latest version of
+        the requested contract
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ContractSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contract_type:
+                  description: The type of the contract.
+                  $ref: '#/components/schemas/scaleway.account.v3.Contract.Type'
+                contract_name:
+                  type: string
+                  description: The name of the contract.
+                validated:
+                  type: boolean
+                  description: Whether the contract is validated at creation.
+                organization_id:
+                  type: string
+                  description: ID of the Organization. (UUID format)
+                  example: 6170692e-7363-616c-6577-61792e636f6d
+              x-properties-order:
+              - contract_type
+              - contract_name
+              - validated
+              - organization_id
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "contract_name": "string",
+              "organization_id": "6170692e-7363-616c-6577-61792e636f6d",
+              "validated": false
+            }' \
+            "https://api.scaleway.com/account/v3/contract-signatures"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/contract-signatures" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            contract_name="string" \
+            organization_id="6170692e-7363-616c-6577-61792e636f6d" \
+            validated:=false
+  /account/v3/contract-signatures/{contract_signature_id}/download:
+    get:
+      tags:
+      - Contract signatures
+      operationId: DownloadContractSignature
+      summary: Download a contract content
+      parameters:
+      - in: path
+        name: contract_signature_id
+        description: The contract signature ID. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      - in: query
+        name: locale
+        description: The locale requested for the content of the contract.
+        schema:
+          $ref: '#/components/schemas/scaleway.std.LanguageCode'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.std.File'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/account/v3/contract-signatures/{contract_signature_id}/download"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/account/v3/contract-signatures/{contract_signature_id}/download" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/contract-signatures/{contract_signature_id}/validate:
+    post:
+      tags:
+      - Contract signatures
+      operationId: ValidateContractSignature
+      summary: Sign a contract for your Organization
+      parameters:
+      - in: path
+        name: contract_signature_id
+        description: The contract linked to your Organization you want to sign. (UUID
+          format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ContractSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/contract-signatures/{contract_signature_id}/validate"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/contract-signatures/{contract_signature_id}/validate" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/contract-signatures/check:
+    post:
+      tags:
+      - Contract signatures
+      operationId: CheckContractSignature
+      summary: Check if a contract is signed for your Organization
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.CheckContractSignatureResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_id:
+                  type: string
+                  description: ID of the Organization to check the contract signature
+                    for. (UUID format)
+                  example: 6170692e-7363-616c-6577-61792e636f6d
+                contract_type:
+                  description: Filter on contract type.
+                  $ref: '#/components/schemas/scaleway.account.v3.Contract.Type'
+                contract_name:
+                  type: string
+                  description: Filter on contract name.
+              x-properties-order:
+              - organization_id
+              - contract_type
+              - contract_name
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"contract_name":"string","organization_id":"6170692e-7363-616c-6577-61792e636f6d"}' \
+            "https://api.scaleway.com/account/v3/contract-signatures/check"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/contract-signatures/check" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            contract_name="string" \
+            organization_id="6170692e-7363-616c-6577-61792e636f6d"

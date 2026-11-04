@@ -1,0 +1,738 @@
+openapi: 3.1.0
+info:
+  title: Web Hosting backup API
+  description: |-
+    Scaleway provides several Web Hosting plans for individuals, professionals, and everyone in between. Our Web Hosting plans include:
+
+    - A domain name
+    - A configurable webhosting service
+    - The management of your emails, including anti-spam, antivirus and filter systems
+    - Unlimited sub-domains
+    - An FTP account to upload your website
+    - At least one database
+
+    ## Concepts
+
+    Refer to our [dedicated concepts page](https://www.scaleway.com/en/docs/managed-services/webhosting/concepts/) to find definitions of all Web Hosting-related terminology.
+
+    ## Quickstart
+
+    1. Configure your environment variables.
+
+       <Message type="note">
+       This is an optional step that seeks to simplify your usage of the Web Hosting API.
+       </Message>
+
+        ```bash
+        export SCW_SECRET_KEY="<API secret key>"
+        export SCW_PROJECT_ID="<Scaleway Project ID>"
+        ```
+
+    2. **Choose a Web Hosting offer**: run the following command to list all Web Hosting offers. The `| jq` appendage at the end of the command makes the output easier to read.
+
+        ```bash
+        curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            "https://api.scaleway.com/webhosting/v1/regions/fr-par/offers?without_options=true" | jq
+        ```
+
+       <Message type="note">
+       In the above example, we choose to get offers only. Adjust the query parameter if you would also like to get information about the different options you can add to offers.
+       </Message>
+
+    3. **Order a Web Hosting plan**: run the following command to create a Web Hosting plan. You can customize the details in the payload to your needs, using the table below to help.
+
+        ```bash
+        curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            "https://api.scaleway.com/webhosting/v1/regions/fr-par/hostings" \
+            -d '{
+            "domain": "mydomain.net",
+            "offer_id": "f5c2ae8f-7625-4bca-b711-b44bb3d08694",
+            "project_id": "'"$SCW_PROJECT_ID"'",
+            "tags": ["my-tag"]
+        }'
+        ```
+
+       | Parameter        | Description                                                                            | Valid values OR Example     |
+       |------------------|----------------------------------------------------------------------------------------|-----------------------------|
+       | `domain`         | The domain name you would like to link to your Web Hosting account. You must already own this domain name and have completed the DNS validation process beforehand.                                                            | `mydomain.net`               |
+       | `offer_id`       | The offer ID of the desired offer. Use one of the offer IDs returned in step 2         |`f5c2ae8f-7625-4bca-b711-b44bb3d08694` |
+       | `project_id`     | The ID of the Scaleway Project to create the Web Hosting plan in.                      | `277ed74e-ea73-11ed-a05b-0242ac120003`                   |
+       | `tags`           | Any tags you would like to associate with this Web Hosting plan                         | `my-tag`                   |
+
+       <Message type="tip">
+       Once you've ordered your Web Hosting plan, check out our [dedicated documentation](https://www.scaleway.com/en/docs/managed-services/webhosting/quickstart/) to get started with your configuration.
+       </Message>
+
+    4. **Delete your Web Hosting plan**: run the following command to delete your Web Hosting plan. Ensure that you replace `{hosting-id}` in the URL with the ID of the Web Hosting plan you want to delete.
+
+        ```bash
+        curl -X DELETE \
+            -H "Content-Type: application/json" \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/rest-of-endpoint/{hosting-id}"
+        ```
+
+    <Message type="requirement">
+    - You have a [Scaleway account](https://console.scaleway.com/)
+    - You have created an [API key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) and that the API key has sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/) to perform the actions described on this page
+    - You have [installed `curl`](https://curl.se/download.html)
+    - You have [installaed `jq`](https://stedolan.github.io/jq/download/)
+    </Message>
+
+    ## Technical information
+
+    All Scaleway Web Hosting plans now offer a choice between cPanel and Plesk for website management. Both tools provide a graphical interface and fast access icons, allowing you to configure and monitor your hosting solutions with ease. You can access cPanel or Plesk via the [Scaleway console](https://www.scaleway.com/en/docs/managed-services/webhosting/quickstart/#how-to-access-the-web-hosting-control-panel-from-the-scaleway-console).
+
+    ### Regions
+
+    The Scaleway Web Hosting API is a **regional** API, meaning that each call must specify in its path parameters the region for the resources concerned by the call.
+
+    Scaleway Web Hosting is available only in the `fr-par` region.
+
+    ## Going further
+
+    For more help using Scaleway Web Hosting, check out the following resources:
+
+    - Our [main documentation](https://www.scaleway.com/en/docs/managed-services/webhosting/)
+    - The #webhosting-early-access channel on our [Slack Community](https://www.scaleway.com/en/docs/tutorials/scaleway-slack-community/)
+    - Our [support ticketing system](https://www.scaleway.com/en/docs/account/how-to/open-a-support-ticket/).
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Backups
+  description: |
+    This API allows you to list available backups and restore individual
+    items such as databases, websites, emails, and FTP accounts.
+components:
+  schemas:
+    scaleway.webhosting.v1.Backup:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the backup.
+        size:
+          type: integer
+          description: Total size of the backup in bytes. (in bytes)
+          format: uint64
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the backup. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        status:
+          description: Status of the backup. Available values are `active`, `locked`,
+            and `restoring`.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.BackupStatus'
+        total_items:
+          type: integer
+          description: Total number of restorable items in the backup.
+          format: uint32
+      x-properties-order:
+      - id
+      - size
+      - created_at
+      - status
+      - total_items
+    scaleway.webhosting.v1.BackupItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the item.
+        name:
+          type: string
+          description: Name of the item (e.g., `database name`, `email address`).
+        type:
+          description: Type of the item (e.g., email, database, FTP).
+          $ref: '#/components/schemas/scaleway.webhosting.v1.BackupItem.Type'
+        size:
+          type: integer
+          description: Size of the item in bytes. (in bytes)
+          format: uint64
+        status:
+          description: Status of the item. Available values are `active`, `damaged`,
+            and `restoring`.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.BackupStatus'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Date and time at which this item was backed up. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - id
+      - name
+      - type
+      - size
+      - status
+      - created_at
+    scaleway.webhosting.v1.BackupItem.Type:
+      type: string
+      enum:
+      - unknown_backup_item_type
+      - full
+      - web
+      - mail
+      - db
+      - db_user
+      - ftp_user
+      - dns_zone
+      - cron_job
+      - ssl_certificate
+      x-enum-descriptions:
+        values:
+          unknown_backup_item_type: Default type returned when the backup item type
+            is not specified
+          full: Complete system backup
+          web: Backup item containing website-related files
+          mail: Backup item for mail service data
+          db: Backup item for databases
+          db_user: Backup item for database user accounts
+          ftp_user: Backup item for FTP user accounts
+          dns_zone: Backup item for DNS zone configurations
+          cron_job: Backup item for scheduled cron jobs
+          ssl_certificate: Backup item for SSL certificates
+      default: unknown_backup_item_type
+    scaleway.webhosting.v1.BackupItemGroup:
+      type: object
+      properties:
+        type:
+          description: Type of items (e.g., email, database, FTP).
+          $ref: '#/components/schemas/scaleway.webhosting.v1.BackupItem.Type'
+        items:
+          type: array
+          description: List of individual backup items of this type.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.BackupItem'
+      x-properties-order:
+      - type
+      - items
+    scaleway.webhosting.v1.BackupStatus:
+      type: string
+      enum:
+      - unknown_backup_status
+      - active
+      - locked
+      - disabled
+      - damaged
+      - restoring
+      x-enum-descriptions:
+        values:
+          unknown_backup_status: Default status returned when the backup status is
+            not specified
+          active: Backup is active and available
+          locked: Backup is locked and cannot be changed
+          disabled: Backup is currently disabled
+          damaged: Backup is incomplete, damaged, or corrupted
+          restoring: Backup is being restored
+      default: unknown_backup_status
+    scaleway.webhosting.v1.ListBackupItemsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total number of backup item groups.
+          format: uint64
+        groups:
+          type: array
+          description: List of backup item groups categorized by type.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.BackupItemGroup'
+      x-properties-order:
+      - total_count
+      - groups
+    scaleway.webhosting.v1.ListBackupsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_desc
+      - created_at_asc
+      x-enum-descriptions:
+        values:
+          created_at_desc: Order by backup creation date, most recent first (default)
+          created_at_asc: Order by backup creation date, oldest first
+      default: created_at_desc
+    scaleway.webhosting.v1.ListBackupsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total number of available backups.
+          format: uint64
+        backups:
+          type: array
+          description: List of available backups.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.Backup'
+      x-properties-order:
+      - total_count
+      - backups
+    scaleway.webhosting.v1.ListRecentProgressesResponse:
+      type: object
+      properties:
+        progresses:
+          type: array
+          description: List of summarized progress entries.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.ProgressSummary'
+      x-properties-order:
+      - progresses
+    scaleway.webhosting.v1.Progress:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the progress.
+        backup_item_groups:
+          type: array
+          description: Groups of backup items included in this progress.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.BackupItemGroup'
+        percentage:
+          type: integer
+          description: Completion percentage of the progress.
+          format: uint64
+        status:
+          description: Current status of the progress operation.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Progress.Status'
+      x-properties-order:
+      - id
+      - backup_item_groups
+      - percentage
+      - status
+    scaleway.webhosting.v1.Progress.Status:
+      type: string
+      enum:
+      - unknown_status
+      - pending
+      - processing
+      - completed
+      - partially_completed
+      - failed
+      - aborted
+      - never_finished
+      x-enum-descriptions:
+        values:
+          unknown_status: Default status returned when no specific progress status
+            is defined.
+          pending: Progress item currently in the pending queue.
+          processing: Progress item that is being processed.
+          completed: Progress item fully completed.
+          partially_completed: Progress item partially completed.
+          failed: Progress item that failed during execution.
+          aborted: Progress item manually or automatically aborted.
+          never_finished: Progress item that did not reach completion.
+      default: unknown_status
+    scaleway.webhosting.v1.ProgressSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the progress.
+        backup_items_count:
+          type: integer
+          description: Total number of backup items included in the progress.
+          format: uint64
+        percentage:
+          type: integer
+          description: Completion percentage of the progress.
+          format: uint64
+        status:
+          description: Current status of the progress operation.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Progress.Status'
+      x-properties-order:
+      - id
+      - backup_items_count
+      - percentage
+      - status
+    scaleway.webhosting.v1.RestoreBackupItemsResponse:
+      type: object
+      properties:
+        progress_id:
+          type: string
+          description: Identifier used to track the item restoration progress.
+      x-properties-order:
+      - progress_id
+    scaleway.webhosting.v1.RestoreBackupResponse:
+      type: object
+      properties:
+        progress_id:
+          type: string
+          description: Identifier used to track the backup restoration progress.
+      x-properties-order:
+      - progress_id
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/backup-items:
+    get:
+      tags:
+      - Backups
+      operationId: ListBackupItems
+      summary: List items within a specific backup, grouped by type.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting account.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: backup_id
+        description: ID of the backup to list items from.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.ListBackupItemsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/backup-items?backup_id=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/backup-items" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            backup_id==string
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/backups:
+    get:
+      tags:
+      - Backups
+      operationId: ListBackups
+      summary: List all available backups for a hosting account.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting account.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        description: Page number to retrieve.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Number of backups to return per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Order in which to return the list of backups.
+        schema:
+          $ref: '#/components/schemas/scaleway.webhosting.v1.ListBackupsRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.ListBackupsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/backups"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/backups" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/backups/{backup_id}:
+    get:
+      tags:
+      - Backups
+      operationId: GetBackup
+      summary: Get info about a backup specified by the backup ID.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting account.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: backup_id
+        description: ID of the backup to retrieve.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.Backup'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/backups/{backup_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/backups/{backup_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/backups/{backup_id}/restore:
+    post:
+      tags:
+      - Backups
+      operationId: RestoreBackup
+      summary: Restore an entire backup to your hosting environment.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting account.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: backup_id
+        description: ID of the backup to fully restore.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.RestoreBackupResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/backups/{backup_id}/restore"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/backups/{backup_id}/restore" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/progresses:
+    get:
+      tags:
+      - Backups
+      operationId: ListRecentProgresses
+      summary: List recent progresses associated with a specific backup, grouped by
+        type.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: ID of the hosting linked to the progress.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.ListRecentProgressesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/progresses"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/progresses" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/progresses/{progress_id}:
+    get:
+      tags:
+      - Backups
+      operationId: GetProgress
+      summary: Retrieve detailed information about a specific progress by its ID.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: ID of the hosting associated with the progress.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: progress_id
+        description: ID of the progress to retrieve.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.Progress'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/progresses/{progress_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/progresses/{progress_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/restore-backup-items:
+    post:
+      tags:
+      - Backups
+      operationId: RestoreBackupItems
+      summary: Restore specific items from a backup (e.g., a database or mailbox).
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting account.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.RestoreBackupItemsResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                item_ids:
+                  type: array
+                  description: List of backup item IDs to restore individually.
+                  items:
+                    type: string
+              x-properties-order:
+              - item_ids
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/restore-backup-items"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/restore-backup-items" \
+            X-Auth-Token:$SCW_SECRET_KEY

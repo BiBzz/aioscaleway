@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: IsoCode API
+  description: The IsoCode API list countries or subdivisions of a country.
+  version: v3
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Countries
+  description: Methods to list countries and their subdivisions.
+components:
+  schemas:
+    scaleway.account.v3.ListCountriesResponse:
+      type: object
+      properties:
+        countries:
+          type: array
+          description: List of countries.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.ListCountriesResponse.Country'
+      x-properties-order:
+      - countries
+    scaleway.account.v3.ListCountriesResponse.Country:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the country.
+        code:
+          type: string
+          description: Two letters representing the country.
+        flag:
+          type: string
+          description: Flag representation of the country.
+        vat_number_required:
+          type: boolean
+          description: True if the country should have a VAT identification number,
+            false otherwise.
+      x-properties-order:
+      - name
+      - code
+      - flag
+      - vat_number_required
+    scaleway.account.v3.ListCountrySubdivisionsResponse:
+      type: object
+      properties:
+        subdivisions:
+          type: array
+          description: List of subdivisions for a country code.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.ListCountrySubdivisionsResponse.Subdivision'
+      x-properties-order:
+      - subdivisions
+    scaleway.account.v3.ListCountrySubdivisionsResponse.Subdivision:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Subdivision name.
+        code:
+          type: string
+          description: Subdivision code is a few numbers and/or letters completing
+            the ISO 3166-1 code of the country.
+      x-properties-order:
+      - name
+      - code
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /account/v3/iso-codes/countries:
+    get:
+      tags:
+      - Countries
+      operationId: ListCountries
+      summary: List countries
+      description: List all countries from ISO 3166-1 alpha-2.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ListCountriesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/account/v3/iso-codes/countries"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/account/v3/iso-codes/countries" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/iso-codes/countries/{country_code}/subdivisions:
+    get:
+      tags:
+      - Countries
+      operationId: ListCountrySubdivisions
+      summary: List all subdivisions for a country code
+      description: Method to list all subdivisions (from ISO 3166-2 alpha-2) for a
+        country code.
+      parameters:
+      - in: path
+        name: country_code
+        description: The country code.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ListCountrySubdivisionsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/account/v3/iso-codes/countries/{country_code}/subdivisions"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/account/v3/iso-codes/countries/{country_code}/subdivisions" \
+            X-Auth-Token:$SCW_SECRET_KEY

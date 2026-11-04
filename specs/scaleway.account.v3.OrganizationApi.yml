@@ -1,0 +1,1231 @@
+openapi: 3.1.0
+info:
+  title: Organization API
+  description: Organization API allows you to manage the personal data of an Organization.
+  version: v3
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Support plans
+  description: Methods to manage support plans.
+- name: Organizations
+  description: Methods to manage Organizations.
+components:
+  schemas:
+    scaleway.account.v3.ActiveSupportPlan:
+      type: object
+      properties:
+        support_plan:
+          description: Active support plan information.
+          $ref: '#/components/schemas/scaleway.account.v3.SupportPlan'
+        support_id:
+          type: string
+          description: Support id of the Organization.
+        support_pin:
+          type: string
+          description: Support pin of the Organization.
+        technical_account_manager:
+          description: Technical account manager attached to the Organization.
+          $ref: '#/components/schemas/scaleway.account.v3.TechnicalAccountManager'
+      x-properties-order:
+      - support_plan
+      - support_id
+      - support_pin
+      - technical_account_manager
+    scaleway.account.v3.CloseOrganizationRequest.Reason:
+      type: string
+      enum:
+      - unknown_reason
+      - no_longer_needed
+      - too_expensive
+      - missing_feature
+      - technical_issue
+      - test_only
+      - difficult_to_use
+      - using_another_account
+      - other
+      x-enum-descriptions:
+        values:
+          unknown_reason: Unknown reason
+          no_longer_needed: I no longer need Scaleway's products
+          too_expensive: It's too expensive
+          missing_feature: I need some features you don't have
+          technical_issue: I've had technical issues
+          test_only: I just wanted to test the service
+          difficult_to_use: I find it difficult to use
+          using_another_account: I'm using another account
+          other: Other reason
+      default: unknown_reason
+    scaleway.account.v3.ListSupportPlansRequest.OrderBy:
+      type: string
+      enum:
+      - started_at_asc
+      - started_at_desc
+      - stopped_at_asc
+      - stopped_at_desc
+      x-enum-descriptions:
+        values:
+          started_at_asc: Start date ascending
+          started_at_desc: Start date descending
+          stopped_at_asc: Stop date ascending
+          stopped_at_desc: Stop date descending
+      default: started_at_asc
+    scaleway.account.v3.ListSupportPlansResponse:
+      type: object
+      properties:
+        support_plans:
+          type: array
+          description: List of support plans.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.SupportPlan'
+        total_count:
+          type: integer
+          description: Total count of support plans.
+          format: uint64
+      x-properties-order:
+      - support_plans
+      - total_count
+    scaleway.account.v3.Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the Organization. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the Organization.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the Organization. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last modification date of the Organization. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        address:
+          description: Postal address of the Organization.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.Address'
+        vat_number:
+          type:
+          - string
+          - "null"
+          description: VAT number for tax exemption.
+        type:
+          description: Type of this Organization (personal or professional).
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.Type'
+        sub_type:
+          description: Subtype of this Organization.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.SubType'
+        currency:
+          description: Currency defined in the signed Terms of Service.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.Currency'
+        warnings:
+          type: array
+          description: All warnings attached to this Organization.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.Organization.Warning'
+        payment_mode:
+          description: Deprecated, use payment API instead.
+          deprecated: true
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.PaymentMode'
+        billing_email:
+          type: string
+          description: Email on which invoices are sent Email to which invoices are
+            sent. If empty, the Owner's email is used. Replaced by the Notification
+            manager.
+          deprecated: true
+        mfa_enforced:
+          type: boolean
+          description: Set to true if MFA is required for the Organization.
+        dedibox_account:
+          description: Contains ID and link creation date if a dedibox account is
+            linked.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.DediboxAccount'
+        is_startup:
+          type: boolean
+          description: Deprecated. Set to true if the Organization is identified as
+            a startup.
+          deprecated: true
+        corporate_industry:
+          description: Corporate industry of the Organization.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.CorporateIndustry'
+        duns_number:
+          type:
+          - string
+          - "null"
+          description: DUNS number.
+        use_cases:
+          type: array
+          description: Use cases of the Organization.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.Organization.UseCase'
+        picture_link:
+          type:
+          - string
+          - "null"
+          description: Link to the Organization's picture.
+        reseller_customer_profile:
+          type:
+          - string
+          - "null"
+          description: Reseller customer profile.
+          deprecated: true
+        badges:
+          type: array
+          description: All badges attached to this Organization.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.Organization.Badge'
+        reseller_customer_config:
+          description: Reseller customer config.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.ResellerCustomerConfig'
+        onboarding_step:
+          description: Organization onboarding process step.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.OnboardingStep'
+        origin:
+          description: Organization origin.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.Origin'
+        tax_code:
+          type:
+          - string
+          - "null"
+          description: Tax code for if required for your country.
+        certified_email_address:
+          type:
+          - string
+          - "null"
+          description: Certified email address if required for your country.
+        recipient_code:
+          type:
+          - string
+          - "null"
+          description: Recipient Code if required for your country (e.g SDI, PPF).
+        legal_name:
+          type:
+          - string
+          - "null"
+          description: Legal name of the organization.
+        company_registration_number:
+          type:
+          - string
+          - "null"
+          description: The primary identification number for the legal entity.
+        establishment_registration_number:
+          type:
+          - string
+          - "null"
+          description: The identification number for a specific branch, operating
+            unit, or physical location of the company.
+        srn:
+          type: string
+          description: The SRN of the organization.
+          pattern: ^srn://account\.[^/]+/organizations/[^/]+$
+      x-properties-order:
+      - id
+      - name
+      - created_at
+      - updated_at
+      - address
+      - vat_number
+      - type
+      - sub_type
+      - currency
+      - warnings
+      - payment_mode
+      - billing_email
+      - mfa_enforced
+      - dedibox_account
+      - is_startup
+      - corporate_industry
+      - duns_number
+      - use_cases
+      - picture_link
+      - reseller_customer_profile
+      - badges
+      - reseller_customer_config
+      - onboarding_step
+      - origin
+      - tax_code
+      - certified_email_address
+      - recipient_code
+      - legal_name
+      - company_registration_number
+      - establishment_registration_number
+      - srn
+    scaleway.account.v3.Organization.Address:
+      type: object
+      properties:
+        line1:
+          type: string
+        line2:
+          type: string
+        city_name:
+          type: string
+        zip_code:
+          type: string
+        subdivision_code:
+          type: string
+        country_code:
+          type: string
+      x-properties-order:
+      - line1
+      - line2
+      - city_name
+      - zip_code
+      - subdivision_code
+      - country_code
+    scaleway.account.v3.Organization.Badge:
+      type: string
+      enum:
+      - unknown_badge
+      - badge_hds
+      x-enum-descriptions:
+        values:
+          unknown_badge: Unknown badge
+          badge_hds: HDS
+      default: unknown_badge
+    scaleway.account.v3.Organization.CorporateIndustry:
+      type: string
+      enum:
+      - unknown_corporate_industry
+      - consulting_services
+      - cybersecurity_software
+      - ecommerce_retail
+      - education
+      - energy
+      - financial_services_insurance
+      - gaming_entertainment
+      - hospitality_leisure
+      - lifescience_healthcare_pharmaceuticals
+      - manufacturing
+      - media_press_tv
+      - public_sector
+      - telecommunications
+      - technology
+      - other
+      x-enum-descriptions:
+        values:
+          unknown_corporate_industry: Unknown corporate industry
+          consulting_services: Consulting & Services
+          cybersecurity_software: Cybersecurity & software
+          ecommerce_retail: E-commerce & retail
+          education: Education
+          energy: Energy
+          financial_services_insurance: Financial Services & Insurance
+          gaming_entertainment: Gaming & Entertainment
+          hospitality_leisure: Hospitality & Leisure
+          lifescience_healthcare_pharmaceuticals: Lifescience, Healthcare & Pharmaceuticals
+          manufacturing: Manufacturing
+          media_press_tv: Media - Press & TV
+          public_sector: Public Sector
+          telecommunications: Telecommunications
+          technology: Technology
+          other: Other
+      default: unknown_corporate_industry
+    scaleway.account.v3.Organization.Currency:
+      type: string
+      enum:
+      - unknown_currency
+      - eur
+      x-enum-descriptions:
+        values:
+          unknown_currency: Unknown currency
+          eur: Euro
+      default: unknown_currency
+    scaleway.account.v3.Organization.DediboxAccount:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+        linked_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        migrated_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - id
+      - linked_at
+      - migrated_at
+    scaleway.account.v3.Organization.OnboardingStep:
+      type: string
+      enum:
+      - unknown_onboarding_step
+      - account_details
+      - phone_details
+      - address_details
+      - billing_details
+      - default_project_details
+      - default_project_qualification
+      - completed
+      x-enum-descriptions:
+        values:
+          unknown_onboarding_step: Unknown onboarding process step
+          account_details: Account details onboarding process step
+          phone_details: Phone details onboarding process step
+          address_details: Address details onboarding process step
+          billing_details: Billing details onboarding process step
+          default_project_details: Default project details onboarding process step
+          default_project_qualification: Default project qualification onboarding
+            process step
+          completed: Completed onboarding process step
+      default: unknown_onboarding_step
+    scaleway.account.v3.Organization.Origin:
+      type: string
+      enum:
+      - unknown_origin
+      - direct
+      - invitation
+      - origin_internal
+      - reseller
+      - dedibox
+      - dedibox_one_account
+      - web_cloud
+      - account
+      - book_my_name_one_account
+      - book_my_name
+      x-enum-descriptions:
+        values:
+          unknown_origin: Other origin
+          direct: Direct origin
+          invitation: Invitation origin
+          origin_internal: Internal origin
+          reseller: Reseller origin
+          dedibox: Dedibox link origin
+          dedibox_one_account: Dedibox one account origin
+          web_cloud: Web Cloud origin
+          account: Account origin
+          book_my_name_one_account: Book My Name one account origin
+          book_my_name: Book My Name origin
+      default: unknown_origin
+    scaleway.account.v3.Organization.PaymentMode:
+      type: string
+      enum:
+      - unknown_payment_mode
+      - card
+      - sepa
+      x-enum-descriptions:
+        values:
+          unknown_payment_mode: Unknown payment mode
+          card: Card
+          sepa: SEPA
+      default: unknown_payment_mode
+    scaleway.account.v3.Organization.ResellerCustomerConfig:
+      type: string
+      enum:
+      - unknown_reseller_customer_config
+      - standard
+      - billing
+      - billing_support
+      default: unknown_reseller_customer_config
+    scaleway.account.v3.Organization.SubType:
+      type: string
+      enum:
+      - unknown_sub_type
+      - standard_sub_type
+      - startup_sub_type
+      - consultant_sub_type
+      - personal_sub_type
+      - association_sub_type
+      x-enum-descriptions:
+        values:
+          unknown_sub_type: Unknown subtype
+          standard_sub_type: Standard subtype
+          startup_sub_type: Startup subtype
+          consultant_sub_type: Consultant subtype
+          personal_sub_type: Personal subtype
+          association_sub_type: Association subtype
+      default: unknown_sub_type
+    scaleway.account.v3.Organization.Type:
+      type: string
+      enum:
+      - unknown_type
+      - individual
+      - professional
+      - internal
+      x-enum-descriptions:
+        values:
+          unknown_type: Unknown type
+          individual: Individual
+          professional: Professional
+          internal: Internal
+      default: unknown_type
+    scaleway.account.v3.Organization.UseCase:
+      type: string
+      enum:
+      - unknown_use_case
+      - host_private_or_hybrid_cloud
+      - build_and_host_saas_application
+      - host_web_apps_and_websites
+      - manage_infrastructure
+      - store_data_and_automate_processes
+      - train_ml_models_and_run_ai_inference
+      - dont_know_yet
+      - other_use_case
+      x-enum-descriptions:
+        values:
+          unknown_use_case: Unknown use case
+          host_private_or_hybrid_cloud: Host private or hybrid cloud
+          build_and_host_saas_application: Build and host SaaS application
+          host_web_apps_and_websites: Host web apps and websites
+          manage_infrastructure: Manage infrastructure
+          store_data_and_automate_processes: Store data and automate processes
+          train_ml_models_and_run_ai_inference: Train ML models and run AI inference
+          dont_know_yet: Don't know yet
+          other_use_case: Other use case
+      default: unknown_use_case
+    scaleway.account.v3.Organization.Warning:
+      type: object
+      properties:
+        id:
+          type: string
+          description: (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        reason:
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.Warning.Reason'
+        locking:
+          type: boolean
+        closed:
+          type: boolean
+        opened_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - id
+      - reason
+      - locking
+      - closed
+      - opened_at
+    scaleway.account.v3.Organization.Warning.Reason:
+      type: string
+      enum:
+      - unknown_reason
+      - security_concerns
+      - security_issue
+      - critical_security_issue
+      - locked_for_abuse
+      - network_abuse
+      - invoice_payment_failure
+      - got_chargeback
+      - validate_tos
+      - validate_kyc
+      - payment_info_missing
+      - billing_info_missing
+      - account_closed
+      - card_expired_or_soon
+      - confirm_email_change
+      - gdpr_delete
+      - rate_limiting
+      - trusted_level_security_check
+      - online_invoice_payment_failure
+      - validate_email
+      - ultra_security_issue
+      - missing_vat_number
+      - invalid_vat_number
+      - locked_by_reseller
+      - validate_phone
+      - e_invoicing_info_missing
+      - e_invoicing_info_invalid
+      x-enum-descriptions:
+        values:
+          unknown_reason: Unknown reason
+          security_concerns: Security concerns
+          security_issue: Security issue
+          critical_security_issue: Critical security issue
+          locked_for_abuse: Locked for abuse
+          network_abuse: Network abuse
+          invoice_payment_failure: Invoice payment failure
+          got_chargeback: Got chargeback
+          validate_tos: Validate TOS
+          validate_kyc: Validate KYC
+          payment_info_missing: Payment info missing
+          billing_info_missing: Billing info missing
+          account_closed: Account closed
+          card_expired_or_soon: Card expired or soon
+          confirm_email_change: Confirm email change
+          gdpr_delete: GDPR delete
+          rate_limiting: Rate limiting
+          trusted_level_security_check: Trusted level security check
+          online_invoice_payment_failure: Online invoice payment failure
+          validate_email: Validate email address
+          ultra_security_issue: Ultra security issue
+          missing_vat_number: Missing VAT number
+          invalid_vat_number: Invalid VAT number
+          locked_by_reseller: Locked by reseller
+          validate_phone: Validate phone number
+          e_invoicing_info_missing: E-invoicing information missing
+          e_invoicing_info_invalid: E-invoicing information invalid
+      default: unknown_reason
+    scaleway.account.v3.SetOrganizationUseCasesResponse:
+      type: object
+      properties:
+        use_cases:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.Organization.UseCase'
+      x-properties-order:
+      - use_cases
+    scaleway.account.v3.SupportPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the support plan. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        level:
+          description: Level of the support plan.
+          $ref: '#/components/schemas/scaleway.account.v3.SupportPlan.Level'
+        started_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the support plan. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        stopped_at:
+          type:
+          - string
+          - "null"
+          description: End date of the support plan. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        organization_id:
+          type: string
+          description: ID of the Organization. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        srn:
+          type: string
+          description: The SRN of the support plan.
+          pattern: ^srn://account\.[^/]+/support-plans/[^/]+$
+      x-properties-order:
+      - id
+      - level
+      - started_at
+      - stopped_at
+      - organization_id
+      - srn
+    scaleway.account.v3.SupportPlan.Level:
+      type: string
+      enum:
+      - unknown_level
+      - basic
+      - developer
+      - bronze
+      - silver
+      - gold
+      - platinum
+      - advanced
+      - business
+      - enterprise
+      - custom_lvmh
+      x-enum-descriptions:
+        values:
+          unknown_level: Unknown level
+          basic: Basic (deprecated)
+          developer: Developer (deprecated)
+          bronze: Bronze (deprecated)
+          silver: Silver
+          gold: Gold
+          platinum: Platinum
+          business: Business (deprecated)
+          enterprise: Enterprise (deprecated)
+      default: unknown_level
+    scaleway.account.v3.TechnicalAccountManager:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the TAM. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        last_name:
+          type: string
+          description: Last name of the TAM.
+        first_name:
+          type: string
+          description: First name of the TAM.
+        email:
+          type: string
+          description: Email address of the TAM.
+        phone_number:
+          type: string
+          description: Phone number of the TAM.
+        srn:
+          type: string
+          description: The SRN of the TAM.
+          pattern: ^srn://account\.[^/]+/technical-account-managers/[^/]+$
+      x-properties-order:
+      - id
+      - last_name
+      - first_name
+      - email
+      - phone_number
+      - srn
+    scaleway.std.File:
+      type: object
+      properties:
+        name:
+          type: string
+        content_type:
+          type: string
+        content:
+          type: string
+      x-properties-order:
+      - name
+      - content_type
+      - content
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /account/v3/organization-use-cases:
+    patch:
+      operationId: SetOrganizationUseCases
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.SetOrganizationUseCasesResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_id:
+                  type: string
+                use_cases:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/scaleway.account.v3.Organization.UseCase'
+              x-properties-order:
+              - organization_id
+              - use_cases
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"organization_id":"string"}' \
+            "https://api.scaleway.com/account/v3/organization-use-cases"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/account/v3/organization-use-cases" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            organization_id="string"
+  /account/v3/organizations/{organization_id}:
+    get:
+      tags:
+      - Organizations
+      operationId: GetOrganization
+      summary: Get the Organization with the given ID
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.Organization'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/account/v3/organizations/{organization_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/organizations/{organization_id}/active-support-plan:
+    get:
+      tags:
+      - Support plans
+      operationId: GetActiveSupportPlan
+      summary: Get the active support plan for the Organization Get the support plan
+        for the Organization along with the Technical Account Manager contact information.
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ActiveSupportPlan'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/active-support-plan"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/account/v3/organizations/{organization_id}/active-support-plan" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/organizations/{organization_id}/close:
+    post:
+      tags:
+      - Organizations
+      operationId: CloseOrganization
+      summary: Close Organization Close the Organization associated with the given
+        ID.
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reasons:
+                  type: array
+                  description: Reasons to close the Organization.
+                  items:
+                    $ref: '#/components/schemas/scaleway.account.v3.CloseOrganizationRequest.Reason'
+                details:
+                  type:
+                  - string
+                  - "null"
+                  description: More details about why the Organization is being closed.
+              x-properties-order:
+              - reasons
+              - details
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/close"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/organizations/{organization_id}/close" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/organizations/{organization_id}/picture:
+    put:
+      tags:
+      - Organizations
+      operationId: SetPicture
+      summary: Set picture Set a picture for the Organization.
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  description: Picture to upload.
+                  $ref: '#/components/schemas/scaleway.std.File'
+              x-properties-order:
+              - file
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PUT \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/picture"
+      - lang: HTTPie
+        source: |-
+          http PUT "https://api.scaleway.com/account/v3/organizations/{organization_id}/picture" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/organizations/{organization_id}/reopen:
+    post:
+      tags:
+      - Organizations
+      operationId: ReopenOrganization
+      summary: Reopen Organization Reopen a previously closed Organization associated
+        with the given ID.
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/reopen"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/organizations/{organization_id}/reopen" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/organizations/{organization_id}/skip-onboarding-billing-details:
+    post:
+      tags:
+      - Organizations
+      operationId: SkipOnboardingBillingDetails
+      summary: Skip billing details during onboarding Skip the billing details step
+        during the onboarding process. The onboarding step will be advanced to the
+        next step.
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/skip-onboarding-billing-details"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/organizations/{organization_id}/skip-onboarding-billing-details" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/organizations/{organization_id}/support-plans:
+    get:
+      tags:
+      - Support plans
+      operationId: ListSupportPlans
+      summary: List the support plans for the Organization
+      parameters:
+      - in: path
+        name: organization_id
+        description: Filter by Organization ID. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      - in: query
+        name: order_by
+        description: Sort order of support plans.
+        schema:
+          $ref: '#/components/schemas/scaleway.account.v3.ListSupportPlansRequest.OrderBy'
+      - in: query
+        name: page
+        description: Requested page number. Value must be greater or equals to 1.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Number of items per page. Value must be between 1 and 1000.
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ListSupportPlansResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/support-plans"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/account/v3/organizations/{organization_id}/support-plans" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Support plans
+      operationId: ChangeSupportPlan
+      summary: Change the support plan for the Organization Change the support plan
+        by supplying the level of support wanted and the Organization ID.
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.SupportPlan'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                level:
+                  description: Level of support plan The level of support plan. Can
+                    only be basic, silver or gold.
+                  $ref: '#/components/schemas/scaleway.account.v3.SupportPlan.Level'
+              x-properties-order:
+              - level
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/support-plans"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/organizations/{organization_id}/support-plans" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/organizations/{organization_id}/update-billing-details:
+    post:
+      tags:
+      - Organizations
+      operationId: UpdateOrganizationBillingDetails
+      summary: Update the billing details of the Organization with the given ID
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vat_number:
+                  type:
+                  - string
+                  - "null"
+                  description: VAT number for tax exemption.
+                address:
+                  description: Address object.
+                  $ref: '#/components/schemas/scaleway.account.v3.Organization.Address'
+                duns_number:
+                  type:
+                  - string
+                  - "null"
+                  description: DUNS number.
+                tax_code:
+                  type:
+                  - string
+                  - "null"
+                  description: Tax code for if required for your country.
+                certified_email_address:
+                  type:
+                  - string
+                  - "null"
+                  description: Certified email address if required for your country.
+                legal_name:
+                  type:
+                  - string
+                  - "null"
+                  description: Legal name of the organization.
+                recipient_code:
+                  type:
+                  - string
+                  - "null"
+                  description: Recipient Code if required for your country (e.g SDI,
+                    PPF).
+                company_registration_number:
+                  type:
+                  - string
+                  - "null"
+                  description: The primary identification number for the legal entity.
+                establishment_registration_number:
+                  type:
+                  - string
+                  - "null"
+                  description: The identification number for a specific branch, operating
+                    unit, or physical location of the company.
+              x-properties-order:
+              - vat_number
+              - address
+              - duns_number
+              - tax_code
+              - certified_email_address
+              - legal_name
+              - recipient_code
+              - company_registration_number
+              - establishment_registration_number
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/update-billing-details"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/organizations/{organization_id}/update-billing-details" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/organizations/{organization_id}/update-details:
+    post:
+      tags:
+      - Organizations
+      operationId: UpdateOrganizationDetails
+      summary: Update the details of the Organization details with the given ID
+      parameters:
+      - in: path
+        name: organization_id
+        description: ID of the Organization.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: Name of the Organization.
+                type:
+                  description: Organization type.
+                  $ref: '#/components/schemas/scaleway.account.v3.Organization.Type'
+                mfa_enforced:
+                  type:
+                  - boolean
+                  - "null"
+                  description: Set to true to ensure MFA is required for the Organization.
+              x-properties-order:
+              - name
+              - type
+              - mfa_enforced
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/organizations/{organization_id}/update-details"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/organizations/{organization_id}/update-details" \
+            X-Auth-Token:$SCW_SECRET_KEY

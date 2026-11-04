@@ -1,0 +1,845 @@
+openapi: 3.1.0
+info:
+  title: Web Hosting Database API
+  description: |-
+    Scaleway provides several Web Hosting plans for individuals, professionals, and everyone in between. Our Web Hosting plans include:
+
+    - A domain name
+    - A configurable webhosting service
+    - The management of your emails, including anti-spam, antivirus and filter systems
+    - Unlimited sub-domains
+    - An FTP account to upload your website
+    - At least one database
+
+    ## Concepts
+
+    Refer to our [dedicated concepts page](https://www.scaleway.com/en/docs/managed-services/webhosting/concepts/) to find definitions of all Web Hosting-related terminology.
+
+    ## Quickstart
+
+    1. Configure your environment variables.
+
+       <Message type="note">
+       This is an optional step that seeks to simplify your usage of the Web Hosting API.
+       </Message>
+
+        ```bash
+        export SCW_SECRET_KEY="<API secret key>"
+        export SCW_PROJECT_ID="<Scaleway Project ID>"
+        ```
+
+    2. **Choose a Web Hosting offer**: run the following command to list all Web Hosting offers. The `| jq` appendage at the end of the command makes the output easier to read.
+
+        ```bash
+        curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            "https://api.scaleway.com/webhosting/v1/regions/fr-par/offers?without_options=true" | jq
+        ```
+
+       <Message type="note">
+       In the above example, we choose to get offers only. Adjust the query parameter if you would also like to get information about the different options you can add to offers.
+       </Message>
+
+    3. **Order a Web Hosting plan**: run the following command to create a Web Hosting plan. You can customize the details in the payload to your needs, using the table below to help.
+
+        ```bash
+        curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            "https://api.scaleway.com/webhosting/v1/regions/fr-par/hostings" \
+            -d '{
+            "domain": "mydomain.net",
+            "offer_id": "f5c2ae8f-7625-4bca-b711-b44bb3d08694",
+            "project_id": "'"$SCW_PROJECT_ID"'",
+            "tags": ["my-tag"]
+        }'
+        ```
+
+       | Parameter        | Description                                                                            | Valid values OR Example     |
+       |------------------|----------------------------------------------------------------------------------------|-----------------------------|
+       | `domain`         | The domain name you would like to link to your Web Hosting account. You must already own this domain name and have completed the DNS validation process beforehand.                                                            | `mydomain.net`               |
+       | `offer_id`       | The offer ID of the desired offer. Use one of the offer IDs returned in step 2         |`f5c2ae8f-7625-4bca-b711-b44bb3d08694` |
+       | `project_id`     | The ID of the Scaleway Project to create the Web Hosting plan in.                      | `277ed74e-ea73-11ed-a05b-0242ac120003`                   |
+       | `tags`           | Any tags you would like to associate with this Web Hosting plan                         | `my-tag`                   |
+
+       <Message type="tip">
+       Once you've ordered your Web Hosting plan, check out our [dedicated documentation](https://www.scaleway.com/en/docs/managed-services/webhosting/quickstart/) to get started with your configuration.
+       </Message>
+
+    4. **Delete your Web Hosting plan**: run the following command to delete your Web Hosting plan. Ensure that you replace `{hosting-id}` in the URL with the ID of the Web Hosting plan you want to delete.
+
+        ```bash
+        curl -X DELETE \
+            -H "Content-Type: application/json" \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/rest-of-endpoint/{hosting-id}"
+        ```
+
+    <Message type="requirement">
+    - You have a [Scaleway account](https://console.scaleway.com/)
+    - You have created an [API key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) and that the API key has sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/) to perform the actions described on this page
+    - You have [installed `curl`](https://curl.se/download.html)
+    - You have [installaed `jq`](https://stedolan.github.io/jq/download/)
+    </Message>
+
+    ## Technical information
+
+    All Scaleway Web Hosting plans now offer a choice between cPanel and Plesk for website management. Both tools provide a graphical interface and fast access icons, allowing you to configure and monitor your hosting solutions with ease. You can access cPanel or Plesk via the [Scaleway console](https://www.scaleway.com/en/docs/managed-services/webhosting/quickstart/#how-to-access-the-web-hosting-control-panel-from-the-scaleway-console).
+
+    ### Regions
+
+    The Scaleway Web Hosting API is a **regional** API, meaning that each call must specify in its path parameters the region for the resources concerned by the call.
+
+    Scaleway Web Hosting is available only in the `fr-par` region.
+
+    ## Going further
+
+    For more help using Scaleway Web Hosting, check out the following resources:
+
+    - Our [main documentation](https://www.scaleway.com/en/docs/managed-services/webhosting/)
+    - The #webhosting-early-access channel on our [Slack Community](https://www.scaleway.com/en/docs/tutorials/scaleway-slack-community/)
+    - Our [support ticketing system](https://www.scaleway.com/en/docs/account/how-to/open-a-support-ticket/).
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Databases
+  description: |
+    Databases represent the databases you can create and manage within your Web Hosting plan. Supported types are MySQL and PostgreSQL.
+- name: Database Users
+  description: |
+    Database users represent the users that can access and manage the databases in your Web Hosting plan.
+components:
+  schemas:
+    scaleway.webhosting.v1.CreateDatabaseRequest.User:
+      type: object
+      properties:
+        username:
+          type: string
+          pattern: ^[A-Za-z0-9_-]+$
+        password:
+          type: string
+      x-properties-order:
+      - username
+      - password
+    scaleway.webhosting.v1.Database:
+      type: object
+      properties:
+        database_name:
+          type: string
+          description: Name of the database.
+        users:
+          type: array
+          description: List of users who have access to the database.
+          items:
+            type: string
+      x-properties-order:
+      - database_name
+      - users
+    scaleway.webhosting.v1.DatabaseUser:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Name of the database user.
+        databases:
+          type: array
+          description: List of databases accessible by the user.
+          items:
+            type: string
+      x-properties-order:
+      - username
+      - databases
+    scaleway.webhosting.v1.ListDatabaseUsersRequest.OrderBy:
+      type: string
+      enum:
+      - username_asc
+      - username_desc
+      default: username_asc
+    scaleway.webhosting.v1.ListDatabaseUsersResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total number of database users.
+          format: uint64
+        users:
+          type: array
+          description: List of database users.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.DatabaseUser'
+      x-properties-order:
+      - total_count
+      - users
+    scaleway.webhosting.v1.ListDatabasesRequest.OrderBy:
+      type: string
+      enum:
+      - database_name_asc
+      - database_name_desc
+      default: database_name_asc
+    scaleway.webhosting.v1.ListDatabasesResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total number of databases.
+          format: uint64
+        databases:
+          type: array
+          description: List of databases.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.Database'
+      x-properties-order:
+      - total_count
+      - databases
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/database-users:
+    get:
+      tags:
+      - Database Users
+      operationId: ListDatabaseUsers
+      summary: '"List all database users"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        description: Page number (must be a positive integer).
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Number of database users to return (must be a positive integer
+          lower or equal to 100).
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Sort order of database users in the response.
+        schema:
+          $ref: '#/components/schemas/scaleway.webhosting.v1.ListDatabaseUsersRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.ListDatabaseUsersResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/database-users"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/database-users" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/database-users/{username}:
+    delete:
+      tags:
+      - Database Users
+      operationId: DeleteDatabaseUser
+      summary: '"Delete a database user"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: username
+        description: Name of the database user to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.DatabaseUser'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/database-users/{username}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/database-users/{username}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/databases:
+    get:
+      tags:
+      - Databases
+      operationId: ListDatabases
+      summary: '"List all databases within your hosting plan"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        description: Page number (must be a positive integer).
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Number of databases to return (must be a positive integer lower
+          or equal to 100).
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Sort order of databases in the response.
+        schema:
+          $ref: '#/components/schemas/scaleway.webhosting.v1.ListDatabasesRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.ListDatabasesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Databases
+      operationId: CreateDatabase
+      summary: '"Create a new database within your hosting plan"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan where the database will be created.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.Database'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                database_name:
+                  type: string
+                  description: Name of the database to be created. If it is not already
+                    prefixed with the hosting's cPanel username followed by an underscore
+                    (e.g. `cpe1234_`), this prefix is automatically added. The resulting
+                    name must not exceed 64 characters.
+                  pattern: ^([A-Za-z0-9]+_)?[A-Za-z0-9-]+$
+                new_user:
+                  description: |-
+                    (Optional) Username and password to create a user and link to the database. The username is prefixed the same way as `database_name`.
+                    Precisely one of new_user, existing_username can be set.
+                  x-one-of: user
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.webhosting.v1.CreateDatabaseRequest.User'
+                  - type: "null"
+                existing_username:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    (Optional) Username to link an existing user to the database.
+                    Precisely one of new_user, existing_username can be set.
+                  x-one-of: user
+              x-properties-order:
+              - database_name
+              - new_user
+              - existing_username
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"database_name":"string"}' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            database_name="string"
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users:
+    post:
+      tags:
+      - Database Users
+      operationId: CreateDatabaseUser
+      summary: '"Create a new database user"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.DatabaseUser'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Name of the user to create. If it is not already prefixed
+                    with the hosting's cPanel username followed by an underscore (e.g.
+                    `cpe1234_`), this prefix is automatically added. The resulting
+                    name must not exceed 32 characters.
+                  pattern: ^[A-Za-z0-9_-]+$
+                password:
+                  type: string
+                  description: Password of the user to create.
+              x-properties-order:
+              - username
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"password":"string","username":"string"}' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            password="string" \
+            username="string"
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users/{username}:
+    get:
+      tags:
+      - Database Users
+      operationId: GetDatabaseUser
+      summary: '"Get details of a database user"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: username
+        description: Name of the database user to retrieve details.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.DatabaseUser'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users/{username}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users/{username}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users/{username}/change-password:
+    post:
+      tags:
+      - Database Users
+      operationId: ChangeDatabaseUserPassword
+      summary: '"Change the password of a database user"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: username
+        description: Name of the user to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.DatabaseUser'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: New password.
+              x-properties-order:
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"password":"string"}' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users/{username}/change-password"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases-users/{username}/change-password" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            password="string"
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}:
+    get:
+      tags:
+      - Databases
+      operationId: GetDatabase
+      summary: '"Get details of a database within your hosting plan"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: database_name
+        description: Name of the database.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.Database'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Databases
+      operationId: DeleteDatabase
+      summary: '"Delete a database within your hosting plan"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: database_name
+        description: Name of the database to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.Database'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}/assign-user:
+    post:
+      tags:
+      - Database Users
+      operationId: AssignDatabaseUser
+      summary: '"Assign a database user to a database"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: database_name
+        description: Name of the database to be assigned.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.DatabaseUser'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Name of the user to assign.
+              x-properties-order:
+              - username
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"username":"string"}' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}/assign-user"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}/assign-user" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            username="string"
+  /webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}/unassign-user:
+    post:
+      tags:
+      - Database Users
+      operationId: UnassignDatabaseUser
+      summary: '"Unassign a database user from a database"'
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: hosting_id
+        description: UUID of the hosting plan.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: database_name
+        description: Name of the database to be unassigned.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.DatabaseUser'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Name of the user to unassign.
+              x-properties-order:
+              - username
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"username":"string"}' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}/unassign-user"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/hostings/{hosting_id}/databases/{database_name}/unassign-user" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            username="string"

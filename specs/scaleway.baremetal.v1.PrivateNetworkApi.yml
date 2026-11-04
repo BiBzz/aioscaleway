@@ -1,0 +1,411 @@
+openapi: 3.1.0
+info:
+  title: Elastic Metal - Private Network API
+  description: |-
+    VPC is a set of products and features allowing you to build your own
+    virtual private cloud on top of Scaleway's shared public cloud.
+    It includes Private Networks, enabling resources to be interconnected
+    through a dedicated, private, and flexible L2 network.
+
+    You can add as many servers to your networks as you want and add
+    up to eight (8) different networks per server, taking the form of additional
+    network interfaces inside your server (VLANs). This service allows you to run
+    services isolated from the public internet and expose them to the rest of your
+    infrastructure without worrying about public network filtering.
+    Servers can be plugged and unplugged from a network at will, even when the server
+    is running: the network interface will be hot-plugged to the server,
+    and software can be configured to set it up as soon as it appears automatically.
+
+    ## Quickstart
+
+    ### Requirements
+
+    You need to have an HTTP client such as [`curl`](https://curl.haxx.se) to use Scaleway's API. It is
+    also a good idea to have [`jq`](https://stedolan.github.io/jq) which will help you read and parse
+    JSON output. Make sure you have these two tools before you begin. Otherwise use your package manager
+    to install them.
+
+    To call Scaleway's API, you need an `X-Auth-Token`. If you don't have one yet, refer to our
+    [doc about generating API keys](https://www.scaleway.com/en/docs/console/my-project/how-to/create-a-project/#-Generating-API-Keys).
+
+    Next, you will need your Project ID to create VPC resources in. If you don't have it, refer to our
+    [doc about creating a Project](https://www.scaleway.com/en/docs/console/my-project/how-to/create-a-project/#-Creating-a-Project).
+
+    Finally, you will need to chose the Availability Zone in which to create your Private Network.
+    Keep in mind that Private Networks are per zone and not per region, thus you will only be able to
+    connect servers to networks from the same Availability Zone.
+
+    ```sh
+    export SECRET_KEY="<Your secret key>"
+    export PROJECT_ID="<Your Project ID>"
+    export ZONE="<Chosen zone (fr-par-1/nl-ams-1)>"
+    ```
+
+    ### Creating a Private Network
+
+    See [our online documentation](https://developers.scaleway.com/en/products/vpc/api/)
+
+    ### Adding a server to the Private Network
+
+    ```sh
+    curl -s -H "Content-Type: application/json" -H "X-Auth-Token: $SECRET_KEY" \
+        https://api.scaleway.com/baremetal/v1/zones/$ZONE/servers/$SRV_ID/private-networks \
+        -d '{"private_network_id": "'$PN_ID'"}'
+    ```
+
+    Keep the `vlan` field from the response. It is your VLAN ID, and will be used
+    to configure the server to handle traffic from and to the private network:
+
+    ```sh
+    sudo ip link add link eno1 name eno1.$VLAN type vlan id $VLAN
+    sudo ip link set eno1.$VLAN up
+    sudo ip addr add 192.168.0.10/24 dev eno1.$VLAN
+    ```
+
+    ## Technical limitations
+
+    - Need to configure manually a VLAN on the Elastic Metal interface
+    - Bandwidth is limited to 1Gbps inside the Private Network
+    - Up to 8 Private Networks per server
+    - Broadcast and Multicast traffic, while supported, are rate-limited.
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Private Networks
+  description: |
+    A Private Network allows you to interconnect your resources
+    (servers, instances, ...) in an isolated and private
+    network. The network reachability is limited to the
+    resources that are on the same Private Network . A VLAN
+    interface is available on the server and can be freely
+    managed (adding IP addresses, shutdown interface...).
+
+    Note that a resource can be a part of multiple Private Networks.
+components:
+  schemas:
+    scaleway.baremetal.v1.ListServerPrivateNetworksRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - updated_at_asc
+      - updated_at_desc
+      default: created_at_asc
+    scaleway.baremetal.v1.ListServerPrivateNetworksResponse:
+      type: object
+      properties:
+        server_private_networks:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.baremetal.v1.ServerPrivateNetwork'
+        total_count:
+          type: integer
+          format: uint32
+      x-properties-order:
+      - server_private_networks
+      - total_count
+    scaleway.baremetal.v1.ServerPrivateNetwork:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Private Network ID.
+        project_id:
+          type: string
+          description: The Private Network Project ID.
+        server_id:
+          type: string
+          description: The server ID.
+        private_network_id:
+          type: string
+          description: The Private Network ID.
+        vlan:
+          type:
+          - integer
+          - "null"
+          description: The VLAN ID associated to the Private Network.
+          format: uint32
+        status:
+          description: The configuration status of the Private Network.
+          $ref: '#/components/schemas/scaleway.baremetal.v1.ServerPrivateNetwork.Status'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The Private Network creation date. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: The date the Private Network was last modified. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - id
+      - project_id
+      - server_id
+      - private_network_id
+      - vlan
+      - status
+      - created_at
+      - updated_at
+    scaleway.baremetal.v1.ServerPrivateNetwork.Status:
+      type: string
+      enum:
+      - unknown
+      - attaching
+      - attached
+      - error
+      - detaching
+      - locked
+      default: unknown
+    scaleway.baremetal.v1.SetServerPrivateNetworksResponse:
+      type: object
+      properties:
+        server_private_networks:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.baremetal.v1.ServerPrivateNetwork'
+      x-properties-order:
+      - server_private_networks
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /baremetal/v1/zones/{zone}/server-private-networks:
+    get:
+      tags:
+      - Private Networks
+      operationId: ListServerPrivateNetworks
+      summary: List the Private Networks of a server
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-2
+      - in: query
+        name: order_by
+        description: The sort order for the returned Private Networks.
+        schema:
+          $ref: '#/components/schemas/scaleway.baremetal.v1.ListServerPrivateNetworksRequest.OrderBy'
+      - in: query
+        name: page
+        description: The page number for the returned Private Networks.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: The maximum number of Private Networks per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: server_id
+        description: Filter Private Networks by server ID. (UUID format)
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      - in: query
+        name: private_network_id
+        description: Filter Private Networks by Private Network ID. (UUID format)
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      - in: query
+        name: organization_id
+        description: Filter Private Networks by Organization ID. (UUID format)
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      - in: query
+        name: project_id
+        description: Filter Private Networks by Project ID. (UUID format)
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.baremetal.v1.ListServerPrivateNetworksResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/baremetal/v1/zones/{zone}/server-private-networks"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/baremetal/v1/zones/{zone}/server-private-networks" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /baremetal/v1/zones/{zone}/servers/{server_id}/private-networks:
+    post:
+      tags:
+      - Private Networks
+      operationId: AddServerPrivateNetwork
+      summary: Add a server to a Private Network
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-2
+      - in: path
+        name: server_id
+        description: The ID of the server.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.baremetal.v1.ServerPrivateNetwork'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                private_network_id:
+                  type: string
+                  description: The ID of the Private Network.
+              required:
+              - private_network_id
+              x-properties-order:
+              - private_network_id
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"private_network_id":"string"}' \
+            "https://api.scaleway.com/baremetal/v1/zones/{zone}/servers/{server_id}/private-networks"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/baremetal/v1/zones/{zone}/servers/{server_id}/private-networks" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            private_network_id="string"
+    put:
+      tags:
+      - Private Networks
+      operationId: SetServerPrivateNetworks
+      summary: Set multiple Private Networks on a server
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-2
+      - in: path
+        name: server_id
+        description: The ID of the server.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.baremetal.v1.SetServerPrivateNetworksResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                private_network_ids:
+                  type: array
+                  description: The IDs of the Private Networks.
+                  items:
+                    type: string
+              required:
+              - private_network_ids
+              x-properties-order:
+              - private_network_ids
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PUT \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"private_network_ids":["string"]}' \
+            "https://api.scaleway.com/baremetal/v1/zones/{zone}/servers/{server_id}/private-networks"
+      - lang: HTTPie
+        source: |-
+          http PUT "https://api.scaleway.com/baremetal/v1/zones/{zone}/servers/{server_id}/private-networks" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            private_network_ids:='["string"]'
+  /baremetal/v1/zones/{zone}/servers/{server_id}/private-networks/{private_network_id}:
+    delete:
+      tags:
+      - Private Networks
+      operationId: DeleteServerPrivateNetwork
+      summary: Delete a Private Network
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-2
+      - in: path
+        name: server_id
+        description: The ID of the server.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: private_network_id
+        description: The ID of the Private Network.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/baremetal/v1/zones/{zone}/servers/{server_id}/private-networks/{private_network_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/baremetal/v1/zones/{zone}/servers/{server_id}/private-networks/{private_network_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY

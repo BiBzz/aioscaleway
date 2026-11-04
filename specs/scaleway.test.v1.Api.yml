@@ -1,0 +1,678 @@
+openapi: 3.1.0
+info:
+  title: Fake API
+  description: |-
+    Test is a fake service that aim to manage fake humans. It is used for internal and public end-to-end tests.
+
+    This service don't use the Scaleway authentication service but a fake one. It allows to use this test
+    service publicly without requiring a Scaleway account.
+
+    ## Getting Started
+
+    First, you need to call the `Register` method to create a new user. It will returns a `secret_key`
+    that must be used in all other methods to authenticate yourself.
+
+    ```bash
+    curl -XPOST -d '{}' https://api.scaleway.com/test/v1/regions/fr-par/register | jq
+    {
+      "secret_key":"<SECRET_KEY>",
+      "access_key":"<ACCESS_KEY>"
+    }
+    ```
+
+    Then you probably want to create your first human:
+
+    ```bash
+    curl -H "X-Auth-Token: <SECRET_KEY>" -XPOST\
+      -d '{"is_happy": true, "organization_id": "<ORG_ID>"}'\
+      https://api.scaleway.com/test/v1/regions/fr-par/humans | jq
+    {
+      "id": "39465185-0fd4-a178-892e-e285ece15114",
+      "organization_id": "<ORG_ID>",
+      "region": "fr-par",
+      "created_at": "2019-12-13T14:55:48.502182100Z",
+      "updated_at": "2019-12-13T14:55:48.502182100Z",
+      "height": 0,
+      "shoe_size": 0,
+      "altitude_in_meter": 0,
+      "altitude_in_millimeter": 0,
+      "fingers_count": 0,
+      "hair_count": 0,
+      "is_happy": true,
+      "eyes_color": "unknown",
+      "status": "stopped"
+    }
+    ```.
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Setup
+  description: Setup your access to the API
+- name: Humans
+  description: Interact with the humans
+components:
+  schemas:
+    google.protobuf.BoolValue:
+      type:
+      - boolean
+      - "null"
+    google.protobuf.DoubleValue:
+      type: object
+      properties:
+        value:
+          type: number
+          format: double
+      x-properties-order:
+      - value
+    google.protobuf.FloatValue:
+      type: object
+      properties:
+        value:
+          type: number
+          format: float
+      x-properties-order:
+      - value
+    google.protobuf.Int32Value:
+      type:
+      - integer
+      - "null"
+      format: int32
+    google.protobuf.Int64Value:
+      type:
+      - integer
+      - "null"
+      format: int64
+    google.protobuf.StringValue:
+      type:
+      - string
+      - "null"
+    google.protobuf.UInt32Value:
+      type:
+      - integer
+      - "null"
+      format: uint32
+    google.protobuf.UInt64Value:
+      type:
+      - integer
+      - "null"
+      format: uint64
+    scaleway.test.v1.EyeColors:
+      type: string
+      enum:
+      - unknown
+      - amber
+      - blue
+      - brown
+      - gray
+      - green
+      - hazel
+      - red
+      - violet
+      x-enum-descriptions:
+        values:
+          unknown: Unknown color
+          amber: Rare and striking shade that typically features a golden or yellowish-brown
+            hue
+          blue: Relatively rare, with the highest frequency found in eastern Europe
+          brown: Most common eye color in the world caused by a high concentration
+            of melanin in the iris
+          gray: Relatively rare color which can change depending on the lighting conditions
+          green: Rare and unique color characterized by a combination of yellow, brown,
+            and blue pigments
+          hazel: Brownish-yellow or greenish-brown with a hint of gold
+          red: Rare mutation that results in a reddish-pink hue
+          violet: Rare and striking shade that appears to be a mix of blue and purple
+      default: unknown
+    scaleway.test.v1.Human:
+      type: object
+      properties:
+        id:
+          type: string
+          description: (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        organization_id:
+          type: string
+          description: (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        created_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        height:
+          type: number
+          format: double
+        shoe_size:
+          type: number
+          format: float
+        altitude_in_meter:
+          type: integer
+          format: int32
+        altitude_in_millimeter:
+          type: integer
+          format: int64
+        fingers_count:
+          type: integer
+          format: uint32
+        hair_count:
+          type: integer
+          format: uint64
+        is_happy:
+          type: boolean
+        eyes_color:
+          $ref: '#/components/schemas/scaleway.test.v1.EyeColors'
+        status:
+          $ref: '#/components/schemas/scaleway.test.v1.Human.Status'
+        name:
+          type: string
+        project_id:
+          type: string
+          description: (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      x-properties-order:
+      - id
+      - organization_id
+      - created_at
+      - updated_at
+      - height
+      - shoe_size
+      - altitude_in_meter
+      - altitude_in_millimeter
+      - fingers_count
+      - hair_count
+      - is_happy
+      - eyes_color
+      - status
+      - name
+      - project_id
+    scaleway.test.v1.Human.Status:
+      type: string
+      enum:
+      - unknown
+      - stopped
+      - running
+      x-enum-descriptions:
+        values:
+          unknown: Unknown status
+          stopped: The human is stopped
+          running: The human is running
+      default: unknown
+    scaleway.test.v1.ListHumansRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - updated_at_asc
+      - updated_at_desc
+      - height_asc
+      - height_desc
+      x-enum-descriptions:
+        values:
+          created_at_asc: Ascending creation date
+          created_at_desc: Descending creation date
+          updated_at_asc: Ascending update date
+          updated_at_desc: Descending update date
+          height_asc: Ascending height
+          height_desc: Descending height
+      default: created_at_asc
+    scaleway.test.v1.ListHumansResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          format: uint32
+        humans:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.test.v1.Human'
+      x-properties-order:
+      - total_count
+      - humans
+    scaleway.test.v1.RegisterResponse:
+      type: object
+      properties:
+        secret_key:
+          type: string
+          description: (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        access_key:
+          type: string
+      x-properties-order:
+      - secret_key
+      - access_key
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /test/v1/humans:
+    get:
+      tags:
+      - Humans
+      operationId: ListHumans
+      summary: List all your humans
+      parameters:
+      - in: query
+        name: page
+        schema:
+          $ref: '#/components/schemas/google.protobuf.Int32Value'
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        schema:
+          $ref: '#/components/schemas/scaleway.test.v1.ListHumansRequest.OrderBy'
+      - in: query
+        name: organization_id
+        description: (UUID format)
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      - in: query
+        name: project_id
+        description: (UUID format)
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.test.v1.ListHumansResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/test/v1/humans"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/test/v1/humans" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Humans
+      operationId: CreateHuman
+      summary: Create a new human
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.test.v1.Human'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                height:
+                  type: number
+                  format: double
+                shoe_size:
+                  type: number
+                  format: float
+                altitude_in_meter:
+                  type: integer
+                  format: int32
+                altitude_in_millimeter:
+                  type: integer
+                  format: int64
+                fingers_count:
+                  type: integer
+                  format: uint32
+                hair_count:
+                  type: integer
+                  format: uint64
+                is_happy:
+                  type: boolean
+                eyes_color:
+                  $ref: '#/components/schemas/scaleway.test.v1.EyeColors'
+                organization_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    (UUID format)
+                    Precisely one of project_id, organization_id can be set.
+                  deprecated: true
+                  example: 6170692e-7363-616c-6577-61792e636f6d
+                  x-one-of: ProjectIdentifier
+                name:
+                  type: string
+                project_id:
+                  type:
+                  - string
+                  - "null"
+                  description: Precisely one of project_id, organization_id can be
+                    set.
+                  x-one-of: ProjectIdentifier
+              x-properties-order:
+              - height
+              - shoe_size
+              - altitude_in_meter
+              - altitude_in_millimeter
+              - fingers_count
+              - hair_count
+              - is_happy
+              - eyes_color
+              - organization_id
+              - name
+              - project_id
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "altitude_in_meter": 42,
+              "altitude_in_millimeter": 42,
+              "fingers_count": 42,
+              "hair_count": 42,
+              "height": 42,
+              "is_happy": false,
+              "name": "string",
+              "shoe_size": 42
+            }' \
+            "https://api.scaleway.com/test/v1/humans"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/test/v1/humans" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            altitude_in_meter:=42 \
+            altitude_in_millimeter:=42 \
+            fingers_count:=42 \
+            hair_count:=42 \
+            height:=42 \
+            is_happy:=false \
+            name="string" \
+            shoe_size:=42
+  /test/v1/humans/{human_id}:
+    get:
+      tags:
+      - Humans
+      operationId: GetHuman
+      summary: Get human details
+      description: Get the human details associated with the given id.
+      parameters:
+      - in: path
+        name: human_id
+        description: UUID of the human you want to get. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.test.v1.Human'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/test/v1/humans/{human_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/test/v1/humans/{human_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Humans
+      operationId: UpdateHuman
+      summary: Update an existing human
+      description: Update the human associated with the given id.
+      parameters:
+      - in: path
+        name: human_id
+        description: UUID of the human you want to update. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.test.v1.Human'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                height:
+                  description: Height of the human in meters.
+                  $ref: '#/components/schemas/google.protobuf.DoubleValue'
+                shoe_size:
+                  $ref: '#/components/schemas/google.protobuf.FloatValue'
+                altitude_in_meter:
+                  $ref: '#/components/schemas/google.protobuf.Int32Value'
+                altitude_in_millimeter:
+                  $ref: '#/components/schemas/google.protobuf.Int64Value'
+                fingers_count:
+                  $ref: '#/components/schemas/google.protobuf.UInt32Value'
+                hair_count:
+                  $ref: '#/components/schemas/google.protobuf.UInt64Value'
+                is_happy:
+                  $ref: '#/components/schemas/google.protobuf.BoolValue'
+                eyes_color:
+                  $ref: '#/components/schemas/scaleway.test.v1.EyeColors'
+                name:
+                  $ref: '#/components/schemas/google.protobuf.StringValue'
+              x-properties-order:
+              - height
+              - shoe_size
+              - altitude_in_meter
+              - altitude_in_millimeter
+              - fingers_count
+              - hair_count
+              - is_happy
+              - eyes_color
+              - name
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/test/v1/humans/{human_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/test/v1/humans/{human_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Humans
+      operationId: DeleteHuman
+      summary: Delete an existing human
+      description: Delete the human associated with the given id.
+      parameters:
+      - in: path
+        name: human_id
+        description: UUID of the human you want to delete. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.test.v1.Human'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/test/v1/humans/{human_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/test/v1/humans/{human_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /test/v1/humans/{human_id}/run:
+    post:
+      tags:
+      - Humans
+      operationId: RunHuman
+      summary: Start a 1h running for the given human
+      description: Start a one hour running for the given human.
+      parameters:
+      - in: path
+        name: human_id
+        description: UUID of the human you want to make run. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.test.v1.Human'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/test/v1/humans/{human_id}/run"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/test/v1/humans/{human_id}/run" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /test/v1/humans/{human_id}/smoke:
+    post:
+      tags:
+      - Humans
+      operationId: SmokeHuman
+      summary: Make a human smoke
+      parameters:
+      - in: path
+        name: human_id
+        description: UUID of the human you want to make smoking. (UUID format)
+        required: true
+        schema:
+          type: string
+          deprecated: true
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.test.v1.Human'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/test/v1/humans/{human_id}/smoke"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/test/v1/humans/{human_id}/smoke" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /test/v1/register:
+    post:
+      tags:
+      - Setup
+      operationId: Register
+      summary: Register a user
+      description: |-
+        Register a human and return a access-key and a secret-key that must be used in all other commands.
+
+        Hint: you can use other test commands by setting the SCW_SECRET_KEY env variable.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.test.v1.RegisterResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+              x-properties-order:
+              - username
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"username":"string"}' \
+            "https://api.scaleway.com/test/v1/register"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/test/v1/register" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            username="string"

@@ -1,0 +1,1274 @@
+openapi: 3.1.0
+info:
+  title: Instance Volume API
+  description: This API allows you to manage Instance local and scratch volumes.
+  version: v2alpha1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Volume Types
+  description: |
+    All volume types available in a specified zone.
+    Each of these types will contain all the capabilities and constraints of the volume (min size, max size, snapshot).
+- name: Volumes
+  description: |
+    A volume is where you store your data inside your Instance. It
+    appears as a block device on Linux that you can use to create
+    a filesystem and mount it.
+
+    The Instance API only supports `l_ssd` and `scratch` volume types.
+    Block storage volumes can also be attached to Instances, these volumes are
+    managed by the SBS API (https://www.scaleway.com/en/developers/api/block/).
+
+    Minimum and maximum volume sizes for each volume type can be queried
+    from the zone `/volume-types` API endpoint.
+
+    Each type of volume is also subject to a global quota for the sum of all the
+    volumes. This quota depends on the level of support and may be
+    changed on demand.
+
+    When using multiple block devices, it's advised to mount them by
+    using their UUID instead of their device name. A device name is
+    subject to change depending on the volumes order. Block devices
+    UUIDs can be found in `/dev/disk/by-id/`.
+- name: Snapshots
+  description: |
+    Snapshots contain the data of a specified l_ssd volume at a particular point in time.
+    The data can include the Instance's operating system,
+    configuration information and/or files stored on the volume.
+
+    l_ssd volumes can be created from snapshots.
+components:
+  schemas:
+    scaleway.instance.v2alpha1.CreateVolumeRequest.VolumeType:
+      type: string
+      enum:
+      - unknown_volume_type
+      - l_ssd
+      - scratch
+      default: unknown_volume_type
+    scaleway.instance.v2alpha1.ListSnapshotsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_desc
+      - created_at_asc
+      - updated_at_desc
+      - updated_at_asc
+      default: created_at_desc
+    scaleway.instance.v2alpha1.ListSnapshotsResponse:
+      type: object
+      properties:
+        snapshots:
+          type: array
+          description: List of snapshots.
+          items:
+            $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot'
+        next_page_token:
+          type:
+          - string
+          - "null"
+          description: Token for the next page.
+        total_count:
+          type: integer
+          description: Total number of items.
+          format: uint64
+      x-properties-order:
+      - snapshots
+      - next_page_token
+      - total_count
+    scaleway.instance.v2alpha1.ListVolumeTypesResponse:
+      type: object
+      properties:
+        volume_types:
+          type: array
+          description: List of volume types.
+          items:
+            $ref: '#/components/schemas/scaleway.instance.v2alpha1.VolumeType'
+        next_page_token:
+          type:
+          - string
+          - "null"
+          description: Token for the next page.
+        total_count:
+          type: integer
+          description: Total number of items.
+          format: uint64
+      x-properties-order:
+      - volume_types
+      - next_page_token
+      - total_count
+    scaleway.instance.v2alpha1.ListVolumesRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_desc
+      - created_at_asc
+      - updated_at_desc
+      - updated_at_asc
+      default: created_at_desc
+    scaleway.instance.v2alpha1.ListVolumesResponse:
+      type: object
+      properties:
+        volumes:
+          type: array
+          description: List of volumes.
+          items:
+            $ref: '#/components/schemas/scaleway.instance.v2alpha1.Volume'
+        next_page_token:
+          type:
+          - string
+          - "null"
+          description: Token for the next page.
+        total_count:
+          type: integer
+          description: Total number of items.
+          format: uint64
+      x-properties-order:
+      - volumes
+      - next_page_token
+      - total_count
+    scaleway.instance.v2alpha1.Snapshot:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique ID of the snapshot.
+        srn:
+          type: string
+          description: The SRN of the snapshot.
+          pattern: ^srn://instance\.[^/]+/zones/[^/]+/snapshots/[^/]+$
+        project_id:
+          type: string
+          description: Project ID of the snapshot.
+        name:
+          type: string
+          description: Name of the snapshot.
+        tags:
+          type: array
+          description: Tags associated with the snapshot.
+          items:
+            type: string
+        size:
+          type: integer
+          description: Size of the snapshot in bytes. (in bytes)
+          format: uint64
+        status:
+          description: Current status of the snapshot.
+          $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot.Status'
+        base_volume_id:
+          type:
+          - string
+          - "null"
+          description: ID of the base volume.
+        volume_type:
+          description: Type of the volume.
+          $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot.VolumeType'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the snapshot. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last update date of the snapshot. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        zone:
+          type: string
+          description: Zone in which the snapshot is located.
+        public:
+          type: boolean
+          description: Whether the snapshot is public.
+      x-properties-order:
+      - id
+      - srn
+      - project_id
+      - name
+      - tags
+      - size
+      - status
+      - base_volume_id
+      - volume_type
+      - created_at
+      - updated_at
+      - zone
+      - public
+    scaleway.instance.v2alpha1.Snapshot.Status:
+      type: string
+      enum:
+      - unknown_status
+      - available
+      - creating
+      - error
+      - invalid_data
+      - exporting
+      x-enum-descriptions:
+        values:
+          unknown_status: Status is unknown
+          available: Snapshot is available
+          creating: Snapshot is being created
+          error: Snapshot is in error state
+          invalid_data: Snapshot has invalid data
+          exporting: Snapshot is being exported
+      default: unknown_status
+    scaleway.instance.v2alpha1.Snapshot.VolumeType:
+      type: string
+      enum:
+      - unknown_volume_type
+      - l_ssd
+      x-enum-descriptions:
+        values:
+          unknown_volume_type: Volume type is unknown
+          l_ssd: Local SSD volume
+      default: unknown_volume_type
+    scaleway.instance.v2alpha1.Volume:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique ID of the volume.
+        srn:
+          type: string
+          description: The SRN of the volume.
+          pattern: ^srn://instance\.[^/]+/zones/[^/]+/volumes/[^/]+$
+        project_id:
+          type: string
+          description: Project ID to which the volume belongs.
+        name:
+          type: string
+          description: Volume name.
+        tags:
+          type: array
+          description: Tags associated with the volume.
+          items:
+            type: string
+        size:
+          type: integer
+          description: Volume size in bytes. (in bytes)
+          format: uint64
+        base_snapshot_id:
+          type:
+          - string
+          - "null"
+          description: ID of the base snapshot used for this volume.
+        status:
+          description: Current status of the volume.
+          $ref: '#/components/schemas/scaleway.instance.v2alpha1.Volume.Status'
+        volume_type:
+          description: Type of the volume.
+          $ref: '#/components/schemas/scaleway.instance.v2alpha1.Volume.VolumeType'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the volume. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last update date of the volume. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        server_id:
+          type:
+          - string
+          - "null"
+          description: ID of the Instance to which the volume is attached.
+        zone:
+          type: string
+          description: Zone in which the volume is located.
+      x-properties-order:
+      - id
+      - srn
+      - project_id
+      - name
+      - tags
+      - size
+      - base_snapshot_id
+      - status
+      - volume_type
+      - created_at
+      - updated_at
+      - server_id
+      - zone
+    scaleway.instance.v2alpha1.Volume.Status:
+      type: string
+      enum:
+      - unknown_status
+      - available
+      - snapshotting
+      - attaching
+      - detaching
+      - creating
+      - migrating
+      - error
+      x-enum-descriptions:
+        values:
+          unknown_status: Status is unknown
+          available: Volume is available
+          snapshotting: Volume is being snapshotted
+          attaching: Volume is being attached
+          detaching: Volume is being detached
+          creating: Volume is being created
+          migrating: Volume is being migrated
+          error: Volume is in error state
+      default: unknown_status
+    scaleway.instance.v2alpha1.Volume.VolumeType:
+      type: string
+      enum:
+      - unknown_volume_type
+      - l_ssd
+      - scratch
+      x-enum-descriptions:
+        values:
+          unknown_volume_type: Volume type is unknown
+          l_ssd: Local SSD volume
+          scratch: Scratch volume
+      default: unknown_volume_type
+    scaleway.instance.v2alpha1.VolumeType:
+      type: object
+      properties:
+        name:
+          description: Name of the volume type.
+          $ref: '#/components/schemas/scaleway.instance.v2alpha1.Volume.VolumeType'
+        min_size:
+          type: integer
+          description: Minimum size of the volume in bytes.
+          format: uint64
+        max_size:
+          type: integer
+          description: Maximum size of the volume in bytes.
+          format: uint64
+      x-properties-order:
+      - name
+      - min_size
+      - max_size
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /instance/v2alpha1/zones/{zone}/snapshots:
+    get:
+      tags:
+      - Snapshots
+      operationId: ListSnapshots
+      summary: List snapshots
+      description: List all snapshots of an Organization.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: query
+        name: page_token
+        description: Token for pagination.
+        schema:
+          type: string
+      - in: query
+        name: page_size
+        description: Number of snapshots to return per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Field to sort by.
+        schema:
+          $ref: '#/components/schemas/scaleway.instance.v2alpha1.ListSnapshotsRequest.OrderBy'
+      - in: query
+        name: project_id
+        description: Filter by Project ID.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: snapshot_ids
+        description: Filter by specific snapshot IDs.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: name
+        description: Filter by name.
+        schema:
+          type: string
+      - in: query
+        name: tags
+        description: Filter by tags.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: base_volume_id
+        description: Filter by base volume ID.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.ListSnapshotsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots?project_id=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            project_id==string
+    post:
+      tags:
+      - Snapshots
+      operationId: CreateSnapshot
+      summary: Create a snapshot from a specified volume
+      description: Create a snapshot from a specified l_ssd volume.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: Project ID of the snapshot.
+                name:
+                  type: string
+                  description: Name of the snapshot.
+                tags:
+                  type: array
+                  description: Tags associated with the snapshot.
+                  items:
+                    type: string
+                base_volume_id:
+                  type: string
+                  description: ID of the base volume.
+                public:
+                  type: boolean
+                  description: Whether the snapshot should be public.
+              x-properties-order:
+              - project_id
+              - name
+              - tags
+              - base_volume_id
+              - public
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "base_volume_id": "string",
+              "name": "string",
+              "project_id": "string",
+              "public": false
+            }' \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            base_volume_id="string" \
+            name="string" \
+            project_id="string" \
+            public:=false
+  /instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}:
+    get:
+      tags:
+      - Snapshots
+      operationId: GetSnapshot
+      summary: Get a snapshot
+      description: Get details of a specified snapshot.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: path
+        name: snapshot_id
+        description: ID of the snapshot to retrieve.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Snapshots
+      operationId: UpdateSnapshot
+      summary: Update a snapshot
+      description: Update the properties of a snapshot.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: path
+        name: snapshot_id
+        description: ID of the snapshot to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: New name for the snapshot.
+                tags:
+                  type:
+                  - array
+                  - "null"
+                  description: New tags for the snapshot.
+                public:
+                  type:
+                  - boolean
+                  - "null"
+                  description: Whether the snapshot should be public.
+              x-properties-order:
+              - name
+              - tags
+              - public
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Snapshots
+      operationId: DeleteSnapshot
+      summary: Delete a snapshot
+      description: Delete a specified snapshot.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: path
+        name: snapshot_id
+        description: ID of the snapshot to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}/export-to-object-storage:
+    post:
+      tags:
+      - Snapshots
+      operationId: ExportSnapshotToObjectStorage
+      summary: Export a snapshot to Object Storage
+      description: Export a snapshot to a specified Object Storage bucket in the same
+        region.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: path
+        name: snapshot_id
+        description: ID of the snapshot to export.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bucket:
+                  type: string
+                  description: Object Storage bucket name.
+                object_key:
+                  type: string
+                  description: Object key.
+              x-properties-order:
+              - bucket
+              - object_key
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"bucket":"string","object_key":"string"}' \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}/export-to-object-storage"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/{snapshot_id}/export-to-object-storage" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            bucket="string" \
+            object_key="string"
+  /instance/v2alpha1/zones/{zone}/snapshots/import-from-object-storage:
+    post:
+      tags:
+      - Snapshots
+      operationId: ImportSnapshotFromObjectStorage
+      summary: Import a snapshot from Object Storage
+      description: Import a snapshot from a QCOW2 file stored in Object Storage.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: Project ID of the snapshot.
+                name:
+                  type: string
+                  description: Name of the snapshot.
+                tags:
+                  type: array
+                  description: Tags associated with the snapshot.
+                  items:
+                    type: string
+                bucket:
+                  type: string
+                  description: Object Storage bucket name.
+                object_key:
+                  type: string
+                  description: Object key.
+                size:
+                  type:
+                  - integer
+                  - "null"
+                  description: Size of the imported snapshot in bytes. (in bytes)
+                  format: uint64
+                volume_type:
+                  description: Volume type of the snapshot.
+                  $ref: '#/components/schemas/scaleway.instance.v2alpha1.Snapshot.VolumeType'
+              x-properties-order:
+              - project_id
+              - name
+              - tags
+              - bucket
+              - object_key
+              - size
+              - volume_type
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "bucket": "string",
+              "name": "string",
+              "object_key": "string",
+              "project_id": "string"
+            }' \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/import-from-object-storage"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/snapshots/import-from-object-storage" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            bucket="string" \
+            name="string" \
+            object_key="string" \
+            project_id="string"
+  /instance/v2alpha1/zones/{zone}/volume-types:
+    get:
+      tags:
+      - Volume Types
+      operationId: ListVolumeTypes
+      summary: List volume types
+      description: List all volume types and their technical details.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: query
+        name: page_token
+        description: Token for pagination.
+        schema:
+          type: string
+      - in: query
+        name: page_size
+        description: Number of items to return per page.
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.ListVolumeTypesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volume-types"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volume-types" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /instance/v2alpha1/zones/{zone}/volumes:
+    get:
+      tags:
+      - Volumes
+      operationId: ListVolumes
+      summary: List volumes
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: query
+        name: page_token
+        description: Token for pagination.
+        schema:
+          type: string
+      - in: query
+        name: page_size
+        description: Number of items to return per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Field to order the results by.
+        schema:
+          $ref: '#/components/schemas/scaleway.instance.v2alpha1.ListVolumesRequest.OrderBy'
+      - in: query
+        name: project_id
+        description: Filter by Project ID.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: volume_ids
+        description: Filter by specific volume IDs.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: name
+        description: Filter by volume name.
+        schema:
+          type: string
+      - in: query
+        name: tags
+        description: Filter by tags.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: volume_type
+        description: Filter by volume type.
+        schema:
+          $ref: '#/components/schemas/scaleway.instance.v2alpha1.Volume.VolumeType'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.ListVolumesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes?project_id=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            project_id==string
+    post:
+      tags:
+      - Volumes
+      operationId: CreateVolume
+      summary: Create a volume
+      description: Create a volume of a specified type.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.Volume'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: Project ID to which the volume belongs.
+                name:
+                  type: string
+                  description: Volume name.
+                tags:
+                  type: array
+                  description: Tags associated with the volume.
+                  items:
+                    type: string
+                size:
+                  type:
+                  - integer
+                  - "null"
+                  description: Volume size in bytes. (in bytes)
+                  format: uint64
+                base_snapshot_id:
+                  type:
+                  - string
+                  - "null"
+                  description: ID of the base snapshot used for this volume.
+                volume_type:
+                  description: Type of the volume.
+                  $ref: '#/components/schemas/scaleway.instance.v2alpha1.CreateVolumeRequest.VolumeType'
+              x-properties-order:
+              - project_id
+              - name
+              - tags
+              - size
+              - base_snapshot_id
+              - volume_type
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"string","project_id":"string"}' \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            name="string" \
+            project_id="string"
+  /instance/v2alpha1/zones/{zone}/volumes/{volume_id}:
+    get:
+      tags:
+      - Volumes
+      operationId: GetVolume
+      summary: Get a volume
+      description: Get a specified volume.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: path
+        name: volume_id
+        description: ID of the volume to retrieve.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.Volume'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes/{volume_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes/{volume_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Volumes
+      operationId: UpdateVolume
+      summary: Update a volume
+      description: Update the properties of a specified volume.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: path
+        name: volume_id
+        description: ID of the volume to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.instance.v2alpha1.Volume'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: New name for the volume.
+                tags:
+                  type:
+                  - array
+                  - "null"
+                  description: New tags for the volume.
+                size:
+                  type:
+                  - integer
+                  - "null"
+                  description: New size for the volume. (in bytes)
+                  format: uint64
+              x-properties-order:
+              - name
+              - tags
+              - size
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes/{volume_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes/{volume_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Volumes
+      operationId: DeleteVolume
+      summary: Delete a volume
+      description: Delete a specified volume.
+      parameters:
+      - in: path
+        name: zone
+        description: The zone you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par-1
+          - fr-par-2
+          - fr-par-3
+          - nl-ams-1
+          - nl-ams-2
+          - nl-ams-3
+          - pl-waw-1
+          - pl-waw-2
+          - pl-waw-3
+          - it-mil-1
+      - in: path
+        name: volume_id
+        description: ID of the volume to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes/{volume_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/instance/v2alpha1/zones/{zone}/volumes/{volume_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY

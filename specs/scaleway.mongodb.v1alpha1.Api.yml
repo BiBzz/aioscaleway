@@ -1,0 +1,2242 @@
+openapi: 3.1.0
+info:
+  title: Managed MongoDB®
+  description: |-
+    Managed MongoDB® Databases provide fully-managed document Database Instances, with MongoDB® as a database engine.
+
+    Document databases enable users to store and retrieve data in a document format, such as `json`. Compared to traditional relational databases where data is stored in a table-like format, document-type storage supports storing multiple nested keys and values in each document key.
+
+    ## Concepts
+
+    Refer to our [dedicated concepts page](https://www.scaleway.com/en/docs/managed-mongodb-databases/concepts/) to find definitions of the different terms referring to Managed MongoDB®.
+
+    ## Quickstart
+
+    1. Configure your environment variables.
+       <Message type="note">
+       This is an optional step that seeks to simplify your usage of the APIs.
+       </Message>
+
+        ```bash
+        export SCW_ACCESS_KEY="<API access key>"
+        export SCW_SECRET_KEY="<API secret key>"
+        export SCW_REGION="<Scaleway region>"
+        ```
+
+    2. Edit the POST request payload you will use to create your Database Instance. Replace the parameters in the following example:
+
+        ```json
+          '{
+          "project_id": "d8e65f2b-cce9-40b7-80fc-6a2902db6826",
+          "name": "myDB",
+          "node_number": 1,
+          "user_name": "my_initial_user",
+          "password": "thiZ_is_v0ry_s3cret",
+          "version": "7.0.12",
+          "tags": ["donnerstag"],
+          "node_type": "mgdb-pro2-l",
+          "volume": [
+            {
+            "volume_size": 10000000000,
+            "volume_type": "sbs_5k"
+            },
+          ],
+          "endpoints": [
+            {
+              "public": {}
+            }
+          ]
+          }'
+        ```
+
+       | Parameter        | Description                                                        |
+       | :--------------- | :----------------------------------------------------------------- |
+       | `project_id`     | **REQUIRED** The ID of the Project you want to create your Database Instance in. To find your Project ID you can **[list the projects](/api/account#path-projects-list-all-projects-of-an-organization)** or consult the **[Scaleway console](https://console.scaleway.com/project/settings)**. |
+       | `name`           | **REQUIRED** Name of the Database Instance                                          |
+       | `node_number`           | **REQUIRED** Number of nodes in the Database Instance. You can select either 1 or 3.                             |
+       | `user_name`      | **REQUIRED** Identifier of the default user, which is created concurrently with the Database Instance |
+       | `password`       | **REQUIRED** Password for the default user |
+       | `version`         | **REQUIRED** Version ID of the MongoDB® engine. To check the list of available version you can use the following endpoint: `https://api.scaleway.com/mongodb/v1alpha1/regions/$SCW_REGION/versions`                                           |
+       | `tags`           | The list of tags `["tag1", "tag2", ...]` that will be associated with the Database Instance. Tags can be appended to the query of the [List Database Instances](#path-instances-list-mongodbtm-database-instances) call to show results for only the Database Instances using a specific tag. You can also combine tags to list Database Instances that possess all the appended tags. |
+       | `node_type`      | **REQUIRED** The node type. To check the list of available node types you can use the following endpoint: `https://api.scaleway.com/mongodb/v1alpha1/regions/$SCW_REGION/node-types`                             |
+       | `volume_type`    | **REQUIRED** Type of volume where data is stored. You can specify either `sbs_5k` or `sbs_15k`. The default value is `sbs_5k` |
+       | `volume_size`    | **REQUIRED** Volume size expressed in bytes. For example 30GB is expressed as 30000000000 |
+       | `endpoints`    | **REQUIRED** Network connection point that allows you to access and interact with your managed Database Instance. You can leave this empty as it will be automatically generated. It takes on the following format: `{instance_id}.mgdb.{region}.scw.cloud"`  |
+
+    3. Create a Database Instance by running the following command. Make sure you include the payload you edited in the previous step.
+
+        ```bash
+        curl -X POST \
+          -H "X-Auth-Token: $SCW_SECRET_KEY" \
+          "Content-Type: application/json" \
+          https://api.scaleway.com/mongodb/v1alpha1/regions/$SCW_REGION/instances \
+          -d '{
+          "project_id": "d8e65f2b-cce9-40b7-80fc-6a2902db6826",
+          "name": "myDB",
+          "node_number": 1,
+          "user_name": "my_initial_user",
+          "password": "thiZ_is_v0ry_s3cret",
+          "version": "7.0.12",
+          "tags": ["donnerstag"],
+          "node_type": "mgdb-pro2-l",
+          "volume": [
+            {
+            "volume_size": 10000000000,
+            "volume_type": "sbs_5k"
+            }
+          ],
+          "endpoints":[
+            {
+              "public": {}
+            }
+          ],
+          }'
+        ```
+
+    4. List your Database Instances.
+
+        ```bash
+        curl -X GET \
+          -H "Content-Type: application/json" \
+          -H "X-Auth-Token: $SCW_SECRET_KEY" https://api.scaleway.com/mongodb/v1alpha1/regions/$SCW_REGION/instances
+        ```
+
+       You should get a response like the following:
+
+       <Message type="note">
+       This is a response example, the UUIDs and IP address displayed are not real.
+       </Message>
+
+        ```json
+        {
+          "id": "ffc473a3-250a-40a1-8d12-0d8c47b2ac63",
+          "name": "cluster",
+          "project_id": "d8e65f2b-cce9-40b7-80fc-6a2902db6826",
+          "status": "provisioning",
+          "version": "7.0.12",
+          "tags": [],
+          "settings": [],
+          "node_number": 1,
+          "node_type": "mgdb-pro2-l",
+          "volume": {
+            "type": "sbs_5k",
+            "size": 10000000000
+          },
+          "endpoints": [
+            {
+              "id": "1210e327-5f6e-4757-834d-483729dcd330",
+              "ips": [],
+              "dns_records": [
+                "ffc473a3-250a-40a1-8d12-0d8c47b2ac63.mgdb.fr-par.scw.cloud"
+              ],
+              "port": 27017,
+              "public": {}
+            }
+          ],
+          "created_at": "2024-10-17T12:26:46.473753Z",
+          "region": "fr-par"
+        }
+
+        ```
+
+    5. Retrieve your Database Instance ID from the response.
+
+    6. Get your TLS certificate in the console.
+
+    7. Connect to your Database Instance with the `mongosh` client.
+
+        ```bash
+        mongosh "mongodb+srv://{database_instance_id}.mgdb.{region}.scw.cloud" --tlsCAFile {your_certificate.pem} -u {username}
+        ```
+
+       <Message type="note">
+       Alternatively, you can connect using different clients. Refer to the [How to connect to a MongoDB Database Instance](https://www.scaleway.com/en/docs/managed-mongodb-databases/how-to/connect-database-instance/) documentation page for more information.
+       </Message>
+
+    8. Enter the database password that you defined upon creation.
+
+    You are now connected to your Managed Database.
+
+    <Message type="requirement">
+    To perform the following steps, you must first ensure that:
+      - you have an account and are logged into the [Scaleway console](https://console.scaleway.com/organization)
+      - you have created an [API key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) and that the API key has sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/) to perform the actions described on this page.
+      - you have [installed `curl`](https://curl.se/download.html)
+    </Message>
+
+    ## Technical Information
+
+    ### Regions
+
+    Scaleway's infrastructure is spread across different [regions and Availability Zones](https://www.scaleway.com/en/docs/account/reference-content/products-availability/).
+
+    Currently, Managed MongoDB® is available only in the Paris region, which is represented by the following path parameter:
+
+    - `fr-par`
+
+    ### MongoDB® specifications
+
+    #### User Management
+
+    - Currently, a single user is created when you create your Database Instance. This user has an `admin` role.
+    - Users with an `admin` role have access to all logical databases and can create new ones.
+
+    ## Going Further
+
+    For more information about Managed MongoDB®, you can check out the following pages:
+
+    - [Managed MongoDB® Documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/)
+    - [Scaleway Slack Community](https://scaleway-community.slack.com/) join the #database channel
+    - [Contact our support team](https://console.scaleway.com/support/tickets).
+  version: v1alpha1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Database Instances
+  description: |
+    A Managed MongoDB® Database Instance is composed of one or multiple dedicated compute nodes running a single database engine.
+- name: Node Types
+  description: |
+    Two node type ranges are available:
+
+    * **Cost-Optimized:** a complete and highly reliable node range with shared resources that is made for scaling from development to production needs, at affordable prices.
+    * **Production-Optimized:** database nodes with dedicated vCPU for the most demanding workloads and mission-critical applications.
+- name: MongoDB® Versions
+  description: |
+    A database engine is the core software that handles the storage, retrieval, and management of data in your Database Instance.
+- name: Snapshots
+  description: |
+    A snapshot is a consistent, instantaneous copy of the Block Storage volume of your Database Instance at a certain point in time.
+- name: Users
+  description: |
+    Users are profiles to which you can attribute database-level permissions. They allow you to define permissions specific to each type of database usage.
+- name: Instance Endpoints
+  description: |
+    Instance endpoints enable connection to your instance.
+components:
+  schemas:
+    scaleway.mongodb.v1alpha1.CreateInstanceRequest.VolumeDetails:
+      type: object
+      properties:
+        volume_size:
+          type: integer
+          description: Volume size. (in bytes)
+          format: uint64
+        volume_type:
+          description: Type of volume where data is stored.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Volume.Type'
+      x-properties-order:
+      - volume_size
+      - volume_type
+    scaleway.mongodb.v1alpha1.Endpoint:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of the endpoint. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        ips:
+          type: array
+          description: List of IPv4 addresses of the endpoint. (IP address)
+          example:
+          - 1.2.3.4
+          items:
+            type: string
+        dns_records:
+          type: array
+          description: List of DNS records of the endpoint.
+          items:
+            type: string
+        port:
+          type: integer
+          description: TCP port of the endpoint.
+          format: uint32
+        private_network:
+          description: |-
+            Private Network endpoint details.
+            Precisely one of private_network, public can be set.
+          x-one-of: details
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Endpoint.PrivateNetworkDetails'
+          - type: "null"
+        public:
+          description: |-
+            Public endpoint details.
+            Precisely one of private_network, public can be set.
+          x-one-of: details
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Endpoint.PublicDetails'
+          - type: "null"
+      x-properties-order:
+      - id
+      - ips
+      - dns_records
+      - port
+      - private_network
+      - public
+    scaleway.mongodb.v1alpha1.Endpoint.PrivateNetworkDetails:
+      type: object
+      properties:
+        private_network_id:
+          type: string
+          description: UUID of the Private Network. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      x-properties-order:
+      - private_network_id
+    scaleway.mongodb.v1alpha1.Endpoint.PublicDetails:
+      type: object
+    scaleway.mongodb.v1alpha1.EndpointSpec:
+      type: object
+      properties:
+        public:
+          description: Precisely one of public, private_network can be set.
+          x-one-of: details
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.EndpointSpec.PublicDetails'
+          - type: "null"
+        private_network:
+          description: Precisely one of public, private_network can be set.
+          x-one-of: details
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.EndpointSpec.PrivateNetworkDetails'
+          - type: "null"
+      x-properties-order:
+      - public
+      - private_network
+    scaleway.mongodb.v1alpha1.EndpointSpec.PrivateNetworkDetails:
+      type: object
+      properties:
+        private_network_id:
+          type: string
+          description: UUID of the Private Network.
+      x-properties-order:
+      - private_network_id
+    scaleway.mongodb.v1alpha1.EndpointSpec.PublicDetails:
+      type: object
+    scaleway.mongodb.v1alpha1.Instance:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of the Database Instance. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the Database Instance.
+        project_id:
+          type: string
+          description: Project ID the Database Instance belongs to. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        status:
+          description: Status of the Database Instance.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance.Status'
+        version:
+          type: string
+          description: MongoDB® engine version of the Database Instance.
+        tags:
+          type: array
+          description: List of tags applied to the Database Instance.
+          items:
+            type: string
+            pattern: ^[0-9A-Za-z_\-=]+$
+        settings:
+          type: array
+          description: Advanced settings of the Database Instance.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.InstanceSetting'
+        node_number:
+          type: integer
+          description: Number of node in the Database Instance.
+          format: uint32
+        node_type:
+          type: string
+          description: Node type of the Database Instance.
+        volume:
+          description: Volumes of the Database Instance.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Volume'
+        endpoints:
+          type: array
+          description: List of Database Instance endpoints.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Endpoint'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date (must follow the ISO 8601 format). (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        snapshot_schedule:
+          description: Snapshot schedule configuration of the Database Instance.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance.SnapshotSchedule'
+        region:
+          type: string
+          description: Region the Database Instance is in.
+      x-properties-order:
+      - id
+      - name
+      - project_id
+      - status
+      - version
+      - tags
+      - settings
+      - node_number
+      - node_type
+      - volume
+      - endpoints
+      - created_at
+      - snapshot_schedule
+      - region
+    scaleway.mongodb.v1alpha1.Instance.SnapshotSchedule:
+      type: object
+      properties:
+        frequency_hours:
+          type: integer
+          format: int32
+        retention_days:
+          type: integer
+          format: int32
+        enabled:
+          type: boolean
+        next_update:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        last_run:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - frequency_hours
+      - retention_days
+      - enabled
+      - next_update
+      - last_run
+    scaleway.mongodb.v1alpha1.Instance.Status:
+      type: string
+      enum:
+      - unknown_status
+      - ready
+      - provisioning
+      - configuring
+      - deleting
+      - error
+      - initializing
+      - locked
+      - snapshotting
+      default: unknown_status
+    scaleway.mongodb.v1alpha1.InstanceSetting:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the settings.
+        value:
+          type: string
+          description: Value of the settings.
+      x-properties-order:
+      - name
+      - value
+    scaleway.mongodb.v1alpha1.ListInstancesRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - name_asc
+      - name_desc
+      - status_asc
+      - status_desc
+      default: created_at_asc
+    scaleway.mongodb.v1alpha1.ListInstancesResponse:
+      type: object
+      properties:
+        instances:
+          type: array
+          description: List of all Database Instances available in an Organization
+            or Project.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance'
+        total_count:
+          type: integer
+          description: Total count of Database Instances available in an Organization
+            or Project.
+          format: uint64
+      x-properties-order:
+      - instances
+      - total_count
+    scaleway.mongodb.v1alpha1.ListNodeTypesResponse:
+      type: object
+      properties:
+        node_types:
+          type: array
+          description: Types of the node.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.NodeType'
+        total_count:
+          type: integer
+          description: Total count of node-types available.
+          format: uint64
+      x-properties-order:
+      - node_types
+      - total_count
+    scaleway.mongodb.v1alpha1.ListSnapshotsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - name_asc
+      - name_desc
+      - expires_at_asc
+      - expires_at_desc
+      default: created_at_asc
+    scaleway.mongodb.v1alpha1.ListSnapshotsResponse:
+      type: object
+      properties:
+        snapshots:
+          type: array
+          description: List of all database snapshots available in an Organization
+            or Project.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Snapshot'
+        total_count:
+          type: integer
+          description: Total count of database snapshots available in a Organization
+            or Project.
+          format: uint64
+      x-properties-order:
+      - snapshots
+      - total_count
+    scaleway.mongodb.v1alpha1.ListUsersRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      default: name_asc
+    scaleway.mongodb.v1alpha1.ListUsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          description: List of users in a Database Instance.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.User'
+        total_count:
+          type: integer
+          description: Total count of users present on a Database Instance.
+          format: uint64
+      x-properties-order:
+      - users
+      - total_count
+    scaleway.mongodb.v1alpha1.ListVersionsResponse:
+      type: object
+      properties:
+        versions:
+          type: array
+          description: Available MongoDB® engine version.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Version'
+        total_count:
+          type: integer
+          description: Total count of MongoDB® engine version available.
+          format: uint64
+      x-properties-order:
+      - versions
+      - total_count
+    scaleway.mongodb.v1alpha1.NodeType:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Node type name identifier.
+        stock_status:
+          description: Current stock status for the node type.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.NodeType.Stock'
+        description:
+          type: string
+          description: Current specs of the offer.
+        vcpus:
+          type: integer
+          description: Number of virtual CPUs.
+          format: uint32
+        memory:
+          type: integer
+          description: Quantity of RAM. (in bytes)
+          format: uint64
+        available_volume_types:
+          type: array
+          description: Available storage options for the node type.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.NodeType.VolumeType'
+        disabled:
+          type: boolean
+          description: The node type is currently disabled.
+        beta:
+          type: boolean
+          description: The node type is currently in beta.
+        instance_range:
+          type: string
+          description: Instance range associated with the node type offer.
+      x-properties-order:
+      - name
+      - stock_status
+      - description
+      - vcpus
+      - memory
+      - available_volume_types
+      - disabled
+      - beta
+      - instance_range
+    scaleway.mongodb.v1alpha1.NodeType.Stock:
+      type: string
+      enum:
+      - unknown_stock
+      - low_stock
+      - out_of_stock
+      - available
+      default: unknown_stock
+    scaleway.mongodb.v1alpha1.NodeType.VolumeType:
+      type: object
+      properties:
+        type:
+          description: Volume Type.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Volume.Type'
+        description:
+          type: string
+          description: The description of the volume.
+        min_size:
+          type: integer
+          description: Minimum size required for the volume. (in bytes)
+          format: uint64
+        max_size:
+          type: integer
+          description: Maximum size required for the volume. (in bytes)
+          format: uint64
+        chunk_size:
+          type: integer
+          description: Minimum increment level for a Block Storage volume size. (in
+            bytes)
+          format: uint64
+      x-properties-order:
+      - type
+      - description
+      - min_size
+      - max_size
+      - chunk_size
+    scaleway.mongodb.v1alpha1.RestoreSnapshotRequest.VolumeDetails:
+      type: object
+      properties:
+        volume_type:
+          description: Type of volume where data is stored.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Volume.Type'
+      x-properties-order:
+      - volume_type
+    scaleway.mongodb.v1alpha1.Setting:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Setting name from the database engine.
+        default_value:
+          type: string
+          description: Value set when not specified.
+        hot_configurable:
+          type: boolean
+          description: Setting can be applied without restarting.
+        description:
+          type: string
+          description: Setting description.
+        property_type:
+          description: Setting type.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Setting.PropertyType'
+        unit:
+          type:
+          - string
+          - "null"
+          description: Setting base unit.
+        string_constraint:
+          type:
+          - string
+          - "null"
+          description: Validation regex for string type settings.
+        int_min:
+          type:
+          - integer
+          - "null"
+          description: Minimum value for int types.
+          format: int32
+        int_max:
+          type:
+          - integer
+          - "null"
+          description: Maximum value for int types.
+          format: int32
+        float_min:
+          type:
+          - number
+          - "null"
+          description: Minimum value for float types.
+          format: float
+        float_max:
+          type:
+          - number
+          - "null"
+          description: Maximum value for float types.
+          format: float
+      x-properties-order:
+      - name
+      - default_value
+      - hot_configurable
+      - description
+      - property_type
+      - unit
+      - string_constraint
+      - int_min
+      - int_max
+      - float_min
+      - float_max
+    scaleway.mongodb.v1alpha1.Setting.PropertyType:
+      type: string
+      enum:
+      - BOOLEAN
+      - INT
+      - STRING
+      - FLOAT
+      default: BOOLEAN
+    scaleway.mongodb.v1alpha1.Snapshot:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of the snapshot. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        instance_id:
+          type: string
+          description: UUID of the Database Instance. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the snapshot.
+        status:
+          description: Status of the snapshot.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Snapshot.Status'
+        size:
+          type: integer
+          description: Size of the snapshot. (in bytes)
+          format: uint64
+        expires_at:
+          type:
+          - string
+          - "null"
+          description: Expiration date (must follow the ISO 8601 format). (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date (must follow the ISO 8601 format). (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Updated date (must follow the ISO 8601 format). (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        instance_name:
+          type: string
+          description: Name of the Database Instance of the snapshot.
+        node_type:
+          type: string
+          description: Source node type.
+        volume_type:
+          description: Type of volume where data is stored - sbs_5k or sbs_15k.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Snapshot.VolumeType'
+        region:
+          type: string
+          description: Region of the snapshot.
+      x-properties-order:
+      - id
+      - instance_id
+      - name
+      - status
+      - size
+      - expires_at
+      - created_at
+      - updated_at
+      - instance_name
+      - node_type
+      - volume_type
+      - region
+    scaleway.mongodb.v1alpha1.Snapshot.Status:
+      type: string
+      enum:
+      - unknown_status
+      - creating
+      - ready
+      - restoring
+      - deleting
+      - error
+      - locked
+      default: unknown_status
+    scaleway.mongodb.v1alpha1.Snapshot.VolumeType:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Volume.Type'
+      x-properties-order:
+      - type
+    scaleway.mongodb.v1alpha1.User:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the user (Length must be between 1 and 63 characters.
+            First character must be an alphabet character (a-zA-Z). Only a-zA-Z0-9_$-
+            characters are accepted).
+        roles:
+          type: array
+          description: List of roles assigned to the user, along with the corresponding
+            database where each role is granted.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.UserRole'
+      x-properties-order:
+      - name
+      - roles
+    scaleway.mongodb.v1alpha1.UserRole:
+      type: object
+      properties:
+        role:
+          description: Name of the preset role.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.UserRole.Role'
+        database:
+          type:
+          - string
+          - "null"
+          description: |-
+            Name of the database on which the preset role will be used.
+            Precisely one of database, any_database can be set.
+          x-one-of: scope
+        any_database:
+          type:
+          - boolean
+          - "null"
+          description: |-
+            Flag to enable the preset role in all databases.
+            Precisely one of database, any_database can be set.
+          x-one-of: scope
+      x-properties-order:
+      - role
+      - database
+      - any_database
+    scaleway.mongodb.v1alpha1.UserRole.Role:
+      type: string
+      enum:
+      - unknown_role
+      - read
+      - read_write
+      - db_admin
+      - sync
+      default: unknown_role
+    scaleway.mongodb.v1alpha1.Version:
+      type: object
+      properties:
+        version:
+          type: string
+          description: MongoDB® engine version.
+        end_of_life_at:
+          type:
+          - string
+          - "null"
+          description: Date of End of Life. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        available_settings:
+          type: array
+          description: Instance settings available to be updated.
+          items:
+            $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Setting'
+      x-properties-order:
+      - version
+      - end_of_life_at
+      - available_settings
+    scaleway.mongodb.v1alpha1.Volume:
+      type: object
+      properties:
+        type:
+          description: Type of volume where data is stored.
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Volume.Type'
+        size:
+          type: integer
+          description: Volume size. (in bytes)
+          format: uint64
+      x-properties-order:
+      - type
+      - size
+    scaleway.mongodb.v1alpha1.Volume.Type:
+      type: string
+      enum:
+      - unknown_type
+      - sbs_5k
+      - sbs_15k
+      default: unknown_type
+    scaleway.std.File:
+      type: object
+      properties:
+        name:
+          type: string
+        content_type:
+          type: string
+        content:
+          type: string
+      x-properties-order:
+      - name
+      - content_type
+      - content
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /mongodb/v1alpha1/regions/{region}/endpoints:
+    post:
+      tags:
+      - Instance Endpoints
+      operationId: CreateEndpoint
+      summary: Create a new Instance endpoint
+      description: Create a new endpoint for a MongoDB® Database Instance. You can
+        add `public_network` or `private_network` specifications to the body of the
+        request.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Endpoint'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                instance_id:
+                  type: string
+                  description: UUID of the Database Instance.
+                endpoint:
+                  description: EndpointSpec used to expose your Database Instance.
+                  $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.EndpointSpec'
+              required:
+              - instance_id
+              - endpoint
+              x-properties-order:
+              - instance_id
+              - endpoint
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"endpoint":"","instance_id":"string"}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/endpoints"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/endpoints" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            endpoint="" \
+            instance_id="string"
+  /mongodb/v1alpha1/regions/{region}/endpoints/{endpoint_id}:
+    delete:
+      tags:
+      - Instance Endpoints
+      operationId: DeleteEndpoint
+      summary: Delete a Database Instance endpoint
+      description: Delete the endpoint of a Database Instance. You must specify the
+        `endpoint_id` parameter of the endpoint you want to delete. Note that you
+        might need to update any environment configurations that point to the deleted
+        endpoint.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: endpoint_id
+        description: UUID of the Endpoint to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/endpoints/{endpoint_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/endpoints/{endpoint_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /mongodb/v1alpha1/regions/{region}/instances:
+    get:
+      tags:
+      - Database Instances
+      operationId: ListInstances
+      summary: List MongoDB® Database Instances
+      description: List all MongoDB® Database Instances in the specified region. By
+        default, the MongoDB® Database Instances returned in the list are ordered
+        by creation date in ascending order, though this can be modified via the order_by
+        field. You can define additional parameters for your query, such as `tags`
+        and `name`. For the `name` parameter, the value you include will be checked
+        against the whole name string to see if it includes the string you put in
+        the parameter.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: tags
+        description: List Database Instances that have a given tag.
+        schema:
+          type: array
+          items:
+            type: string
+            pattern: ^[0-9A-Za-z_\-=]+$
+      - in: query
+        name: name
+        description: Lists Database Instances that match a name pattern.
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9\-_]+$
+      - in: query
+        name: order_by
+        description: Criteria to use when ordering Database Instance listings.
+        schema:
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.ListInstancesRequest.OrderBy'
+      - in: query
+        name: organization_id
+        description: Organization ID of the Database Instance.
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        description: Project ID.
+        schema:
+          type: string
+      - in: query
+        name: page
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.ListInstancesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Database Instances
+      operationId: CreateInstance
+      summary: Create a MongoDB® Database Instance
+      description: Create a new MongoDB® Database Instance.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: The Project ID on which the Database Instance will
+                    be created.
+                name:
+                  type: string
+                  description: Name of the Database Instance.
+                  pattern: ^[A-Za-z0-9\-_]+$
+                version:
+                  type: string
+                  description: Version of the MongoDB® engine.
+                  pattern: ^[0-9]+\.[0-9]+\.[0-9]+$
+                tags:
+                  type: array
+                  description: Tags to apply to the Database Instance.
+                  items:
+                    type: string
+                    pattern: ^[0-9A-Za-z_\-=]+$
+                node_number:
+                  type: integer
+                  description: Number of node to use for the Database Instance.
+                  format: uint32
+                node_type:
+                  type: string
+                  description: Type of node to use for the Database Instance.
+                  pattern: ^[A-Za-z0-9\-_]+$
+                user_name:
+                  type: string
+                  description: Username created when the Database Instance is created.
+                  pattern: ^[a-zA-Z0-9_\-]*$
+                password:
+                  type: string
+                  description: Password of the initial user.
+                volume:
+                  description: Instance volume information.
+                  $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.CreateInstanceRequest.VolumeDetails'
+                endpoints:
+                  type: array
+                  description: One or multiple EndpointSpec used to expose your Database
+                    Instance.
+                  items:
+                    $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.EndpointSpec'
+              required:
+              - version
+              - node_number
+              - node_type
+              - user_name
+              - password
+              x-properties-order:
+              - project_id
+              - name
+              - version
+              - tags
+              - node_number
+              - node_type
+              - user_name
+              - password
+              - volume
+              - endpoints
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "string",
+              "node_number": 42,
+              "node_type": "string",
+              "password": "string",
+              "project_id": "string",
+              "user_name": "string",
+              "version": "string"
+            }' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            name="string" \
+            node_number:=42 \
+            node_type="string" \
+            password="string" \
+            project_id="string" \
+            user_name="string" \
+            version="string"
+  /mongodb/v1alpha1/regions/{region}/instances/{instance_id}:
+    get:
+      tags:
+      - Database Instances
+      operationId: GetInstance
+      summary: Get a MongoDB® Database Instance
+      description: Retrieve information about a given MongoDB® Database Instance,
+        specified by the `region` and `instance_id` parameters. Its full details,
+        including name, status, IP address and port, are returned in the response
+        object.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Database Instances
+      operationId: UpdateInstance
+      summary: Update a MongoDB® Database Instance
+      description: Update the parameters of a MongoDB® Database Instance.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: Name of the Database Instance.
+                  pattern: ^[A-Za-z0-9\-_]+$
+                tags:
+                  type:
+                  - array
+                  - "null"
+                  description: Tags of a Database Instance.
+              x-properties-order:
+              - name
+              - tags
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Database Instances
+      operationId: DeleteInstance
+      summary: Delete a MongoDB® Database Instance
+      description: Delete a given MongoDB® Database Instance, specified by the `region`
+        and `instance_id` parameters. Deleting a MongoDB® Database Instance is permanent,
+        and cannot be undone. Note that upon deletion all your data will be lost.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /mongodb/v1alpha1/regions/{region}/instances/{instance_id}/certificate:
+    get:
+      tags:
+      - Database Instances
+      operationId: GetInstanceCertificate
+      summary: Get the certificate of a Database Instance
+      description: Retrieve the certificate of a given Database Instance, specified
+        by the `instance_id` parameter.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.std.File'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/certificate"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/certificate" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /mongodb/v1alpha1/regions/{region}/instances/{instance_id}/roles:
+    put:
+      tags:
+      - Users
+      operationId: SetUserRole
+      summary: Apply user roles
+      description: Apply preset roles for a user in a Database Instance.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance the user belongs to.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.User'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: string
+                  description: Name of the database user.
+                  pattern: ^[a-zA-Z0-9_\-]*$
+                roles:
+                  type: array
+                  description: List of roles assigned to the user, along with the
+                    corresponding database where each role is granted.
+                  items:
+                    $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.UserRole'
+              x-properties-order:
+              - user_name
+              - roles
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PUT \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"user_name":"string"}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/roles"
+      - lang: HTTPie
+        source: |-
+          http PUT "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/roles" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            user_name="string"
+  /mongodb/v1alpha1/regions/{region}/instances/{instance_id}/snapshots:
+    post:
+      tags:
+      - Snapshots
+      operationId: CreateSnapshot
+      summary: Create a Database Instance snapshot
+      description: Create a new snapshot of a Database Instance. You must define the
+        `name` and `instance_id` parameters in the request.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance to snapshot.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Snapshot'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the snapshot.
+                  pattern: ^[A-Za-z0-9\-_]+$
+                expires_at:
+                  type:
+                  - string
+                  - "null"
+                  description: Expiration date of the snapshot (must follow the ISO
+                    8601 format). (RFC 3339 format)
+                  format: date-time
+                  example: "2022-03-22T12:34:56.123456Z"
+              x-properties-order:
+              - name
+              - expires_at
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"string"}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/snapshots"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/snapshots" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            name="string"
+  /mongodb/v1alpha1/regions/{region}/instances/{instance_id}/upgrade:
+    post:
+      tags:
+      - Database Instances
+      operationId: UpgradeInstance
+      summary: Upgrade a Database Instance
+      description: Upgrade your current Database Instance specifications like volume
+        size.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance you want to upgrade.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                volume_size:
+                  type:
+                  - integer
+                  - "null"
+                  description: |-
+                    Increase your Block Storage volume size. (in bytes)
+                    Precisely one of volume_size can be set.
+                  format: uint64
+                  x-one-of: upgrade_target
+              x-properties-order:
+              - volume_size
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/upgrade"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/upgrade" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users:
+    get:
+      tags:
+      - Users
+      operationId: ListUsers
+      summary: List users of a Database Instance
+      description: List all users of a given Database Instance.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: name
+        description: Name of the user.
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9_\-]*$
+      - in: query
+        name: order_by
+        description: Criteria to use when requesting user listing.
+        schema:
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.ListUsersRequest.OrderBy'
+      - in: query
+        name: page
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.ListUsersResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Users
+      operationId: CreateUser
+      summary: Create an user on a Database Instance
+      description: Create an user on a Database Instance. You must define the `name`,
+        `password` of the user and `instance_id` parameters in the request.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance the user belongs to.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.User'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the database user.
+                  pattern: ^[a-zA-Z0-9_\-]*$
+                password:
+                  type: string
+                  description: Password of the database user.
+              x-properties-order:
+              - name
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"string","password":"string"}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            name="string" \
+            password="string"
+  /mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users/{name}:
+    patch:
+      tags:
+      - Users
+      operationId: UpdateUser
+      summary: Update a user on a Database Instance
+      description: Update the parameters of a user on a Database Instance. You can
+        update the `password` parameter, but you cannot change the name of the user.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance the user belongs to.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: name
+        description: Name of the database user.
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9_\-]*$
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.User'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type:
+                  - string
+                  - "null"
+                  description: Password of the database user.
+              x-properties-order:
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users/{name}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users/{name}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Users
+      operationId: DeleteUser
+      summary: Delete a user on a Database Instance
+      description: Delete an existing user on a Database Instance.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: instance_id
+        description: UUID of the Database Instance the user belongs to.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: name
+        description: Name of the database user.
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9_\-]*$
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users/{name}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/instances/{instance_id}/users/{name}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /mongodb/v1alpha1/regions/{region}/node-types:
+    get:
+      tags:
+      - Node Types
+      operationId: ListNodeTypes
+      summary: List available node types
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: include_disabled_types
+        description: Defines whether or not to include disabled types.
+        schema:
+          type: boolean
+      - in: query
+        name: page
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.ListNodeTypesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/node-types"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/node-types" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /mongodb/v1alpha1/regions/{region}/snapshots:
+    get:
+      tags:
+      - Snapshots
+      operationId: ListSnapshots
+      summary: List snapshots
+      description: List snapshots. You can include the `instance_id` or `project_id`
+        in your query to get the list of snapshots for specific Database Instances
+        and/or Projects. By default, the details returned in the list are ordered
+        by creation date in ascending order, though this can be modified via the `order_by`
+        field.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: instance_id
+        description: Instance ID the snapshots belongs to.
+        schema:
+          type: string
+      - in: query
+        name: name
+        description: Lists database snapshots that match a name pattern.
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9\-_]+$
+      - in: query
+        name: order_by
+        description: Criteria to use when ordering snapshot listings.
+        schema:
+          $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.ListSnapshotsRequest.OrderBy'
+      - in: query
+        name: organization_id
+        description: Organization ID the snapshots belongs to.
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        description: Project ID to list the snapshots of.
+        schema:
+          type: string
+      - in: query
+        name: page
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.ListSnapshotsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}:
+    get:
+      tags:
+      - Snapshots
+      operationId: GetSnapshot
+      summary: Get a Database Instance snapshot
+      description: Retrieve information about a given snapshot of a Database Instance.
+        You must specify, in the endpoint, the `snapshot_id` parameter of the snapshot
+        you want to retrieve.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: snapshot_id
+        description: UUID of the snapshot.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Snapshot'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Snapshots
+      operationId: UpdateSnapshot
+      summary: Update a Database Instance snapshot
+      description: Update the parameters of a snapshot of a Database Instance. You
+        can update the `name` and `expires_at` parameters.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: snapshot_id
+        description: UUID of the Snapshot.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Snapshot'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: Name of the snapshot.
+                  pattern: ^[A-Za-z0-9\-_]+$
+                expires_at:
+                  type:
+                  - string
+                  - "null"
+                  description: Expiration date of the snapshot (must follow the ISO
+                    8601 format). (RFC 3339 format)
+                  format: date-time
+                  example: "2022-03-22T12:34:56.123456Z"
+              x-properties-order:
+              - name
+              - expires_at
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Snapshots
+      operationId: DeleteSnapshot
+      summary: Delete a Database Instance snapshot
+      description: Delete a given snapshot of a Database Instance. You must specify,
+        in the endpoint, the `snapshot_id` parameter of the snapshot you want to delete.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: snapshot_id
+        description: UUID of the snapshot.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Snapshot'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}/restore:
+    post:
+      tags:
+      - Snapshots
+      operationId: RestoreSnapshot
+      summary: Restore a Database Instance snapshot
+      description: Restore a given snapshot of a Database Instance. You must specify,
+        in the endpoint, the `snapshot_id` parameter of the snapshot you want to restore,
+        the `instance_name` of the new Database Instance, `node_type` of the new Database
+        Instance and `node_number` of the new Database Instance.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: snapshot_id
+        description: UUID of the snapshot.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.Instance'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                instance_name:
+                  type: string
+                  description: Name of the new Database Instance.
+                  pattern: ^[A-Za-z0-9\-_]+$
+                node_type:
+                  type: string
+                  description: Node type to use for the new Database Instance.
+                node_number:
+                  type: integer
+                  description: Number of nodes to use for the new Database Instance.
+                  format: uint32
+                volume:
+                  description: Instance volume information.
+                  $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.RestoreSnapshotRequest.VolumeDetails'
+              required:
+              - instance_name
+              - node_type
+              - node_number
+              - volume
+              x-properties-order:
+              - instance_name
+              - node_type
+              - node_number
+              - volume
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "instance_name": "string",
+              "node_number": 42,
+              "node_type": "string",
+              "volume": ""
+            }' \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}/restore"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/snapshots/{snapshot_id}/restore" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            instance_name="string" \
+            node_number:=42 \
+            node_type="string" \
+            volume=""
+  /mongodb/v1alpha1/regions/{region}/versions:
+    get:
+      tags:
+      - MongoDB® Versions
+      operationId: ListVersions
+      summary: List available MongoDB® versions
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: version
+        schema:
+          type: string
+          pattern: ^[0-9]+\.[0-9]+\.[0-9]+$
+      - in: query
+        name: page
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mongodb.v1alpha1.ListVersionsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/versions"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mongodb/v1alpha1/regions/{region}/versions" \
+            X-Auth-Token:$SCW_SECRET_KEY

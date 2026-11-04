@@ -1,0 +1,62 @@
+openapi: 3.1.0
+info:
+  title: Suggestions API
+  description: Propose a list of domain names similar to the requested one.
+  version: v2beta1
+servers:
+- url: https://api.scaleway.com
+components:
+  schemas:
+    scaleway.domain.v2beta1.ListSuggestionsResponse:
+      type: object
+      properties:
+        suggestions:
+          type: array
+          description: Domain name suggestions.
+          items:
+            type: string
+        total_count:
+          type: integer
+          description: Number of suggestions.
+          format: uint64
+      x-properties-order:
+      - suggestions
+      - total_count
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /domain/v2beta1/suggestions:
+    get:
+      operationId: ListSuggestions
+      summary: List suggested domain names
+      description: Returns a list of suggested domain names.
+      parameters:
+      - in: query
+        name: name
+        description: Desired domain name.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.ListSuggestionsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/suggestions?name=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/suggestions" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            name==string

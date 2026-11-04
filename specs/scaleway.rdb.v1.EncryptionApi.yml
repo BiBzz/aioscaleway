@@ -1,0 +1,61 @@
+openapi: 3.1.0
+info:
+  title: DBaaS Encryption API
+  version: v1
+servers:
+- url: https://api.scaleway.com
+components:
+  schemas:
+    scaleway.rdb.v1.EncryptionKey:
+      type: object
+      properties:
+        encryption_key:
+          type: string
+      x-properties-order:
+      - encryption_key
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /rdb/v1/regions/{region}/encryption-key/{encryption_key_id}:
+    get:
+      operationId: GetEncryptionKey
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: encryption_key_id
+        description: (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.rdb.v1.EncryptionKey'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/rdb/v1/regions/{region}/encryption-key/{encryption_key_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/rdb/v1/regions/{region}/encryption-key/{encryption_key_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY

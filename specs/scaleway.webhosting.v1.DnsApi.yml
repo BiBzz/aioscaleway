@@ -1,0 +1,772 @@
+openapi: 3.1.0
+info:
+  title: Web Hosting Dns API
+  description: |-
+    Scaleway provides several Web Hosting plans for individuals, professionals, and everyone in between. Our Web Hosting plans include:
+
+    - A domain name
+    - A configurable webhosting service
+    - The management of your emails, including anti-spam, antivirus and filter systems
+    - Unlimited sub-domains
+    - An FTP account to upload your website
+    - At least one database
+
+    ## Concepts
+
+    Refer to our [dedicated concepts page](https://www.scaleway.com/en/docs/managed-services/webhosting/concepts/) to find definitions of all Web Hosting-related terminology.
+
+    ## Quickstart
+
+    1. Configure your environment variables.
+
+       <Message type="note">
+       This is an optional step that seeks to simplify your usage of the Web Hosting API.
+       </Message>
+
+        ```bash
+        export SCW_SECRET_KEY="<API secret key>"
+        export SCW_PROJECT_ID="<Scaleway Project ID>"
+        ```
+
+    2. **Choose a Web Hosting offer**: run the following command to list all Web Hosting offers. The `| jq` appendage at the end of the command makes the output easier to read.
+
+        ```bash
+        curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            "https://api.scaleway.com/webhosting/v1/regions/fr-par/offers?without_options=true" | jq
+        ```
+
+       <Message type="note">
+       In the above example, we choose to get offers only. Adjust the query parameter if you would also like to get information about the different options you can add to offers.
+       </Message>
+
+    3. **Order a Web Hosting plan**: run the following command to create a Web Hosting plan. You can customize the details in the payload to your needs, using the table below to help.
+
+        ```bash
+        curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            "https://api.scaleway.com/webhosting/v1/regions/fr-par/hostings" \
+            -d '{
+            "domain": "mydomain.net",
+            "offer_id": "f5c2ae8f-7625-4bca-b711-b44bb3d08694",
+            "project_id": "'"$SCW_PROJECT_ID"'",
+            "tags": ["my-tag"]
+        }'
+        ```
+
+       | Parameter        | Description                                                                            | Valid values OR Example     |
+       |------------------|----------------------------------------------------------------------------------------|-----------------------------|
+       | `domain`         | The domain name you would like to link to your Web Hosting account. You must already own this domain name and have completed the DNS validation process beforehand.                                                            | `mydomain.net`               |
+       | `offer_id`       | The offer ID of the desired offer. Use one of the offer IDs returned in step 2         |`f5c2ae8f-7625-4bca-b711-b44bb3d08694` |
+       | `project_id`     | The ID of the Scaleway Project to create the Web Hosting plan in.                      | `277ed74e-ea73-11ed-a05b-0242ac120003`                   |
+       | `tags`           | Any tags you would like to associate with this Web Hosting plan                         | `my-tag`                   |
+
+       <Message type="tip">
+       Once you've ordered your Web Hosting plan, check out our [dedicated documentation](https://www.scaleway.com/en/docs/managed-services/webhosting/quickstart/) to get started with your configuration.
+       </Message>
+
+    4. **Delete your Web Hosting plan**: run the following command to delete your Web Hosting plan. Ensure that you replace `{hosting-id}` in the URL with the ID of the Web Hosting plan you want to delete.
+
+        ```bash
+        curl -X DELETE \
+            -H "Content-Type: application/json" \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/rest-of-endpoint/{hosting-id}"
+        ```
+
+    <Message type="requirement">
+    - You have a [Scaleway account](https://console.scaleway.com/)
+    - You have created an [API key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) and that the API key has sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/) to perform the actions described on this page
+    - You have [installed `curl`](https://curl.se/download.html)
+    - You have [installaed `jq`](https://stedolan.github.io/jq/download/)
+    </Message>
+
+    ## Technical information
+
+    All Scaleway Web Hosting plans now offer a choice between cPanel and Plesk for website management. Both tools provide a graphical interface and fast access icons, allowing you to configure and monitor your hosting solutions with ease. You can access cPanel or Plesk via the [Scaleway console](https://www.scaleway.com/en/docs/managed-services/webhosting/quickstart/#how-to-access-the-web-hosting-control-panel-from-the-scaleway-console).
+
+    ### Regions
+
+    The Scaleway Web Hosting API is a **regional** API, meaning that each call must specify in its path parameters the region for the resources concerned by the call.
+
+    Scaleway Web Hosting is available only in the `fr-par` region.
+
+    ## Going further
+
+    For more help using Scaleway Web Hosting, check out the following resources:
+
+    - Our [main documentation](https://www.scaleway.com/en/docs/managed-services/webhosting/)
+    - The #webhosting-early-access channel on our [Slack Community](https://www.scaleway.com/en/docs/tutorials/scaleway-slack-community/)
+    - Our [support ticketing system](https://www.scaleway.com/en/docs/account/how-to/open-a-support-ticket/).
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Web Hosting Domains
+  description: |
+    With a Scaleway Web Hosting plan, you can manage your domain, configure your web hosting services, manage your emails and more. Get dns records status and check if user owns domain with these calls
+components:
+  schemas:
+    google.type.Money:
+      type: object
+      properties:
+        currency_code:
+          type: string
+        units:
+          type: integer
+          format: int64
+        nanos:
+          type: integer
+          format: int32
+      x-properties-order:
+      - currency_code
+      - units
+      - nanos
+    scaleway.webhosting.v1.AutoConfigDomainDns:
+      type: object
+      properties:
+        nameservers:
+          type: boolean
+          description: Whether or not to synchronize domain nameservers.
+        web_records:
+          type: boolean
+          description: Whether or not to synchronize web records.
+        mail_records:
+          type: boolean
+          description: Whether or not to synchronize mail records.
+        all_records:
+          type: boolean
+          description: Whether or not to synchronize all types of records. Takes priority
+            over the other fields.
+        none:
+          type: boolean
+          description: No automatic domain configuration. Users must configure their
+            domain for the Web Hosting to work.
+      x-properties-order:
+      - nameservers
+      - web_records
+      - mail_records
+      - all_records
+      - none
+    scaleway.webhosting.v1.CheckUserOwnsDomainResponse:
+      type: object
+      properties:
+        owns_domain:
+          type: boolean
+          description: Indicates whether the specified project owns the domain.
+      x-properties-order:
+      - owns_domain
+    scaleway.webhosting.v1.DnsRecord:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Record name.
+        type:
+          description: Record type.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecord.Type'
+        ttl:
+          type: integer
+          description: Record time-to-live.
+          format: uint32
+        value:
+          type: string
+          description: Record value.
+        priority:
+          type:
+          - integer
+          - "null"
+          description: Record priority level.
+          format: uint32
+        status:
+          description: Record status.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecord.Status'
+        raw_data:
+          type: string
+          description: Record representation as it appears in the zone file or DNS
+            management system.
+      x-properties-order:
+      - name
+      - type
+      - ttl
+      - value
+      - priority
+      - status
+      - raw_data
+    scaleway.webhosting.v1.DnsRecord.Status:
+      type: string
+      enum:
+      - unknown_status
+      - valid
+      - invalid
+      default: unknown_status
+    scaleway.webhosting.v1.DnsRecord.Type:
+      type: string
+      enum:
+      - unknown_type
+      - a
+      - cname
+      - mx
+      - txt
+      - ns
+      - aaaa
+      default: unknown_type
+    scaleway.webhosting.v1.DnsRecords:
+      type: object
+      properties:
+        records:
+          type: array
+          description: List of DNS records.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecord'
+        name_servers:
+          type: array
+          description: List of nameservers.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.Nameserver'
+        status:
+          description: Status of the records.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecords.Status'
+        dns_config:
+          type: array
+          description: Records dns auto configuration settings (deprecated, use auto_config_domain_dns).
+          deprecated: true
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.Domain.DnsAction'
+        auto_config_domain_dns:
+          description: Whether or not to synchronize each types of records.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.AutoConfigDomainDns'
+      x-properties-order:
+      - records
+      - name_servers
+      - status
+      - dns_config
+      - auto_config_domain_dns
+    scaleway.webhosting.v1.DnsRecords.Status:
+      type: string
+      enum:
+      - unknown_status
+      - valid
+      - invalid
+      default: unknown_status
+    scaleway.webhosting.v1.Domain:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the domain.
+        status:
+          description: Current status of the domain.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Domain.Status'
+        owner:
+          description: Zone owner of the domain.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Domain.ZoneOwner'
+        zone_domain_name:
+          type: string
+          description: Main domain for this zone.
+        available_actions:
+          type: array
+          description: A list of actions that can be performed on the domain.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.Domain.Action'
+        available_dns_actions:
+          type: array
+          description: A list of DNS-related actions that can be auto configured for
+            the domain (deprecated, use auto_config_domain_dns instead).
+          deprecated: true
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.Domain.DnsAction'
+        auto_config_domain_dns:
+          description: Whether or not to synchronize each type of record.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.AutoConfigDomainDns'
+      x-properties-order:
+      - name
+      - status
+      - owner
+      - zone_domain_name
+      - available_actions
+      - available_dns_actions
+      - auto_config_domain_dns
+    scaleway.webhosting.v1.Domain.Action:
+      type: string
+      enum:
+      - unknown_action
+      - transfer
+      - manage_external
+      - renew
+      x-enum-descriptions:
+        values:
+          unknown_action: Unknown action.
+          transfer: Action to transfer the domain to Scaleway.
+          manage_external: Action to manage domain zone at Scaleway.
+          renew: Action to renew the domain's registration.
+      default: unknown_action
+    scaleway.webhosting.v1.Domain.DnsAction:
+      type: string
+      enum:
+      - unknown_dns_action
+      - auto_config_all_records
+      - auto_config_web_records
+      - auto_config_mail_records
+      - auto_config_nameservers
+      - auto_config_none
+      x-enum-descriptions:
+        values:
+          unknown_dns_action: Unknown DNS action.
+          auto_config_all_records: Automatically configure all DNS records for the
+            domain.
+          auto_config_web_records: Automatically configure web-related DNS records
+            (e.g., A, CNAME).
+          auto_config_mail_records: Automatically configure mail-related DNS records
+            (e.g., MX, SPF, DKIM).
+          auto_config_nameservers: Automatically configure the domain's name servers
+            to point to Web Hosting name servers.
+          auto_config_none: No automatic domain configuration. Users must configure
+            their domain for the Web Hosting to work.
+      default: unknown_dns_action
+    scaleway.webhosting.v1.Domain.Status:
+      type: string
+      enum:
+      - unknown_status
+      - valid
+      - invalid
+      - validating
+      - error
+      x-enum-descriptions:
+        values:
+          unknown_status: The status of the domain is unknown.
+          valid: The domain is valid and operational.
+          invalid: The domain is invalid, potentially due to incorrect settings or
+            configuration issues.
+          validating: The domain is in the process of being validated.
+          error: The domain is in an error status, it should be checked in Domain&DNS.
+      default: unknown_status
+    scaleway.webhosting.v1.Domain.ZoneOwner:
+      type: string
+      enum:
+      - unknown_zone_owner
+      - external
+      - scaleway
+      - online
+      - webhosting
+      x-enum-descriptions:
+        values:
+          unknown_zone_owner: The zone owner is unknown or not specified.
+          external: The domain's DNS is managed externally.
+          scaleway: The domain's DNS is managed by Scaleway.
+          online: The domain's DNS is managed by Online.
+          webhosting: The domain's DNS is managed by the Web Hosting platform.
+      default: unknown_zone_owner
+    scaleway.webhosting.v1.DomainAvailability:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Fully qualified domain name (FQDN).
+        zone_name:
+          type: string
+          description: DNS zone associated with the domain.
+        status:
+          description: Availability status of the domain.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.DomainAvailability.Status'
+        available_actions:
+          type: array
+          description: A list of actions that can be performed on the domain.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.DomainAvailability.Action'
+        can_create_hosting:
+          type: boolean
+          description: Whether a hosting can be created for this domain.
+        price:
+          description: Price for registering the domain.
+          $ref: '#/components/schemas/google.type.Money'
+      x-properties-order:
+      - name
+      - zone_name
+      - status
+      - available_actions
+      - can_create_hosting
+      - price
+    scaleway.webhosting.v1.DomainAvailability.Action:
+      type: string
+      enum:
+      - unknown_action
+      - register
+      - transfer
+      - manage_external
+      x-enum-descriptions:
+        values:
+          unknown_action: Unknown action.
+          register: Action to register the domain at Scaleway.
+          transfer: Action to transfer the domain from another registrar to Scaleway.
+          manage_external: Action to manage the domain as an external domain at Scaleway.
+      default: unknown_action
+    scaleway.webhosting.v1.DomainAvailability.Status:
+      type: string
+      enum:
+      - unknown_status
+      - available
+      - not_available
+      - owned
+      - validating
+      - error
+      x-enum-descriptions:
+        values:
+          unknown_status: The status of the domain is unknown.
+          available: The domain is available for registration.
+          not_available: The domain is not available for registration.
+          owned: The domain is already owned by the user.
+          validating: The domain is being validated.
+          error: The domain is in an error status, it should be checked in Domain&DNS.
+      default: unknown_status
+    scaleway.webhosting.v1.Nameserver:
+      type: object
+      properties:
+        hostname:
+          type: string
+          description: Hostname of the nameserver.
+        status:
+          description: Status of the nameserver.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Nameserver.Status'
+        is_default:
+          type: boolean
+          description: Defines whether the nameserver is the default one.
+      x-properties-order:
+      - hostname
+      - status
+      - is_default
+    scaleway.webhosting.v1.Nameserver.Status:
+      type: string
+      enum:
+      - unknown_status
+      - valid
+      - invalid
+      default: unknown_status
+    scaleway.webhosting.v1.SearchDomainsResponse:
+      type: object
+      properties:
+        domains_available:
+          type: array
+          description: List of domains availability.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.DomainAvailability'
+      x-properties-order:
+      - domains_available
+    scaleway.webhosting.v1.SyncDomainDnsRecordsRequest.Record:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecord.Type'
+      x-properties-order:
+      - name
+      - type
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /webhosting/v1/regions/{region}/domains/{domain_name}:
+    get:
+      tags:
+      - Web Hosting Domains
+      operationId: GetDomain
+      summary: Retrieve detailed information about a specific domain, including its
+        status, DNS configuration, and ownership.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: domain_name
+        description: Domain name to get.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        description: ID of the Scaleway Project in which to get the domain to create
+          the Web Hosting plan.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.Domain'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/domains/{domain_name}?project_id=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/domains/{domain_name}" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            project_id==string
+  /webhosting/v1/regions/{region}/domains/{domain}/check-ownership:
+    post:
+      tags:
+      - Web Hosting Domains
+      operationId: CheckUserOwnsDomain
+      summary: Check whether you own this domain or not.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: domain
+        description: Domain for which ownership is to be verified.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.CheckUserOwnsDomainResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: ID of the project currently in use.
+              x-properties-order:
+              - project_id
+      security:
+      - scaleway: []
+      deprecated: true
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"project_id":"string"}' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/domains/{domain}/check-ownership"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/domains/{domain}/check-ownership" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            project_id="string"
+  /webhosting/v1/regions/{region}/domains/{domain}/dns-records:
+    get:
+      tags:
+      - Web Hosting Domains
+      operationId: GetDomainDnsRecords
+      summary: Get DNS records
+      description: Get the set of DNS records of a specified domain associated with
+        a Web Hosting plan's domain.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: domain
+        description: Domain associated with the DNS records.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecords'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/domains/{domain}/dns-records"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/domains/{domain}/dns-records" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /webhosting/v1/regions/{region}/domains/{domain}/sync-domain-dns-records:
+    post:
+      tags:
+      - Web Hosting Domains
+      operationId: SyncDomainDnsRecords
+      summary: Synchronize your DNS records on the Elements Console and on cPanel.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: path
+        name: domain
+        description: Domain for which the DNS records will be synchronized.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecords'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                update_web_records:
+                  type: boolean
+                  description: Whether or not to synchronize the web records (deprecated,
+                    use auto_config_domain_dns).
+                  deprecated: true
+                update_mail_records:
+                  type: boolean
+                  description: Whether or not to synchronize the mail records (deprecated,
+                    use auto_config_domain_dns).
+                  deprecated: true
+                update_all_records:
+                  type: boolean
+                  description: Whether or not to synchronize all types of records.
+                    This one has priority (deprecated, use auto_config_domain_dns).
+                  deprecated: true
+                update_nameservers:
+                  type: boolean
+                  description: Whether or not to synchronize domain nameservers (deprecated,
+                    use auto_config_domain_dns).
+                  deprecated: true
+                custom_records:
+                  type: array
+                  description: Custom records to synchronize.
+                  deprecated: true
+                  items:
+                    $ref: '#/components/schemas/scaleway.webhosting.v1.SyncDomainDnsRecordsRequest.Record'
+                auto_config_domain_dns:
+                  description: Whether or not to synchronize each types of records.
+                  $ref: '#/components/schemas/scaleway.webhosting.v1.AutoConfigDomainDns'
+              x-properties-order:
+              - update_web_records
+              - update_mail_records
+              - update_all_records
+              - update_nameservers
+              - custom_records
+              - auto_config_domain_dns
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "update_all_records": false,
+              "update_mail_records": false,
+              "update_nameservers": false,
+              "update_web_records": false
+            }' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/domains/{domain}/sync-domain-dns-records"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/domains/{domain}/sync-domain-dns-records" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            update_all_records:=false \
+            update_mail_records:=false \
+            update_nameservers:=false \
+            update_web_records:=false
+  /webhosting/v1/regions/{region}/search-domains:
+    get:
+      tags:
+      - Web Hosting Domains
+      operationId: SearchDomains
+      summary: Search for available domains based on domain name.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - nl-ams
+          - pl-waw
+      - in: query
+        name: domain_name
+        description: Domain name to search.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        description: ID of the Scaleway Project in which to search the domain to create
+          the Web Hosting plan.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.SearchDomainsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/search-domains?domain_name=string&project_id=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/webhosting/v1/regions/{region}/search-domains" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            domain_name==string \
+            project_id==string

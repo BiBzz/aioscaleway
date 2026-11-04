@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: Unauthenticated API
+  version: v3
+servers:
+- url: https://api.scaleway.com
+components:
+  schemas:
+    scaleway.account.v3.PasswordStrength:
+      type: object
+      properties:
+        score:
+          $ref: '#/components/schemas/scaleway.account.v3.PasswordStrength.Score'
+        time_to_crack:
+          type:
+          - string
+          - "null"
+          description: (in seconds)
+          example: 2.5s
+      x-properties-order:
+      - score
+      - time_to_crack
+    scaleway.account.v3.PasswordStrength.Score:
+      type: string
+      enum:
+      - unknown_score
+      - very_weak
+      - weak
+      - medium
+      - strong
+      - very_strong
+      x-enum-descriptions:
+        values:
+          unknown_score: Unknown score
+          very_weak: Very weak
+          weak: Weak
+          medium: Medium
+          strong: Strong
+          very_strong: Very strong
+      default: unknown_score
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /account/v3/compute-password-strength:
+    post:
+      operationId: ComputePasswordStrength
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.PasswordStrength'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                user_inputs:
+                  type: array
+                  items:
+                    type: string
+              x-properties-order:
+              - password
+              - user_inputs
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"password":"string"}' \
+            "https://api.scaleway.com/account/v3/compute-password-strength"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/compute-password-strength" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            password="string"

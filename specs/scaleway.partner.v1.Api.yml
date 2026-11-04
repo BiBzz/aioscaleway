@@ -1,0 +1,576 @@
+openapi: 3.1.0
+info:
+  title: Partner API
+  description: |-
+    As a partner, this API allows you to create and manage Scaleway organizations (accounts) for your customers.
+    Access to this API is reserved for official Scaleway Partners.
+
+    For everything related to consumption and expenses monitoring, refer to the Scaleway's [Billing API](https://www.scaleway.com/en/developers/api/billing).
+
+    ## Endpoint
+
+    Scaleway partner API is available at `https://api.scaleway.com`
+
+    ## Authentication
+
+    To access this API, you need to create a unique [API secret key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/).
+    Ensure that you have the correct permission set: `ResellerFullAccess`. If you are the owner of the Organization and thus the creator of the API key, this permission is enabled by default.
+    Be very careful as this secret key allows management access to all Scaleway organizations attached to your account.
+    You must pass the secret key in an `X-Auth-Token` HTTP header along with all your requests.
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Organizations
+  description: |
+    All organizations created with this API are considered standard Scaleway organizations, with a few differences:
+      - Special quotas will automatically be applied to all organizations
+        without needing them to go through standard account verification.
+      - Organizations will not be billed at the end of the month.
+        Instead, you will receive an invoice with the aggregated consumption of all your organizations.
+    When you create an organization, you will be able to attach a custom `customer_id` identifier.
+    You can use this identifier to associate a customer's ID in your infrastructure with the corresponding Scaleway organization.
+    Depending on your customer's management process, you might need to lock one of your customers' organizations temporarily.
+    When locked, a customer will no longer be able to perform any actions on the Scaleway ecosystem.
+    Please note that a lock:
+      - will NOT delete any customer data.
+      - will NOT stop already started resources.
+components:
+  schemas:
+    google.protobuf.Int32Value:
+      type:
+      - integer
+      - "null"
+      format: int32
+    scaleway.partner.v1.ListOrganizationsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      default: created_at_asc
+    scaleway.partner.v1.ListOrganizationsResponse:
+      type: object
+      properties:
+        organizations:
+          type: array
+          description: List of organizations.
+          items:
+            $ref: '#/components/schemas/scaleway.partner.v1.Organization'
+        total_count:
+          type: integer
+          description: Total number of organizations.
+          format: uint64
+      x-properties-order:
+      - organizations
+      - total_count
+    scaleway.partner.v1.Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the organization. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the organization.
+        email:
+          type: string
+          description: Organization owner's email.
+        status:
+          description: The current status of the organization.
+          $ref: '#/components/schemas/scaleway.partner.v1.Organization.Status'
+        owner_firstname:
+          type: string
+          description: Organization owner's first name.
+        owner_lastname:
+          type: string
+          description: Organization owner's last name.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Date of organization creation. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        phone_number:
+          type:
+          - string
+          - "null"
+          description: Organization owner's phone number.
+        customer_id:
+          type: string
+          description: Customer ID associated with this organization.
+        lock_reason_message:
+          type: string
+          description: If the organization is locked, this field will contain a human-readable
+            reason.
+        locked_by:
+          description: Originator of the lock. Can be one of "partner" or "scaleway".
+          $ref: '#/components/schemas/scaleway.partner.v1.Organization.LockedBy'
+        locked_at:
+          type:
+          - string
+          - "null"
+          description: Date of lock. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        picture_link:
+          type:
+          - string
+          - "null"
+          description: Link to the Organization's picture.
+        comment:
+          type: string
+          description: A comment about the organization.
+        srn:
+          type: string
+          description: The SRN of the organization.
+          pattern: ^srn://account\.[^/]+/organizations/[^/]+$
+      x-properties-order:
+      - id
+      - name
+      - email
+      - status
+      - owner_firstname
+      - owner_lastname
+      - created_at
+      - phone_number
+      - customer_id
+      - lock_reason_message
+      - locked_by
+      - locked_at
+      - picture_link
+      - comment
+      - srn
+    scaleway.partner.v1.Organization.LockedBy:
+      type: string
+      enum:
+      - unknown_locked_by
+      - partner
+      - scaleway
+      default: unknown_locked_by
+    scaleway.partner.v1.Organization.Status:
+      type: string
+      enum:
+      - unknown_status
+      - opened
+      - locked
+      - closed
+      default: unknown_status
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /partner/v1/organizations:
+    get:
+      tags:
+      - Organizations
+      operationId: ListOrganizations
+      summary: List Organizations
+      parameters:
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: page
+        schema:
+          $ref: '#/components/schemas/google.protobuf.Int32Value'
+      - in: query
+        name: order_by
+        schema:
+          $ref: '#/components/schemas/scaleway.partner.v1.ListOrganizationsRequest.OrderBy'
+      - in: query
+        name: status
+        description: Only list organizations with this status.
+        schema:
+          $ref: '#/components/schemas/scaleway.partner.v1.Organization.Status'
+      - in: query
+        name: email
+        description: Only list organizations created with this email.
+        schema:
+          type: string
+      - in: query
+        name: customer_id
+        description: |-
+          Only list organizations attached to this Customer ID.
+          Only list organizations attached to this Customer ID.
+          If the customer ID was changed only the last one can be used.
+        schema:
+          type: string
+      - in: query
+        name: locked_by
+        description: Only list organizations locked by a certain entity.
+        schema:
+          $ref: '#/components/schemas/scaleway.partner.v1.Organization.LockedBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.partner.v1.ListOrganizationsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/partner/v1/organizations"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/partner/v1/organizations" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Organizations
+      operationId: CreateOrganization
+      summary: Create a new organization
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.partner.v1.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                partner_id:
+                  type: string
+                  description: Your personal `partner_id`. This is the same as your
+                    Organization ID.
+                email:
+                  type: string
+                  description: The email of the new organization owner.
+                organization_name:
+                  type: string
+                  description: The name of the organization you want to create. Usually
+                    the company name.
+                owner_firstname:
+                  type: string
+                  description: The first name of the new organization owner.
+                owner_lastname:
+                  type: string
+                  description: The last name of the new organization owner.
+                phone_number:
+                  type:
+                  - string
+                  - "null"
+                  description: The phone number of the new organization owner.
+                customer_id:
+                  type: string
+                  description: A custom ID for the customer in your own infrastructure.
+                comment:
+                  type:
+                  - string
+                  - "null"
+                  description: A comment about the organization.
+              required:
+              - partner_id
+              - email
+              - organization_name
+              - owner_firstname
+              - owner_lastname
+              - customer_id
+              x-properties-order:
+              - partner_id
+              - email
+              - organization_name
+              - owner_firstname
+              - owner_lastname
+              - phone_number
+              - customer_id
+              - comment
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "customer_id": "string",
+              "email": "string",
+              "organization_name": "string",
+              "owner_firstname": "string",
+              "owner_lastname": "string",
+              "partner_id": "string"
+            }' \
+            "https://api.scaleway.com/partner/v1/organizations"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/partner/v1/organizations" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            customer_id="string" \
+            email="string" \
+            organization_name="string" \
+            owner_firstname="string" \
+            owner_lastname="string" \
+            partner_id="string"
+  /partner/v1/organizations/{organization_id}:
+    get:
+      tags:
+      - Organizations
+      operationId: GetOrganization
+      summary: Get an organization
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to GET.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.partner.v1.Organization'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/partner/v1/organizations/{organization_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/partner/v1/organizations/{organization_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Organizations
+      operationId: UpdateOrganization
+      summary: Update an organization
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.partner.v1.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type:
+                  - string
+                  - "null"
+                  description: The new email.
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: The new name.
+                owner_firstname:
+                  type:
+                  - string
+                  - "null"
+                  description: The first name of the new owner.
+                owner_lastname:
+                  type:
+                  - string
+                  - "null"
+                  description: The last name of the new owner.
+                phone_number:
+                  type:
+                  - string
+                  - "null"
+                  description: The phone number of the new owner.
+                customer_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    Customer ID associated with this organization.
+                    Customer ID associated with this organization.
+                    Warning: Changing this value will only affect future invoices.
+                    If you try to change this value after the 25th of the month, we cannot guarantee that this will take effect on the invoice issued for the current month.
+                comment:
+                  type:
+                  - string
+                  - "null"
+                  description: A comment about the organization.
+              x-properties-order:
+              - email
+              - name
+              - owner_firstname
+              - owner_lastname
+              - phone_number
+              - customer_id
+              - comment
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/partner/v1/organizations/{organization_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/partner/v1/organizations/{organization_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /partner/v1/organizations/{organization_id}/lock:
+    post:
+      tags:
+      - Organizations
+      operationId: LockOrganization
+      summary: Lock an organization
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to lock.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.partner.v1.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/partner/v1/organizations/{organization_id}/lock"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/partner/v1/organizations/{organization_id}/lock" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /partner/v1/organizations/{organization_id}/request-admin-role:
+    post:
+      tags:
+      - Organizations
+      operationId: RequestAdminRole
+      summary: Invite a partner user in the customer organization
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to be invited to.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The member username.
+                  pattern: ^[a-zA-Z0-9@._+-]+$
+                email:
+                  type: string
+                  description: The member email.
+                password:
+                  type: string
+                  description: The member password.
+              x-properties-order:
+              - username
+              - email
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "email": "string",
+              "password": "string",
+              "username": "string"
+            }' \
+            "https://api.scaleway.com/partner/v1/organizations/{organization_id}/request-admin-role"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/partner/v1/organizations/{organization_id}/request-admin-role" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            email="string" \
+            password="string" \
+            username="string"
+  /partner/v1/organizations/{organization_id}/unlock:
+    post:
+      tags:
+      - Organizations
+      operationId: UnlockOrganization
+      summary: Unlock an organization
+      parameters:
+      - in: path
+        name: organization_id
+        description: The ID of the organization you want to unlock.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.partner.v1.Organization'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/partner/v1/organizations/{organization_id}/unlock"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/partner/v1/organizations/{organization_id}/unlock" \
+            X-Auth-Token:$SCW_SECRET_KEY

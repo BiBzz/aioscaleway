@@ -1,0 +1,1101 @@
+openapi: 3.1.0
+info:
+  title: Clusters for Apache Spark™ API
+  description: |-
+    Clusters for Apache Spark™ is Scaleway's fully-managed service for running Apache Spark™ workloads. It provides a scalable, secure environment to process large datasets with ease. With Clusters for Apache Spark™, you can launch Apache Spark™ clusters in minutes and focus on data processing instead of infrastructure management.
+
+    The service is currently in General Availability.
+
+    ## Concepts
+
+    Refer to our [dedicated concepts page](https://www.scaleway.com/en/docs/data-lab/concepts/) to find definitions of the different terms referring to Clusters for Apache Spark™.
+
+    ## Quickstart
+
+    1. Configure your environment variables.
+
+       <Message type="note">
+       This is an optional step that seeks to simplify your usage of the Clusters for Apache Spark™ API.
+       </Message>
+
+        ```bash
+        export SCW_SECRET_KEY="<API secret key>"
+        export SCW_DEFAULT_ZONE="<Scaleway default Availability Zone>"
+        export SCW_DEFAULT_REGION="<Scaleway default region>"
+        export SCW_PROJECT_ID="<Scaleway Project ID>"
+        ```
+
+    2. **Create a new cluster**: Run the following command to create a cluster with a main node and 2 worker nodes with 20GB of total persistent volume storage. You can customize the details in the payload to your needs, using the table below to help. Note that you will need to have a [VPC and a Private Network](https://www.scaleway.com/en/developers/api/vpc/) before running this command.
+
+        ```bash
+        curl --request POST \
+        --url https://api.scaleway.com//datalab/v1beta1/regions/fr-par/datalabs \
+        -H "X-Auth-Token: $SCW_SECRET_KEY" \
+        -H "Content-Type: application/json" -d '{
+                "name": "my-first-cluster",
+                "project_id": "'"$SCW_PROJECT_ID"'",
+                 "worker": {
+                               "node_type": "DDL-POP2-2C-8G",
+                               "node_count": 2
+                       },
+                 "main": {
+                               "node_type": "DDL-PLAY2-MICRO"
+                  }, "has_notebook": true,
+                  "total_storage": {
+                          "size": 20000000000,
+                          "type": "sbs_5k"
+                      },
+                  "private_network_id": "{Your PN ID}",
+                  "spark_version": "4.0.0"
+            }
+        }'
+        ```
+
+    3. **Get a list of your clusters**: Run the following command to get a list of all the clusters in your account, with their details:
+
+        ```bash
+        curl --request GET \
+        --url https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs \
+        -H "X-Auth-Token: $SCW_SECRET_KEY"
+        ```
+
+    4. **Delete your cluster**: Run the following command to delete a cluster. Ensure that you replace `{datalab-id}` in the URL with the ID of the cluster you want to delete.
+
+        ```bash
+        curl --request DELETE \
+        --url https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/{datalab-id} \
+        -H "X-Auth-Token: $SCW_SECRET_KEY" | jq
+        ```
+
+    ## Technical information
+
+    ### Regions
+
+    Scaleway's infrastructure spans different [regions and Availability Zones](https://www.scaleway.com/en/docs/account/reference-content/products-availability/).
+
+    Clusters for Apache Spark™ is currently available in the Paris & Milano regions, which is represented by the following path parameter:
+
+    - fr-par
+    - it-mil
+
+    ## Going further
+
+    For more information about Clusters for Apache Spark™, you can check out the following pages:
+
+    - [Clusters for Apache Spark™ Documentation](https://www.scaleway.com/en/docs/data-lab/)
+    - [Contact our support team](https://console.scaleway.com/support/tickets).
+  version: v1beta1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Clusters for Apache Spark™
+  description: |
+    Each cluster is composed of one or more dedicated compute nodes running Apache Spark™. It can optionally include a dedicated JupyterLab Notebook. These resources are fully manageable through this API.
+components:
+  schemas:
+    scaleway.datalab.v1beta1.Cluster:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the cluster.
+        description:
+          type: string
+          description: The description of the cluster.
+        versions:
+          type: array
+          description: The versions of the cluster.
+          items:
+            $ref: '#/components/schemas/scaleway.datalab.v1beta1.ClusterVersion'
+      x-properties-order:
+      - name
+      - description
+      - versions
+    scaleway.datalab.v1beta1.ClusterVersion:
+      type: object
+      properties:
+        version:
+          type: string
+          description: The version of the cluster.
+        end_of_life:
+          type:
+          - string
+          - "null"
+          description: The end of life date of the cluster version. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation date of the cluster version. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: The last update date of the cluster version. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        disabled:
+          type: boolean
+          description: Whether the cluster version is disabled.
+        beta:
+          type: boolean
+          description: Whether the cluster version is in beta.
+      x-properties-order:
+      - version
+      - end_of_life
+      - created_at
+      - updated_at
+      - disabled
+      - beta
+    scaleway.datalab.v1beta1.CreateDatalabRequest.SparkMain:
+      type: object
+      properties:
+        node_type:
+          type: string
+      x-properties-order:
+      - node_type
+    scaleway.datalab.v1beta1.CreateDatalabRequest.SparkWorker:
+      type: object
+      properties:
+        node_type:
+          type: string
+        node_count:
+          type: integer
+          format: uint32
+      x-properties-order:
+      - node_type
+      - node_count
+    scaleway.datalab.v1beta1.Datalab:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the cluster. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        project_id:
+          type: string
+          description: The unique identifier of the project where the cluster has
+            been created. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: The name of the cluster.
+        description:
+          type: string
+          description: The description of the cluster.
+        tags:
+          type: array
+          description: The tags of the cluster.
+          items:
+            type: string
+        main:
+          description: The Apache Spark™ Main node specification of cluster. It holds
+            the parameters `node_type`, `spark_ui_url` (available to reach Apache
+            Spark™ UI), `spark_master_url` (used to reach the cluster within a VPC),
+            `root_volume` (size of the volume assigned to the cluster).
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.Datalab.SparkMain'
+        worker:
+          description: The cluster worker nodes specification. It holds the parameters
+            `node_type`, `node_count`, `root_volume` (size of the volume assigned
+            to the cluster).
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.Datalab.SparkWorker'
+        status:
+          description: The status of the cluster. For a working cluster the status
+            is marked as `ready`.
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.Datalab.Status'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation timestamp of the cluster. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: The last update date of the cluster. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        region:
+          type: string
+          description: The region of the cluster.
+        has_notebook:
+          type: boolean
+          description: Whether a JupyterLab notebook is associated with the cluster
+            or not.
+        notebook_url:
+          type:
+          - string
+          - "null"
+          description: The URL of the notebook if available.
+        spark_version:
+          type: string
+          description: The version of Apache Spark™ running inside the cluster.
+        total_storage:
+          description: The total persistent volume storage selected to run Apache
+            Spark™.
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.Volume'
+        private_network_id:
+          type: string
+          description: The unique identifier of the private network to which the cluster
+            is attached to. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        notebook_master_url:
+          type:
+          - string
+          - "null"
+          description: The URL that is used to reach the cluster from the notebook
+            when available. This URL cannot be used to reach the cluster from a server.
+      x-properties-order:
+      - id
+      - project_id
+      - name
+      - description
+      - tags
+      - main
+      - worker
+      - status
+      - created_at
+      - updated_at
+      - region
+      - has_notebook
+      - notebook_url
+      - spark_version
+      - total_storage
+      - private_network_id
+      - notebook_master_url
+    scaleway.datalab.v1beta1.Datalab.SparkMain:
+      type: object
+      properties:
+        node_type:
+          type: string
+        spark_ui_url:
+          type: string
+        spark_master_url:
+          type: string
+        root_volume:
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.Volume'
+      x-properties-order:
+      - node_type
+      - spark_ui_url
+      - spark_master_url
+      - root_volume
+    scaleway.datalab.v1beta1.Datalab.SparkWorker:
+      type: object
+      properties:
+        node_type:
+          type: string
+        node_count:
+          type: integer
+          format: uint32
+        root_volume:
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.Volume'
+      x-properties-order:
+      - node_type
+      - node_count
+      - root_volume
+    scaleway.datalab.v1beta1.Datalab.Status:
+      type: string
+      enum:
+      - unknown_status
+      - creating
+      - updating
+      - ready
+      - error
+      - deleting
+      - locked
+      - deleted
+      default: unknown_status
+    scaleway.datalab.v1beta1.ListClusterVersionsRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      default: name_asc
+    scaleway.datalab.v1beta1.ListClusterVersionsResponse:
+      type: object
+      properties:
+        clusters:
+          type: array
+          description: The list of cluster versions.
+          items:
+            $ref: '#/components/schemas/scaleway.datalab.v1beta1.Cluster'
+        total_count:
+          type: integer
+          description: The total count of cluster versions.
+          format: uint64
+      x-properties-order:
+      - clusters
+      - total_count
+    scaleway.datalab.v1beta1.ListDatalabsRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      - created_at_asc
+      - created_at_desc
+      - updated_at_asc
+      - updated_at_desc
+      default: name_asc
+    scaleway.datalab.v1beta1.ListDatalabsResponse:
+      type: object
+      properties:
+        datalabs:
+          type: array
+          description: The list of clusters. This is a list composed of messages of
+            type `DataLab`.
+          items:
+            $ref: '#/components/schemas/scaleway.datalab.v1beta1.Datalab'
+        total_count:
+          type: integer
+          description: The total count of clusters.
+          format: uint64
+      x-properties-order:
+      - datalabs
+      - total_count
+    scaleway.datalab.v1beta1.ListNodeTypesRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      - vcpus_asc
+      - vcpus_desc
+      - memory_gigabytes_asc
+      - memory_gigabytes_desc
+      - vram_bytes_asc
+      - vram_bytes_desc
+      - gpus_asc
+      - gpus_desc
+      default: name_asc
+    scaleway.datalab.v1beta1.ListNodeTypesRequest.ResourceType:
+      type: string
+      enum:
+      - all
+      - gpu
+      - cpu
+      default: all
+    scaleway.datalab.v1beta1.ListNodeTypesResponse:
+      type: object
+      properties:
+        node_types:
+          type: array
+          description: The list of node types.
+          items:
+            $ref: '#/components/schemas/scaleway.datalab.v1beta1.NodeType'
+        total_count:
+          type: integer
+          description: The total count of node types.
+          format: uint64
+      x-properties-order:
+      - node_types
+      - total_count
+    scaleway.datalab.v1beta1.ListNotebookVersionsRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      default: name_asc
+    scaleway.datalab.v1beta1.ListNotebookVersionsResponse:
+      type: object
+      properties:
+        notebooks:
+          type: array
+          description: The list of notebook versions.
+          items:
+            $ref: '#/components/schemas/scaleway.datalab.v1beta1.Notebook'
+        total_count:
+          type: integer
+          description: The total count of notebook versions.
+          format: uint64
+      x-properties-order:
+      - notebooks
+      - total_count
+    scaleway.datalab.v1beta1.NodeType:
+      type: object
+      properties:
+        stock_status:
+          description: The stock status of the node type.
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.NodeType.Stock'
+        name:
+          type: string
+          description: The name of the node type.
+        description:
+          type: string
+          description: The description of the node type.
+        vcpus:
+          type: integer
+          description: The number of vCPUs.
+          format: uint32
+        memory_gigabytes:
+          type: integer
+          description: The amount of memory.
+          format: uint64
+        vram_gigabytes:
+          type: integer
+          description: The amount of VRAM.
+          format: uint64
+        gpus:
+          type: integer
+          description: The number of GPUs.
+          format: uint32
+        disabled:
+          type: boolean
+          description: Whether the node type is disabled.
+        beta:
+          type: boolean
+          description: Whether the node type is in beta.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation date of the node type. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: The last update date of the node type. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        targets:
+          type: array
+          description: The targets of the node type.
+          items:
+            $ref: '#/components/schemas/scaleway.datalab.v1beta1.NodeType.Target'
+      x-properties-order:
+      - stock_status
+      - name
+      - description
+      - vcpus
+      - memory_gigabytes
+      - vram_gigabytes
+      - gpus
+      - disabled
+      - beta
+      - created_at
+      - updated_at
+      - targets
+    scaleway.datalab.v1beta1.NodeType.Stock:
+      type: string
+      enum:
+      - unknown_stock
+      - low_stock
+      - out_of_stock
+      - available
+      default: unknown_stock
+    scaleway.datalab.v1beta1.NodeType.Target:
+      type: string
+      enum:
+      - unknown_target
+      - notebook
+      - worker
+      default: unknown_target
+    scaleway.datalab.v1beta1.Notebook:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the notebook.
+        description:
+          type: string
+          description: The description of the notebook.
+        versions:
+          type: array
+          description: The versions of the notebook.
+          items:
+            $ref: '#/components/schemas/scaleway.datalab.v1beta1.NotebookVersion'
+      x-properties-order:
+      - name
+      - description
+      - versions
+    scaleway.datalab.v1beta1.NotebookVersion:
+      type: object
+      properties:
+        version:
+          type: string
+          description: The version of the notebook.
+        end_of_life:
+          type:
+          - string
+          - "null"
+          description: The end of life date of the notebook version. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation date of the notebook version. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: The last update date of the notebook version. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        disabled:
+          type: boolean
+          description: Whether the notebook version is disabled.
+        beta:
+          type: boolean
+          description: Whether the notebook version is in beta.
+      x-properties-order:
+      - version
+      - end_of_life
+      - created_at
+      - updated_at
+      - disabled
+      - beta
+    scaleway.datalab.v1beta1.Volume:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.Volume.Type'
+        size:
+          type: integer
+          description: (in bytes)
+          format: uint64
+      x-properties-order:
+      - type
+      - size
+    scaleway.datalab.v1beta1.Volume.Type:
+      type: string
+      enum:
+      - unknown_type
+      - sbs_5k
+      default: unknown_type
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /datalab/v1beta1/regions/{region}/cluster-versions:
+    get:
+      tags:
+      - Clusters for Apache Spark™
+      operationId: ListClusterVersions
+      description: List the Apache Spark™ versions the product is compatible with.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - it-mil
+      - in: query
+        name: page
+        description: The page number.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: The page size.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: The order by field.
+        schema:
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListClusterVersionsRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListClusterVersionsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/datalab/v1beta1/regions/{region}/cluster-versions"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/datalab/v1beta1/regions/{region}/cluster-versions" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /datalab/v1beta1/regions/{region}/datalabs:
+    get:
+      tags:
+      - Clusters for Apache Spark™
+      operationId: ListDatalabs
+      description: List information about cluster within a project or an organization.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - it-mil
+      - in: query
+        name: organization_id
+        description: The unique identifier of the organization whose clusters you
+          want to list.
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        description: The unique identifier of the project whose clusters you want
+          to list.
+        schema:
+          type: string
+      - in: query
+        name: name
+        description: The name of the cluster you want to list.
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9-_. ]+$
+      - in: query
+        name: tags
+        description: The tags associated with the cluster you want to list.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: page
+        description: The page number for pagination.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: The page size for pagination.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: The order by field, available options are `name_asc`, `name_desc`,
+          `created_at_asc`, `created_at_desc`, `updated_at_asc`, `updated_at_desc`.
+        schema:
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListDatalabsRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListDatalabsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Clusters for Apache Spark™
+      operationId: CreateDatalab
+      description: Create a new cluster. In this call, one can personalize the node
+        counts, add a notebook, choose the private network, define the persistent
+        volume storage capacity.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - it-mil
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.datalab.v1beta1.Datalab'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: The unique identifier of the project where the cluster
+                    will be created.
+                name:
+                  type: string
+                  description: The name of the cluster.
+                  pattern: ^[A-Za-z0-9-_. ]+$
+                description:
+                  type: string
+                  description: The description of the cluster.
+                tags:
+                  type: array
+                  description: The tags of the cluster.
+                  items:
+                    type: string
+                main:
+                  description: The cluster main node specification. It holds the parameters
+                    `node_type` which specifies the node type of the main node. See
+                    ListNodeTypes for available options. See ListNodeTypes for available
+                    options.
+                  $ref: '#/components/schemas/scaleway.datalab.v1beta1.CreateDatalabRequest.SparkMain'
+                worker:
+                  description: The cluster worker node specification. It holds the
+                    parameters `node_type` which specifies the node type of the worker
+                    node and `node_count` for specifying the amount of nodes.
+                  $ref: '#/components/schemas/scaleway.datalab.v1beta1.CreateDatalabRequest.SparkWorker'
+                has_notebook:
+                  type: boolean
+                  description: Select this option to include a notebook as part of
+                    the cluster.
+                spark_version:
+                  type: string
+                  description: The version of Apache Spark™ running inside the cluster,
+                    available options can be viewed at ListClusterVersions.
+                total_storage:
+                  description: The maximum persistent volume storage that will be
+                    available during workload.
+                  $ref: '#/components/schemas/scaleway.datalab.v1beta1.Volume'
+                private_network_id:
+                  type: string
+                  description: The unique identifier of the private network the cluster
+                    will be attached to.
+              x-properties-order:
+              - project_id
+              - name
+              - description
+              - tags
+              - main
+              - worker
+              - has_notebook
+              - spark_version
+              - total_storage
+              - private_network_id
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "description": "string",
+              "has_notebook": false,
+              "name": "string",
+              "private_network_id": "string",
+              "project_id": "string",
+              "spark_version": "string"
+            }' \
+            "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            description="string" \
+            has_notebook:=false \
+            name="string" \
+            private_network_id="string" \
+            project_id="string" \
+            spark_version="string"
+  /datalab/v1beta1/regions/{region}/datalabs/{datalab_id}:
+    get:
+      tags:
+      - Clusters for Apache Spark™
+      operationId: GetDatalab
+      description: Retrieve information about a given cluster, specified by the `region`
+        and `datalab_id` parameters. Its full details, including name, status, node
+        counts, are returned in the response object.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - it-mil
+      - in: path
+        name: datalab_id
+        description: The unique identifier of the cluster.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.datalab.v1beta1.Datalab'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs/{datalab_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs/{datalab_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Clusters for Apache Spark™
+      operationId: UpdateDatalab
+      description: Update a cluster node counts. Allows for up- and downscaling on
+        demand, depending on the expected workload.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - it-mil
+      - in: path
+        name: datalab_id
+        description: The unique identifier of the cluster.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.datalab.v1beta1.Datalab'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: The updated name of the cluster.
+                description:
+                  type:
+                  - string
+                  - "null"
+                  description: The updated description of the cluster.
+                tags:
+                  type: array
+                  description: The updated tags of the cluster.
+                  items:
+                    type: string
+                node_count:
+                  type:
+                  - integer
+                  - "null"
+                  description: The updated node count of the cluster. Scale up or
+                    down the number of worker nodes.
+                  format: uint32
+              x-properties-order:
+              - name
+              - description
+              - tags
+              - node_count
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs/{datalab_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs/{datalab_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Clusters for Apache Spark™
+      operationId: DeleteDatalab
+      description: Delete a cluster based on its region and id.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - it-mil
+      - in: path
+        name: datalab_id
+        description: The unique identifier of the cluster.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.datalab.v1beta1.Datalab'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs/{datalab_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/datalab/v1beta1/regions/{region}/datalabs/{datalab_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /datalab/v1beta1/regions/{region}/node-types:
+    get:
+      tags:
+      - Clusters for Apache Spark™
+      operationId: ListNodeTypes
+      description: List the available compute node types for creating a new cluster.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - it-mil
+      - in: query
+        name: page
+        description: The page number.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: The page size.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: The order by field. Available fields are `name_asc`, `name_desc`,
+          `vcpus_asc`, `vcpus_desc`, `memory_gigabytes_asc`, `memory_gigabytes_desc`,
+          `vram_bytes_asc`, `vram_bytes_desc`, `gpus_asc`, `gpus_desc`.
+        schema:
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListNodeTypesRequest.OrderBy'
+      - in: query
+        name: targets
+        description: Filter based on the target of the nodes. Allows to filter the
+          nodes based on their purpose which can be main or worker node.
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.datalab.v1beta1.NodeType.Target'
+      - in: query
+        name: resource_type
+        description: Filter based on node type ( `cpu`/`gpu`/`all` ).
+        schema:
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListNodeTypesRequest.ResourceType'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListNodeTypesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/datalab/v1beta1/regions/{region}/node-types"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/datalab/v1beta1/regions/{region}/node-types" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /datalab/v1beta1/regions/{region}/notebook-versions:
+    get:
+      tags:
+      - Clusters for Apache Spark™
+      operationId: ListNotebookVersions
+      description: Lists available notebook versions.
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+          - it-mil
+      - in: query
+        name: page
+        description: The page number.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: The page size.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: The order by field. Available options are `name_asc` and `name_desc`.
+        schema:
+          $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListNotebookVersionsRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.datalab.v1beta1.ListNotebookVersionsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/datalab/v1beta1/regions/{region}/notebook-versions"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/datalab/v1beta1/regions/{region}/notebook-versions" \
+            X-Auth-Token:$SCW_SECRET_KEY

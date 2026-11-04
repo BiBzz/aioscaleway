@@ -1,0 +1,222 @@
+openapi: 3.1.0
+info:
+  title: Marketplace API
+  version: v2
+servers:
+- url: https://api.scaleway.com
+components:
+  schemas:
+    scaleway.marketplace.v2.FullImage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of this image. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the image.
+        description:
+          type: string
+          description: Text description of this image.
+        logo:
+          type: string
+          description: URL of this image's logo.
+        categories:
+          type: array
+          description: List of categories this image belongs to.
+          items:
+            type: string
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of this image. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Date of the last modification of this image. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        valid_until:
+          type:
+          - string
+          - "null"
+          description: Expiration date of this image. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        label:
+          type: string
+          description: |-
+            Label of this image.
+            Typically an identifier for a distribution (ex. "ubuntu_focal").
+        local_images:
+          type: array
+          description: List of this image's local images.
+          items:
+            $ref: '#/components/schemas/scaleway.marketplace.v2.FullImage.LocalImage'
+      x-properties-order:
+      - id
+      - name
+      - description
+      - logo
+      - categories
+      - created_at
+      - updated_at
+      - valid_until
+      - label
+      - local_images
+    scaleway.marketplace.v2.FullImage.LocalImage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: |-
+            UUID of this local image.
+            Version you will typically use to define an image in an API call. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        compatible_commercial_types:
+          type: array
+          description: List of all commercial types that are compatible with this
+            local image.
+          items:
+            type: string
+        arch:
+          type: string
+          description: Supported architecture for this local image.
+        zone:
+          type: string
+          description: Availability Zone where this local image is available.
+        type:
+          description: The type of the image.
+          $ref: '#/components/schemas/scaleway.marketplace.v2.FullImage.LocalImage.Type'
+      x-properties-order:
+      - id
+      - compatible_commercial_types
+      - arch
+      - zone
+      - type
+    scaleway.marketplace.v2.FullImage.LocalImage.Type:
+      type: string
+      enum:
+      - unknown_type
+      - instance_local
+      - instance_sbs
+      - instance_local_snapshot
+      - instance_sbs_snapshot
+      x-enum-descriptions:
+        values:
+          unknown_type: Unspecified image type
+          instance_local: An image type that can be used to create volumes which are
+            managed via the Instance API.
+          instance_sbs: An image type that can be used to create volumes which are
+            managed via the Scaleway Block Storage (SBS) API.
+          instance_local_snapshot: An image referencing a public Local Storage snapshot.
+          instance_sbs_snapshot: An image referencing a public Scaleway Block Storage
+            (SBS) snapshot.
+      default: unknown_type
+    scaleway.marketplace.v2.ListFullImagesRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      - created_at_asc
+      - created_at_desc
+      - updated_at_asc
+      - updated_at_desc
+      default: name_asc
+    scaleway.marketplace.v2.ListFullImagesResponse:
+      type: object
+      properties:
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.marketplace.v2.FullImage'
+        total_count:
+          type: integer
+          format: uint64
+      x-properties-order:
+      - images
+      - total_count
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /marketplace/v2/full-images:
+    get:
+      operationId: ListFullImages
+      summary: List marketplace images
+      parameters:
+      - in: query
+        name: page
+        description: A positive integer to choose the page to display.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: A positive integer lower or equal to 100 to select the number
+          of items to display.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Ordering to use.
+        schema:
+          $ref: '#/components/schemas/scaleway.marketplace.v2.ListFullImagesRequest.OrderBy'
+      - in: query
+        name: arch
+        description: Choose for which machine architecture to return images.
+        schema:
+          type: string
+      - in: query
+        name: category
+        description: Choose the category of images to get.
+        schema:
+          type: string
+      - in: query
+        name: include_eol
+        description: Choose to include end-of-life images.
+        required: true
+        schema:
+          type: boolean
+      - in: query
+        name: zone
+        description: Filter images to only include those with local images in the
+          specified zone.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: commercial_type
+        description: Filter images to only include those compatible with a specific
+          commercial type.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.marketplace.v2.ListFullImagesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/marketplace/v2/full-images?include_eol=false&zone=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/marketplace/v2/full-images" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            include_eol==false \
+            zone==string

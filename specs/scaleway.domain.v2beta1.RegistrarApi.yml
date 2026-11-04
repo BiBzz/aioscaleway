@@ -1,0 +1,3869 @@
+openapi: 3.1.0
+info:
+  title: Domain names - Registrar API
+  description: "The Domain names - Registrar API documentation allows you to buy,
+    transfer and manage your domains and contacts (DNSSEC included) as a simple client
+    or a reseller.\n\nRead our [reference content documentation for more information
+    about domains](https://www.scaleway.com/en/docs/network/domains-and-dns/reference-content/).\n\n(switchcolumn)\n(switchcolumn)\n\n##
+    Concepts\n\nRefer to our [dedicated concepts page](https://www.scaleway.com/en/docs/network/domains-and-dns/concepts/)
+    to find definitions of the different terms referring to Scaleway Domains and DNS.\n\n(switchcolumn)\n(switchcolumn)\n\n##
+    Quickstart\n\n1. **Configure your environment variables.**\n\n   <Message type=\"note\">\n
+    \  This is an optional step that seeks to simplify your usage of the API.\n   </Message>\n\n
+    \   ```bash\n    export SCW_ACCESS_KEY=\"<API access key>\"\n    export SCW_SECRET_KEY=\"<API
+    secret key>\"\n    export SCW_PROJECT_ID=\"<Scaleway Project ID>\"\n    ```\n\n2.
+    **Get information about your domains.**\n\n   <Message type=\"important\">\n   You
+    must specify the domain you want to get information for if you want to get information
+    about one specific domain.\n   </Message>\n\n   Run the following command to get
+    information about your domains:\n\n\t```bash\n\tcurl https://api.scaleway.com/domain/v2beta1/search-domains?domains=domain-example.fr
+    \\\n\t-H \"X-Auth-Token: $secret_key\"\n\t```\n\n   An output similar to the following
+    displays:\n\n\t```bash\n\t{\n\t\t\"available_domains\": [\n\t\t\t{\n\t\t\t\t\"domain\":
+    \"domain-example.fr\",\n\t\t\t\t\"available\": true,\n\t\t\t\t\"tld\": {\n\t\t\t\t\t\"name\":
+    \"fr\",\n\t\t\t\t\t\"dnssec_support\": true,\n\t\t\t\t\t\"duration_in_years_min\":
+    1,\n\t\t\t\t\t\"duration_in_years_max\": 10,\n\t\t\t\t\t\"idn_support\": true,\n\t\t\t\t\t\"offers\":
+    {\n\t\t\t\t\t\t\"create\": {\n\t\t\t\t\t\t\t\"action\": \"create\",\n\t\t\t\t\t\t\t\"operation_path\":
+    \"/network/domain/domains/fr/register\",\n\t\t\t\t\t\t\t\"price\": {\n\t\t\t\t\t\t\t\t\"currency_code\":
+    \"EUR\",\n\t\t\t\t\t\t\t\t\"units\": 123,\n\t\t\t\t\t\t\t\t\"nanos\": 456000000\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"late_renew\":
+    {\n\t\t\t\t\t\t\t\"action\": \"late_renew\",\n\t\t\t\t\t\t\t\"operation_path\":
+    \"/network/domain/domains/fr/late_renew\",\n\t\t\t\t\t\t\t\"price\": {\n\t\t\t\t\t\t\t\t\"currency_code\":
+    \"EUR\",\n\t\t\t\t\t\t\t\t\"units\": 123,\n\t\t\t\t\t\t\t\t\"nanos\": 456000000\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"renew\":
+    {\n\t\t\t\t\t\t\t\"action\": \"renew\",\n\t\t\t\t\t\t\t\"operation_path\": \"/network/domain/domains/fr/renew\",\n\t\t\t\t\t\t\t\"price\":
+    {\n\t\t\t\t\t\t\t\t\"currency_code\": \"EUR\",\n\t\t\t\t\t\t\t\t\"units\": 123,\n\t\t\t\t\t\t\t\t\"nanos\":
+    456000000\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"trade\": {\n\t\t\t\t\t\t\t\"action\":
+    \"trade\",\n\t\t\t\t\t\t\t\"operation_path\": \"/network/domain/domains/fr/trade\",\n\t\t\t\t\t\t\t\"price\":
+    {\n\t\t\t\t\t\t\t\t\"currency_code\": \"EUR\",\n\t\t\t\t\t\t\t\t\"units\": 123,\n\t\t\t\t\t\t\t\t\"nanos\":
+    456000000\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t},\n\t\t\t\t\t\t\"transfer\": {\n\t\t\t\t\t\t\t\"action\":
+    \"transfer\",\n\t\t\t\t\t\t\t\"operation_path\": \"/network/domain/domains/fr/transfer\",\n\t\t\t\t\t\t\t\"price\":
+    {\n\t\t\t\t\t\t\t\t\"currency_code\": \"EUR\",\n\t\t\t\t\t\t\t\t\"units\": 123,\n\t\t\t\t\t\t\t\t\"nanos\":
+    456000000\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t},\n\t\t\t\t\t\"specifications\":
+    {\n\t\t\t\t\t\t\"afnic\": \"1\",\n\t\t\t\t\t\t\"grace_period\": \"1\",\n\t\t\t\t\t\t\"transfer_without_contact\":
+    \"1\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t]\n\t}\n\t```\n\n   <Message type=\"note\">\n\n
+    \    - `available` indicates whether the domain is available to be ordered and
+    created at the registry\n     - `tld` indicates whether TLD is supported, the
+    different actions and prices available. If TLD is not supported, `null` is returned
+    in the output\n     - `offers` indicates the different actions and prices available\n
+    \    - `specifications` includes tags to indicate TLD specifications\n     - `currency_code`
+    indicates the available currency. Currently only euro is available\n     - `units`
+    and `nanos` compose the price\n   </Message>\n\n3. **Manage an external domain.**\n\n
+    \  Refer to the DNS zones and records API documentation to find out [how to register
+    and manage an external domain](https://www.scaleway.com/en/developers/api/domains-and-dns/#quickstart).\n\n4.
+    **Purchase a domain.**\n\n   Run the following command to purchase a domain:\n\n\t```bash\n\tcurl
+    https://api.scaleway.com/domain/v2beta1/buy-domains \\\n\t-X POST \\\n\t-H \"X-Auth-Token:
+    $SCW_SECRET_KEY\" \\\n\t-d '{\n\t\t\"domains\": [\n\t\t\t\"my_domain.fr\"\n\t\t],\n\t\t\"project_id\":
+    \"$project_id\",\n\t\t\"duration_in_years\": 1,\n\t\t\"owner_contact_id\": \"$owner_contact_id\",\n\t\t\"owner_contact\":
+    {\n\t\t\t\"legal_form\": \"individual\",\n\t\t\t\"firstname\": \"John\",\n\t\t\t\"lastname\":
+    \"DOE\",\n\t\t\t\"email\": \"email@mail.fr\",\n\t\t\t\"phone_number\": \"0123456789\",\n\t\t\t\"address_line_1\":
+    \"37 rue de la barre\",\n\t\t\t\"zip\": \"59800\",\n\t\t\t\"city\": \"Lille\",\n\t\t\t\"country\":
+    \"France\",\n\t\t\t\"lang\": \"fr_FR\",\n\t\t\t\"resale\": true,\n\t\t\t\"extension_fr\":
+    {\n\t\t\t\t\"mode\": \"individual\",\n\t\t\t\t\"individual_info\": {\n\t\t\t\t\t\"whois_opt_in\":
+    true\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\t```\n\n   <Message type=\"note\">\n\n
+    \  `extension_fr.individual_info.whois_opt_in` returns `false` if the information
+    of the domain's owner is anonymous. It returns `true` if the information of the
+    domain's owner is published in whois.\n   </Message>\n\n5. **List your domains.**\n\n
+    \  Run the following command to list your domains:\n\n\t```bash\n\tcurl https://api.scaleway.com/domain/v2beta1/domains
+    \\\n\t-H \"X-Auth-Token: $SCW_SECRET_KEY\"\n\t```\n\n   An output similar to the
+    following displays:\n\n\t```bash\n\t{\n\t\"total_count\": 1,\n\t\"domains\": [\n\t\t{\n\t\t\"domain\":
+    \"my_domain.fr\",\n\t\t\"project_id\": \"xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxx\",\n\t\t\"organization_id\":
+    \"xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxx\",\n\t\t\"auto_renew_status\": \"disabled\",\n\t\t\"dnssec_status\":
+    \"disabled\",\n\t\t\"epp_code\": [\n\t\t\t\"clientTransferProhibited\"\n\t\t],\n\t\t\"expired_at\":
+    \"1970-01-01T00:00:00Z\",\n\t\t\"updated_at\": \"1970-01-01T00:00:00Z\",\n\t\t\"registrar\":
+    \"SCALEWAY\",\n\t\t\"is_external\": false,\n\t\t\"status\": \"active\"\n\t\t}\n\t]\n\t}\n\t```\n\n6.
+    **Enable DNSSEC for external domains.**\n\n    - Run the following command if
+    you have not set up DNSSEC at your registrar:\n\n    ```bash\n    curl https://api.scaleway.com/domain/v2beta1/domains/example.com/enable-dnssec
+    \\\n      -X POST \\\n      -H \"Content-Type: application/json\" \\\n      -H
+    \"X-Auth-Token: $SCW_SECRET_KEY\" \\\n      -d '{}'\n    ```\n\n   An output similar
+    to the following displays:\n\n    ```json\n    {\n      \"domain\":{\n          \"domain\":\"example.fr\",\n
+    \         \"auto_renew_status\":\"enabled\",\n          \"dnssec_status\":\"disabled\",\n
+    \         \"ds_records\":[\n            {\n                \"key_id\":49071,\n
+    \               \"algorithm\":\"ecdsap256sha256\",\n                \"digest\":{\n
+    \                 \"type\":\"sha_384\",\n                  \"digest\":\"c14421f739e35b62e3383d5972263f93610dea31da48a1990453752cf1b4f4f0314f75ecd0bc9061c51ee41ec7692204\"\n
+    \               }\n            }\n          ],\n          \"epp\":[\n            \"clientTransferProhibited\"\n
+    \         ],\n          \"expired_at\":\"2021-04-04T12:46:29Z\",\n          \"updated_at\":\"2020-07-07T13:24:27Z\",\n
+    \         \"registrar\":\"EXTERNAL\",\n          \"is_external\":true,\n          \"status\":\"active\",\n
+    \         \"......\"\n      }\n    ```\n\n   <Message type=\"important\">\n   Set
+    up the information returned under `ds_records` in the output, in your registrar
+    to configure DNSSEC for your external domain.\n   </Message>\n\n    - Run the
+    following command if you have already set up DNSSEC at your registrar:\n\n    ```bash\n
+    \   curl https://api.scaleway.com/domain/v2beta1/domains/example.com/enable-dnssec
+    \\\n      -X POST \\\n      -H \"Content-Type: application/json\" \\\n      -H
+    \"X-Auth-Token: $SCW_SECRET_KEY\" \\\n      -d '{\n        \"ds_record\": {\n
+    \         \"algorithm\": \"rsamd5\",\n          \"digest\":\n          {\n            \"type\":
+    \"sha_1\",\n            \"digest\": \"ABCD\"\n          }\n        }\n      }'\n
+    \   ```\n\n7. **Enable DNSSEC for internal domains.**\n\n   Find out how to enable
+    DNSSEC for your internal domains using the [Scaleway console](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/configure-dnssec-internal-domain/)
+    or the [API](https://www.scaleway.com/en/developers/api/domains-and-dns/registrar-api/#path-domains-update-domain-dnssec).\n\n
+    \  <Message type=\"important\">\n     - If your DNS service is managed by Scaleway,
+    no other information is required from you. You will however need to provide the
+    DS or public key information.\n     - If your domain uses another registrar and
+    has the default Scaleway NS, you have to **update the DS record at your registrar**.\n
+    \  </Message>\n\n(switchcolumn)\n<Message type=\"requirement\">\n\n- You have
+    a [Scaleway account](https://console.scaleway.com/)\n- You have [created an API
+    key](https://www.scaleway.com/en/docs/iam/how-to/create-api-keys/) and that the
+    API key has sufficient [IAM permissions](https://www.scaleway.com/en/docs/iam/reference-content/permission-sets/)
+    to perform the actions described on this page\n- You have your [Organization ID](https://console.scaleway.com/organization/settings)\n-
+    You are the owner of your domain\n- You have [installed `curl`](https://curl.se/download.html)\n</Message>\n(switchcolumn)\n\n##
+    Technical information\n\n### Regional availability\n\nScaleway Domains and DNS
+    is currently available globally. Find out about [product availability in our dedicated
+    documentation](https://www.scaleway.com/en/docs/account/reference-content/products-availability).\n\n##
+    Technical limitations\n\n- Only the owner of a domain can use and configure it
+    with Domains and DNS\n- Each zone supports the creation of sub-zones, which inherit
+    the parent's Project ID\n\n## Going further\n\nFor more information about Domains
+    and DNS, you can check out the following pages:\n\n- [Domains and DNS Documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/)\n-
+    [Scaleway Slack Community](http://slack.scaleway.com) join the #domains channel\n-
+    [Contact our support team](https://console.scaleway.com/support/tickets)."
+  version: v2beta1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Contacts
+  description: |
+    There are up to three different types of contacts for a domain:
+        **Owner**: The owner is the registrant and owner of the domain.
+        **Administrative**: The administrative contact of a domain is typically in charge of performing all domain-related actions.
+        **Technical**: The technical contact of a domain takes care of technical issues like DNS records.
+
+    It is possible to be the **Owner** and the **Administrative** and / or the **Technical** contact all at once but some registries may have specific requirements.
+- name: Order
+  description: Order a new domain or request an operation on an existing domain
+- name: Domains
+  description: Manage your domains
+- name: Tasks
+  description: A task is an asynchronous operation perform on any type of resources
+    (domain, zone, contact...).
+components:
+  schemas:
+    google.protobuf.StringValue:
+      type:
+      - string
+      - "null"
+    google.type.Money:
+      type: object
+      properties:
+        currency_code:
+          type: string
+        units:
+          type: integer
+          format: int64
+        nanos:
+          type: integer
+          format: int32
+      x-properties-order:
+      - currency_code
+      - units
+      - nanos
+    scaleway.domain.v2beta1.AvailableDomain:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: The domain name.
+        available:
+          type: boolean
+          description: Indicates whether the domain is available for registration.
+        tld:
+          description: TLD information of the domain.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Tld'
+      x-properties-order:
+      - domain
+      - available
+      - tld
+    scaleway.domain.v2beta1.CheckContactsCompatibilityResponse:
+      type: object
+      properties:
+        compatible:
+          type: boolean
+          description: Indicates whether all contacts are compatible with the domains
+            or TLDs.
+        owner_check_result:
+          description: Compatibility check result for the owner contact.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.CheckContactsCompatibilityResponse.ContactCheckResult'
+        administrative_check_result:
+          description: Compatibility check result for the administrative contact.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.CheckContactsCompatibilityResponse.ContactCheckResult'
+        technical_check_result:
+          description: Compatibility check result for the technical contact.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.CheckContactsCompatibilityResponse.ContactCheckResult'
+      x-properties-order:
+      - compatible
+      - owner_check_result
+      - administrative_check_result
+      - technical_check_result
+    scaleway.domain.v2beta1.CheckContactsCompatibilityResponse.ContactCheckResult:
+      type: object
+      properties:
+        compatible:
+          type: boolean
+        error_message:
+          $ref: '#/components/schemas/google.protobuf.StringValue'
+      x-properties-order:
+      - compatible
+      - error_message
+    scaleway.domain.v2beta1.Contact:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the contact.
+        legal_form:
+          description: Legal form of the contact (individual, corporate, association,
+            other).
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.LegalForm'
+        firstname:
+          type: string
+          description: First name of the contact.
+        lastname:
+          type: string
+          description: Last name of the contact.
+        company_name:
+          type: string
+          description: Company name of the contact (required for corporate legal forms).
+        email:
+          type: string
+          description: Email address of the contact.
+        email_alt:
+          type: string
+          description: Alternative email address of the contact.
+        phone_number:
+          type: string
+          description: Phone number of the contact, normalized to +CC.NationalNumber
+            format.
+        fax_number:
+          type: string
+          description: Fax number of the contact, normalized to +CC.NationalNumber
+            format.
+        address_line_1:
+          type: string
+          description: First line of the contact's address.
+        address_line_2:
+          type: string
+          description: Second line of the contact's address.
+        zip:
+          type: string
+          description: Postal code of the contact.
+        city:
+          type: string
+          description: City of the contact.
+        country:
+          type: string
+          description: Country code of the contact (ISO 3166-1 alpha-2 format).
+        vat_identification_code:
+          type: string
+          description: VAT identification code of the contact.
+        company_identification_code:
+          type: string
+          description: Company identification code of the contact (SIRET/SIREN for
+            French contacts, any format for others).
+        lang:
+          description: Preferred language of the contact.
+          $ref: '#/components/schemas/scaleway.std.LanguageCode'
+        resale:
+          type: boolean
+          description: Indicates whether the contact's information can be resold.
+        extension_fr:
+          description: Additional information required for AFNIC-managed TLDs (.fr,
+            .re, .pm, .yt, .wf, .tf).
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR'
+        extension_eu:
+          description: Additional information required for .eu domains. Conditionally
+            required.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionEU'
+        whois_opt_in:
+          type: boolean
+          description: Indicates whether the contact's information is published in
+            the WHOIS database.
+        email_status:
+          description: Email validation status of the contact.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.EmailStatus'
+        state:
+          type: string
+          description: State or region of the contact.
+        extension_nl:
+          description: Additional information required for .nl domains. Auto-populated
+            for individuals.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionNL'
+        status:
+          description: Status of the contact.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.Status'
+        extension_it:
+          description: Additional information required for .it domains. Contains a
+            PIN.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionIT'
+        questions:
+          type: array
+          deprecated: true
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.Question'
+        srn:
+          type: string
+          description: The SRN of the contact.
+          pattern: ^srn://domain\.[^/]+/contacts/[^/]+$
+      x-properties-order:
+      - id
+      - legal_form
+      - firstname
+      - lastname
+      - company_name
+      - email
+      - email_alt
+      - phone_number
+      - fax_number
+      - address_line_1
+      - address_line_2
+      - zip
+      - city
+      - country
+      - vat_identification_code
+      - company_identification_code
+      - lang
+      - resale
+      - extension_fr
+      - extension_eu
+      - whois_opt_in
+      - email_status
+      - state
+      - extension_nl
+      - status
+      - extension_it
+      - questions
+      - srn
+    scaleway.domain.v2beta1.Contact.EmailStatus:
+      type: string
+      enum:
+      - email_status_unknown
+      - validated
+      - not_validated
+      - invalid_email
+      x-enum-descriptions:
+        values:
+          email_status_unknown: If unspecified, the status is unknown by default.
+          validated: The contact email has been validated.
+          not_validated: The contact email has not been validated.
+          invalid_email: The contact email is invalid.
+      default: email_status_unknown
+    scaleway.domain.v2beta1.Contact.ExtensionEU:
+      type: object
+      properties:
+        european_citizenship:
+          type: string
+      x-properties-order:
+      - european_citizenship
+    scaleway.domain.v2beta1.Contact.ExtensionFR:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR.Mode'
+        individual_info:
+          description: Precisely one of individual_info, duns_info, association_info,
+            trademark_info, code_auth_afnic_info can be set.
+          x-one-of: mode_fields
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR.IndividualInfo'
+          - type: "null"
+        duns_info:
+          description: Precisely one of individual_info, duns_info, association_info,
+            trademark_info, code_auth_afnic_info can be set.
+          x-one-of: mode_fields
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR.DunsInfo'
+          - type: "null"
+        association_info:
+          description: Precisely one of individual_info, duns_info, association_info,
+            trademark_info, code_auth_afnic_info can be set.
+          x-one-of: mode_fields
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR.AssociationInfo'
+          - type: "null"
+        trademark_info:
+          description: Precisely one of individual_info, duns_info, association_info,
+            trademark_info, code_auth_afnic_info can be set.
+          x-one-of: mode_fields
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR.TrademarkInfo'
+          - type: "null"
+        code_auth_afnic_info:
+          description: Precisely one of individual_info, duns_info, association_info,
+            trademark_info, code_auth_afnic_info can be set.
+          x-one-of: mode_fields
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR.CodeAuthAfnicInfo'
+          - type: "null"
+      x-properties-order:
+      - mode
+      - individual_info
+      - duns_info
+      - association_info
+      - trademark_info
+      - code_auth_afnic_info
+    scaleway.domain.v2beta1.Contact.ExtensionFR.AssociationInfo:
+      type: object
+      properties:
+        publication_jo:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        publication_jo_page:
+          type: integer
+          format: uint32
+      x-properties-order:
+      - publication_jo
+      - publication_jo_page
+    scaleway.domain.v2beta1.Contact.ExtensionFR.CodeAuthAfnicInfo:
+      type: object
+      properties:
+        code_auth_afnic:
+          type: string
+      x-properties-order:
+      - code_auth_afnic
+    scaleway.domain.v2beta1.Contact.ExtensionFR.DunsInfo:
+      type: object
+      properties:
+        duns_id:
+          type: string
+        local_id:
+          type: string
+      x-properties-order:
+      - duns_id
+      - local_id
+    scaleway.domain.v2beta1.Contact.ExtensionFR.IndividualInfo:
+      type: object
+      properties:
+        whois_opt_in:
+          type: boolean
+      x-properties-order:
+      - whois_opt_in
+    scaleway.domain.v2beta1.Contact.ExtensionFR.Mode:
+      type: string
+      enum:
+      - mode_unknown
+      - individual
+      - company_identification_code
+      - duns
+      - local
+      - association
+      - trademark
+      - code_auth_afnic
+      x-enum-descriptions:
+        values:
+          mode_unknown: If unspecified, the status is unknown by default.
+          individual: The contact is a physical person (only for .fr domains).
+          company_identification_code: The contact is a company with a SIRET/SIREN
+            code (only for .fr domains).
+          duns: The contact has a Data Universal Numbering System code (only for .fr
+            domains).
+          local: The contact has a local or a country ID (only for .fr domains).
+          association: The contact is an association (only for .fr domains).
+          trademark: The contact is a brand (only for .fr domains).
+          code_auth_afnic: The contact has an intervention code (DSIA) from AFNIC
+            (only for .fr domains).
+      default: mode_unknown
+    scaleway.domain.v2beta1.Contact.ExtensionFR.TrademarkInfo:
+      type: object
+      properties:
+        trademark_inpi:
+          type: string
+      x-properties-order:
+      - trademark_inpi
+    scaleway.domain.v2beta1.Contact.ExtensionIT:
+      type: object
+      properties:
+        european_citizenship:
+          type: string
+          description: This option is useless anymore.
+          deprecated: true
+        tax_code:
+          type: string
+          description: Tax_code is renamed to pin.
+          deprecated: true
+        pin:
+          type: string
+          description: |-
+            Domain name registrant's Taxcode (mandatory / only optional when the trustee is used).
+            Domain name registrant's Taxcode (mandatory / only optional when the trustee is used)
+
+            If the requester:
+            * is an Italian natural person it contains his/her Codice Fiscale (16 characters format).
+            * For others than residents of IT it can contain a document number. (ID Card).
+            * In all other cases it must be equal to VAT number (in the 16 characters format if nationality is IT) or the numeric Codice Fiscale.
+      required:
+      - pin
+      x-properties-order:
+      - european_citizenship
+      - tax_code
+      - pin
+    scaleway.domain.v2beta1.Contact.ExtensionNL:
+      type: object
+      properties:
+        legal_form:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionNL.LegalForm'
+        legal_form_registration_number:
+          type: string
+      x-properties-order:
+      - legal_form
+      - legal_form_registration_number
+    scaleway.domain.v2beta1.Contact.ExtensionNL.LegalForm:
+      type: string
+      enum:
+      - legal_form_unknown
+      - other
+      - non_dutch_eu_company
+      - non_dutch_legal_form_enterprise_subsidiary
+      - limited_company
+      - limited_company_in_formation
+      - cooperative
+      - limited_partnership
+      - sole_company
+      - european_economic_interest_group
+      - religious_entity
+      - partnership
+      - public_company
+      - mutual_benefit_company
+      - residential
+      - shipping_company
+      - foundation
+      - association
+      - trading_partnership
+      - natural_person
+      x-enum-descriptions:
+        values:
+          legal_form_unknown: If unspecified, the status is unknown by default.
+          other: The contact's legal form is not listed below (only for .nl domains).
+          non_dutch_eu_company: The contact is a non-Dutch EC company (only for .nl
+            domains).
+          non_dutch_legal_form_enterprise_subsidiary: The contact is a non-Dutch legal
+            form/enterprise/subsidiary (only for .nl domains).
+          limited_company: The contact is a limited company (only for .nl domains).
+          limited_company_in_formation: The contact is a limited company in formation
+            (only for .nl domains).
+          cooperative: The contact is a cooperative (only for .nl domains).
+          limited_partnership: The contact is a limited Partnership (only for .nl
+            domains).
+          sole_company: The contact is a sole trader (only for .nl domains).
+          european_economic_interest_group: The contact is a European Economic Interest
+            Group (only for .nl domains).
+          religious_entity: The contact is a religious society (only for .nl domains).
+          partnership: The contact is a partnership (only for .nl domains).
+          public_company: The contact is a public Company (only for .nl domains).
+          mutual_benefit_company: The contact is a mutual benefit company (only for
+            .nl domains).
+          residential: The contact is a natural person (only for .nl domains).
+          shipping_company: The contact is a shipping company (only for .nl domains).
+          foundation: The contact is a foundation (only for .nl domains).
+          association: The contact is a association (only for .nl domains).
+          trading_partnership: The contact is a trading partnership (only for .nl
+            domains).
+          natural_person: The contact is a physical person (only for .nl domains).
+      default: legal_form_unknown
+    scaleway.domain.v2beta1.Contact.LegalForm:
+      type: string
+      enum:
+      - legal_form_unknown
+      - individual
+      - corporate
+      - association
+      - other
+      x-enum-descriptions:
+        values:
+          legal_form_unknown: If unspecified, the status is unknown by default.
+          individual: The contact is a physical person.
+          corporate: The contact is a corporate or a society.
+          association: The contact is an association.
+          other: The contact is not represented by a physical person, a corporate
+            or an association.
+      default: legal_form_unknown
+    scaleway.domain.v2beta1.Contact.Question:
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+      x-properties-order:
+      - question
+      - answer
+    scaleway.domain.v2beta1.Contact.Status:
+      type: string
+      enum:
+      - status_unknown
+      - active
+      - pending
+      x-enum-descriptions:
+        values:
+          status_unknown: If unspecified, the status is unknown by default.
+          active: The contact is active and can be edited.
+          pending: The contact is temporarily locked (ie. while being edited).
+      default: status_unknown
+    scaleway.domain.v2beta1.ContactRoles:
+      type: object
+      properties:
+        contact:
+          description: The contact information.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact'
+        roles:
+          type: object
+          description: Map of domain names to the contact's roles on each domain.
+          properties:
+            <roleKey>:
+              description: Map of domain names to the contact's roles on each domain.
+              $ref: '#/components/schemas/scaleway.domain.v2beta1.ContactRoles.Roles'
+          additionalProperties: true
+      x-properties-order:
+      - contact
+      - roles
+    scaleway.domain.v2beta1.ContactRoles.Roles:
+      type: object
+      properties:
+        is_owner:
+          type: boolean
+          description: Indicates whether the contact is the owner of the domain.
+        is_administrative:
+          type: boolean
+          description: Indicates whether the contact is the administrative contact
+            of the domain.
+        is_technical:
+          type: boolean
+          description: Indicates whether the contact is the technical contact of the
+            domain.
+      x-properties-order:
+      - is_owner
+      - is_administrative
+      - is_technical
+    scaleway.domain.v2beta1.DNSZone:
+      type: object
+      properties:
+        domain:
+          type: string
+        subdomain:
+          type: string
+        ns:
+          type: array
+          items:
+            type: string
+        ns_default:
+          type: array
+          items:
+            type: string
+        ns_master:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.DNSZone.Status'
+        message:
+          $ref: '#/components/schemas/google.protobuf.StringValue'
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        project_id:
+          type: string
+        linked_products:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.LinkedProduct'
+        srn:
+          type: string
+          pattern: ^srn://domain\.[^/]+/dns-zones/[^/]+$
+        dns_zone:
+          type: string
+      x-properties-order:
+      - domain
+      - subdomain
+      - ns
+      - ns_default
+      - ns_master
+      - status
+      - message
+      - updated_at
+      - project_id
+      - linked_products
+      - srn
+      - dns_zone
+    scaleway.domain.v2beta1.DNSZone.Status:
+      type: string
+      enum:
+      - unknown
+      - active
+      - pending
+      - error
+      - locked
+      x-enum-descriptions:
+        values:
+          unknown: If unspecified, the DNS zone's status is unknown by default
+          active: The DNS zone is active and healthy.
+          pending: The DNS zone is updating.
+          error: An error occurred after updating the DNS zone.
+          locked: The DNS zone is locked and cannot be updated anymore.
+      default: unknown
+    scaleway.domain.v2beta1.DSRecord:
+      type: object
+      properties:
+        key_id:
+          type: integer
+          description: The key tag of the DS record.
+          format: uint32
+        algorithm:
+          description: The cryptographic algorithm of the DNSKEY used for the DS record.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.DSRecord.Algorithm'
+        digest:
+          description: |-
+            The digest of the DS record.
+            Precisely one of digest, public_key can be set.
+          x-one-of: type
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.DSRecord.Digest'
+          - type: "null"
+        public_key:
+          description: |-
+            The public key of the DS record.
+            Precisely one of digest, public_key can be set.
+          x-one-of: type
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.DSRecord.PublicKey'
+          - type: "null"
+      x-properties-order:
+      - key_id
+      - algorithm
+      - digest
+      - public_key
+    scaleway.domain.v2beta1.DSRecord.Algorithm:
+      type: string
+      enum:
+      - rsamd5
+      - dh
+      - dsa
+      - rsasha1
+      - dsa_nsec3_sha1
+      - rsasha1_nsec3_sha1
+      - rsasha256
+      - rsasha512
+      - ecc_gost
+      - ecdsap256sha256
+      - ecdsap384sha384
+      - ed25519
+      - ed448
+      x-enum-descriptions:
+        values:
+          rsamd5: 'Code 1, algorithm: ''RSAMD5''.'
+          dh: 'Code 2, algorithm: ''DIFFIE_HELLMAN''.'
+          dsa: 'Code 3, algorithm: ''DSA_SHA1''.'
+          rsasha1: 'Code 5, algorithm: ''RSA_SHA1''.'
+          dsa_nsec3_sha1: 'Code 6, algorithm: ''DSA_NSEC3_SHA1''.'
+          rsasha1_nsec3_sha1: 'Code 7, algorithm: ''RSASHA1_NSEC3_SHA1''.'
+          rsasha256: 'Code 8, algorithm: ''RSASHA256''.'
+          rsasha512: 'Code 10, algorithm: ''RSASHA512''.'
+          ecc_gost: 'Code 12, algorithm: ''ECC_GOST''.'
+          ecdsap256sha256: 'Code 13, algorithm: ''ECDSAP256SHA256''.'
+          ecdsap384sha384: 'Code 14, algorithm: ''ECDSAP384SHA384''.'
+          ed25519: 'Code 15, algorithm: ''ED25519''.'
+          ed448: 'Code 16, algorithm: ''ED448''.'
+      default: rsamd5
+    scaleway.domain.v2beta1.DSRecord.Digest:
+      type: object
+      properties:
+        type:
+          description: The digest type of the DS record.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.DSRecord.Digest.Type'
+        digest:
+          type: string
+          description: The digest string of the DS record.
+        public_key:
+          description: The DNSKEY the digest is derived from. Optional.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.DSRecord.PublicKey'
+      x-properties-order:
+      - type
+      - digest
+      - public_key
+    scaleway.domain.v2beta1.DSRecord.Digest.Type:
+      type: string
+      enum:
+      - sha_1
+      - sha_256
+      - gost_r_34_11_94
+      - sha_384
+      x-enum-descriptions:
+        values:
+          sha_1: 'Code 1, digest type: ''SHA_1''.'
+          sha_256: 'Code 2, digest type: ''SHA_256''.'
+          gost_r_34_11_94: 'Code 3, digest type: ''GOST_R_34_11_94''.'
+          sha_384: 'Code 4, digest type: ''SHA_384''.'
+      default: sha_1
+    scaleway.domain.v2beta1.DSRecord.PublicKey:
+      type: object
+      properties:
+        key:
+          type: string
+          description: The public key string.
+      x-properties-order:
+      - key
+    scaleway.domain.v2beta1.DeleteExternalDomainResponse:
+      type: object
+    scaleway.domain.v2beta1.Domain:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: The domain name.
+        organization_id:
+          type: string
+          description: The organization ID associated with the domain.
+        project_id:
+          type: string
+          description: The project ID associated with the domain.
+        auto_renew_status:
+          description: Status of the automatic renewal of the domain (enabling, enabled,
+            disabling, disabled).
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.FeatureStatus'
+        dnssec:
+          description: Status of the DNSSEC configuration of the domain.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.DNSSEC'
+        epp_code:
+          type: array
+          description: List of the domain's EPP status codes (e.g. clientTransferProhibited,
+            serverHold).
+          items:
+            type: string
+        expired_at:
+          type:
+          - string
+          - "null"
+          description: Date of expiration of the domain. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Domain's last modification date. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        registrar:
+          type: string
+          description: The registrar managing the domain.
+        is_external:
+          type: boolean
+          description: Indicates whether the domain is external (not managed by Scaleway
+            as registrar).
+        status:
+          description: Status of the domain.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.Status'
+        dns_zones:
+          type: array
+          description: List of the domain's DNS zones.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.DNSZone'
+        owner_contact:
+          description: Contact information of the domain's owner.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact'
+        technical_contact:
+          description: Contact information of the domain's technical contact.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact'
+        administrative_contact:
+          description: Contact information of the domain's administrative contact.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact'
+        external_domain_registration_status:
+          description: |-
+            Registration status of an external domain, if available.
+            Precisely one of external_domain_registration_status, transfer_registration_status can be set.
+          x-one-of: registration_status
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.RegistrationStatusExternalDomain'
+          - type: "null"
+        transfer_registration_status:
+          description: |-
+            Status of an in-progress domain transfer.
+            Precisely one of external_domain_registration_status, transfer_registration_status can be set.
+          x-one-of: registration_status
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.RegistrationStatusTransfer'
+          - type: "null"
+        tld:
+          description: Domain's TLD information.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Tld'
+        linked_products:
+          type: array
+          description: List of Scaleway product types linked to the domain (e.g. vpc).
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.LinkedProduct'
+        pending_trade:
+          type: boolean
+          description: Indicates if a trade is ongoing.
+        srn:
+          type: string
+          description: The SRN of the domain.
+          pattern: ^srn://domain\.[^/]+/domains/[^/]+$
+      x-properties-order:
+      - domain
+      - organization_id
+      - project_id
+      - auto_renew_status
+      - dnssec
+      - epp_code
+      - expired_at
+      - updated_at
+      - registrar
+      - is_external
+      - status
+      - dns_zones
+      - owner_contact
+      - technical_contact
+      - administrative_contact
+      - external_domain_registration_status
+      - transfer_registration_status
+      - tld
+      - linked_products
+      - pending_trade
+      - srn
+    scaleway.domain.v2beta1.Domain.DNSSEC:
+      type: object
+      properties:
+        status:
+          description: Status of the DNSSEC configuration of the domain.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.FeatureStatus'
+        ds_records:
+          type: array
+          description: List of the domain's DS records.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.DSRecord'
+      x-properties-order:
+      - status
+      - ds_records
+    scaleway.domain.v2beta1.Domain.FeatureStatus:
+      type: string
+      enum:
+      - feature_status_unknown
+      - enabling
+      - enabled
+      - disabling
+      - disabled
+      x-enum-descriptions:
+        values:
+          feature_status_unknown: Default unknown status.
+          enabling: A feature (auto renew, DNSSEC) is being enabled.
+          enabled: A feature (auto renew, DNSSEC) has been enabled.
+          disabling: A feature (auto renew, DNSSEC) is being disabled.
+          disabled: A feature (auto renew, DNSSEC) has been disabled.
+      default: feature_status_unknown
+    scaleway.domain.v2beta1.Domain.RegistrationStatusExternalDomain:
+      type: object
+      properties:
+        validation_token:
+          type: string
+          description: Validation token for the external domain registration.
+      x-properties-order:
+      - validation_token
+    scaleway.domain.v2beta1.Domain.RegistrationStatusTransfer:
+      type: object
+      properties:
+        status:
+          description: Status of the domain transfer.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.RegistrationStatusTransfer.Status'
+        vote_current_owner:
+          type: boolean
+          description: Indicates whether the current owner has voted for the transfer.
+        vote_new_owner:
+          type: boolean
+          description: Indicates whether the new owner has voted for the transfer.
+      x-properties-order:
+      - status
+      - vote_current_owner
+      - vote_new_owner
+    scaleway.domain.v2beta1.Domain.RegistrationStatusTransfer.Status:
+      type: string
+      enum:
+      - status_unknown
+      - pending
+      - waiting_vote
+      - rejected
+      - processing
+      - done
+      x-enum-descriptions:
+        values:
+          status_unknown: If unspecified, the status is unknown by default.
+          pending: The domain transfer is being initialized.
+          waiting_vote: The domain transfer has started. The process can be accelerated
+            if you accept the vote.
+          rejected: The domain transfer has been rejected.
+          processing: The domain transfer has been accepted. Your resources are being
+            created.
+          done: The domain transfer is complete.
+      default: status_unknown
+    scaleway.domain.v2beta1.Domain.Status:
+      type: string
+      enum:
+      - status_unknown
+      - active
+      - creating
+      - create_error
+      - renewing
+      - renew_error
+      - xfering
+      - xfer_error
+      - expired
+      - expiring
+      - updating
+      - checking
+      - locked
+      - deleting
+      x-enum-descriptions:
+        values:
+          status_unknown: If unspecified, the status is unknown by default.
+          active: The domain is active.
+          creating: The domain is in the process of being created.
+          create_error: An error occurred during the domain's creation process.
+          renewing: The domain is being renewed.
+          renew_error: An error occurred during the domain's renewal process.
+          xfering: The domain is being transferred to Scaleway Domains and DNS.
+          xfer_error: An error occurred during the domain's transfer process.
+          expired: The domain is expired but it can be renewed.
+          expiring: The domain is expiring but it is still renewable.
+          updating: The domain's information is updating.
+          checking: The external domain has not yet been validated. It will be automatically
+            removed after 48 hours if it still has not been validated by then.
+          locked: The domain is locked. Contact Scaleway's support team for more information.
+          deleting: The domain will be deleted soon. This process cannot be canceled.
+      default: status_unknown
+    scaleway.domain.v2beta1.DomainSummary:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: The domain name.
+        project_id:
+          type: string
+          description: The project ID associated with the domain.
+        organization_id:
+          type: string
+          description: The organization ID associated with the domain.
+        auto_renew_status:
+          description: Status of the automatic renewal of the domain (enabling, enabled,
+            disabling, disabled).
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.FeatureStatus'
+        dnssec_status:
+          description: Status of the DNSSEC configuration of the domain (enabling,
+            enabled, disabling, disabled).
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.FeatureStatus'
+        epp_code:
+          type: array
+          description: List of the domain's EPP status codes (e.g. clientTransferProhibited,
+            serverHold).
+          items:
+            type: string
+        expired_at:
+          type:
+          - string
+          - "null"
+          description: Date of expiration of the domain. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Domain's last modification date. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Domain's creation date. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        registrar:
+          type: string
+          description: The registrar managing the domain.
+        is_external:
+          type: boolean
+          description: Indicates whether the domain is external (not managed by Scaleway
+            as registrar).
+        status:
+          description: Status of the domain.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.Status'
+        external_domain_registration_status:
+          description: |-
+            Registration status of an external domain, if available.
+            Precisely one of external_domain_registration_status, transfer_registration_status can be set.
+          x-one-of: registration_status
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.RegistrationStatusExternalDomain'
+          - type: "null"
+        transfer_registration_status:
+          description: |-
+            Status of an in-progress domain transfer.
+            Precisely one of external_domain_registration_status, transfer_registration_status can be set.
+          x-one-of: registration_status
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.RegistrationStatusTransfer'
+          - type: "null"
+        pending_trade:
+          type: boolean
+          description: Indicates if a trade is ongoing.
+        srn:
+          type: string
+          description: The SRN of the domain.
+          pattern: ^srn://domain\.[^/]+/domains/[^/]+$
+      x-properties-order:
+      - domain
+      - project_id
+      - organization_id
+      - auto_renew_status
+      - dnssec_status
+      - epp_code
+      - expired_at
+      - updated_at
+      - created_at
+      - registrar
+      - is_external
+      - status
+      - external_domain_registration_status
+      - transfer_registration_status
+      - pending_trade
+      - srn
+    scaleway.domain.v2beta1.GetDomainAuthCodeResponse:
+      type: object
+      properties:
+        auth_code:
+          type: string
+          description: The authorization code to transfer the domain.
+      x-properties-order:
+      - auth_code
+    scaleway.domain.v2beta1.Host:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: The domain name associated with the hostname.
+        name:
+          type: string
+          description: The hostname (FQDN, e.g. ns1.example.com).
+        ips:
+          type: array
+          description: List of glue IP addresses associated with the hostname. (IP
+            address)
+          example:
+          - 1.2.3.4
+          items:
+            type: string
+        status:
+          description: Status of the hostname.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Host.Status'
+      x-properties-order:
+      - domain
+      - name
+      - ips
+      - status
+    scaleway.domain.v2beta1.Host.Status:
+      type: string
+      enum:
+      - unknown_status
+      - active
+      - updating
+      - deleting
+      x-enum-descriptions:
+        values:
+          unknown_status: If unspecified, the status is unknown by default.
+          active: The host is active.
+          updating: The host is being updated.
+          deleting: The host is being deleted.
+      default: unknown_status
+    scaleway.domain.v2beta1.InboundTransfer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the inbound transfer.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation date of the inbound transfer. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        last_updated_at:
+          type:
+          - string
+          - "null"
+          description: The last modification date of the inbound transfer. (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        project_id:
+          type: string
+          description: The project ID associated with the inbound transfer.
+        domain:
+          type: string
+          description: The domain associated with the inbound transfer.
+        status:
+          description: Inbound transfer status.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.InboundTransfer.Status'
+        message:
+          type: string
+          description: Human-friendly message to describe the current inbound transfer
+            status.
+        task_id:
+          type: string
+          description: The unique identifier of the associated task.
+      x-properties-order:
+      - id
+      - created_at
+      - last_updated_at
+      - project_id
+      - domain
+      - status
+      - message
+      - task_id
+    scaleway.domain.v2beta1.InboundTransfer.Status:
+      type: string
+      enum:
+      - unknown
+      - in_progress
+      - done
+      - err_internal
+      - err_domain_pending
+      - err_already_transferring
+      - err_transfer_prohibited
+      - err_transfer_impossible
+      - err_invalid_authcode
+      - err_domain_too_young
+      - err_too_many_requests
+      x-enum-descriptions:
+        values:
+          unknown: Unknown status.
+          in_progress: Domain transfer in progress.
+          done: Domain successfully transferred.
+          err_internal: Internal error.
+          err_domain_pending: Domain is in a pending status.
+          err_already_transferring: Domain is already being transferred.
+          err_transfer_prohibited: Domain transfer is prohibited (transfer/update
+            prohibited status or is currently locked).
+          err_transfer_impossible: Transfer is not supported for this TLD or the domain
+            is premium.
+          err_invalid_authcode: Invalid authcode.
+          err_domain_too_young: Domain name was created less than 60 days ago.
+          err_too_many_requests: Too many transfer requests for this domain name.
+      default: unknown
+    scaleway.domain.v2beta1.LinkedProduct:
+      type: string
+      enum:
+      - unknown_product
+      - vpc
+      x-enum-descriptions:
+        values:
+          unknown_product: If unspecified, no Scaleway product uses the resources
+          vpc: Resources are used by Scaleway VPC
+      default: unknown_product
+    scaleway.domain.v2beta1.ListContactsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - email_asc
+      - email_desc
+      x-enum-descriptions:
+        values:
+          created_at_asc: Order by creation date (ascending)
+          created_at_desc: Order by creation date (descending)
+          email_asc: Order by email (ascending)
+          email_desc: Order by email (descending)
+      default: created_at_asc
+    scaleway.domain.v2beta1.ListContactsRequest.Role:
+      type: string
+      enum:
+      - unknown_role
+      - owner
+      - administrative
+      - technical
+      x-enum-descriptions:
+        values:
+          owner: The contact is a domain's owner.
+          administrative: The contact is a domain's administrative contact.
+          technical: The contact is a domain's technical contact.
+      default: unknown_role
+    scaleway.domain.v2beta1.ListContactsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of contacts matching the request.
+          format: uint32
+        contacts:
+          type: array
+          description: List of contacts with their associated roles.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.ContactRoles'
+      x-properties-order:
+      - total_count
+      - contacts
+    scaleway.domain.v2beta1.ListDomainHostsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of hostnames matching the request.
+          format: uint32
+        hosts:
+          type: array
+          description: List of host objects matching the request.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.Host'
+      x-properties-order:
+      - total_count
+      - hosts
+    scaleway.domain.v2beta1.ListDomainsRequest.OrderBy:
+      type: string
+      enum:
+      - domain_asc
+      - domain_desc
+      x-enum-descriptions:
+        values:
+          domain_asc: Order by domain name (ascending)
+          domain_desc: Order by domain name (descending)
+      default: domain_asc
+    scaleway.domain.v2beta1.ListDomainsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of domains matching the request.
+          format: uint32
+        domains:
+          type: array
+          description: List of domain summaries matching the request.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.DomainSummary'
+      x-properties-order:
+      - total_count
+      - domains
+    scaleway.domain.v2beta1.ListInboundTransfersResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of inbound transfers matching the request.
+          format: uint32
+        inbound_transfers:
+          type: array
+          description: List of inbound transfers matching the request.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.InboundTransfer'
+      x-properties-order:
+      - total_count
+      - inbound_transfers
+    scaleway.domain.v2beta1.ListRenewableDomainsRequest.OrderBy:
+      type: string
+      enum:
+      - domain_asc
+      - domain_desc
+      x-enum-descriptions:
+        values:
+          domain_asc: Order by domain name (ascending)
+          domain_desc: Order by domain name (descending)
+      default: domain_asc
+    scaleway.domain.v2beta1.ListRenewableDomainsResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of renewable domains matching the request.
+          format: uint32
+        domains:
+          type: array
+          description: List of renewable domains matching the request.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.RenewableDomain'
+      x-properties-order:
+      - total_count
+      - domains
+    scaleway.domain.v2beta1.ListTasksRequest.OrderBy:
+      type: string
+      enum:
+      - domain_desc
+      - domain_asc
+      - type_asc
+      - type_desc
+      - status_asc
+      - status_desc
+      - updated_at_asc
+      - updated_at_desc
+      x-enum-descriptions:
+        values:
+          domain_desc: Order by domain name (descending)
+          domain_asc: Order by domain name (ascending)
+          type_asc: Order by type (ascending)
+          type_desc: Order by type (descending)
+          status_asc: Order by status (ascending)
+          status_desc: Order by status (descending)
+          updated_at_asc: Order by updated date (ascending)
+          updated_at_desc: Order by updated date (descending)
+      default: domain_desc
+    scaleway.domain.v2beta1.ListTasksResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+          description: Total count of tasks matching the request.
+          format: uint32
+        tasks:
+          type: array
+          description: List of tasks matching the request.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.Task'
+      x-properties-order:
+      - total_count
+      - tasks
+    scaleway.domain.v2beta1.ListTldsRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      x-enum-descriptions:
+        values:
+          name_asc: Order by TLD name (ascending)
+          name_desc: Order by TLD name (descending)
+      default: name_asc
+    scaleway.domain.v2beta1.ListTldsResponse:
+      type: object
+      properties:
+        tlds:
+          type: array
+          description: Array of TLDs.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.Tld'
+        total_count:
+          type: integer
+          description: Total count of TLDs returned.
+          format: uint64
+      x-properties-order:
+      - tlds
+      - total_count
+    scaleway.domain.v2beta1.NewContact:
+      type: object
+      properties:
+        legal_form:
+          description: Legal form of the contact (individual, corporate, association,
+            other).
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.LegalForm'
+        firstname:
+          type: string
+          description: First name of the contact.
+        lastname:
+          type: string
+          description: Last name of the contact.
+        company_name:
+          type:
+          - string
+          - "null"
+          description: Company name of the contact (required for corporate legal forms).
+        email:
+          type: string
+          description: Email address of the contact.
+        email_alt:
+          type:
+          - string
+          - "null"
+          description: Alternative email address of the contact.
+        phone_number:
+          type: string
+          description: Phone number of the contact, normalized to +CC.NationalNumber
+            format.
+        fax_number:
+          type:
+          - string
+          - "null"
+          description: Fax number of the contact, normalized to +CC.NationalNumber
+            format.
+        address_line_1:
+          type: string
+          description: First line of the contact's address.
+        address_line_2:
+          type:
+          - string
+          - "null"
+          description: Second line of the contact's address.
+        zip:
+          type: string
+          description: Postal code of the contact.
+        city:
+          type: string
+          description: City of the contact.
+        country:
+          type: string
+          description: Country code of the contact (ISO 3166-1 alpha-2 format).
+        vat_identification_code:
+          type:
+          - string
+          - "null"
+          description: VAT identification code of the contact.
+        company_identification_code:
+          type:
+          - string
+          - "null"
+          description: Company identification code of the contact (SIRET/SIREN for
+            French contacts, any format for others).
+        lang:
+          description: Preferred language of the contact.
+          $ref: '#/components/schemas/scaleway.std.LanguageCode'
+        resale:
+          type: boolean
+          description: Indicates whether the contact's information can be resold.
+        extension_fr:
+          description: Additional information required for AFNIC-managed TLDs (.fr,
+            .re, .pm, .yt, .wf, .tf).
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR'
+        extension_eu:
+          description: Additional information required for .eu domains. Conditionally
+            required.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionEU'
+        whois_opt_in:
+          type: boolean
+          description: Indicates whether the contact's information is published in
+            the WHOIS database.
+        state:
+          type:
+          - string
+          - "null"
+          description: State or region of the contact.
+        extension_nl:
+          description: Additional information required for .nl domains. Auto-populated
+            for individuals.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionNL'
+        extension_it:
+          description: Additional information required for .it domains. Contains a
+            PIN.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionIT'
+        questions:
+          type: array
+          deprecated: true
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.Question'
+      x-properties-order:
+      - legal_form
+      - firstname
+      - lastname
+      - company_name
+      - email
+      - email_alt
+      - phone_number
+      - fax_number
+      - address_line_1
+      - address_line_2
+      - zip
+      - city
+      - country
+      - vat_identification_code
+      - company_identification_code
+      - lang
+      - resale
+      - extension_fr
+      - extension_eu
+      - whois_opt_in
+      - state
+      - extension_nl
+      - extension_it
+      - questions
+    scaleway.domain.v2beta1.OrderResponse:
+      type: object
+      properties:
+        domains:
+          type: array
+          description: List of domains in the order.
+          items:
+            type: string
+        organization_id:
+          type: string
+          description: The organization ID associated with the order.
+        project_id:
+          type: string
+          description: The project ID associated with the order.
+        task_id:
+          type: string
+          description: The unique identifier of the task associated with the order.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation date of the order. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - domains
+      - organization_id
+      - project_id
+      - task_id
+      - created_at
+    scaleway.domain.v2beta1.RegisterExternalDomainResponse:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: The external domain name registered.
+        organization_id:
+          type: string
+          description: The organization ID associated with the external domain.
+        project_id:
+          type: string
+          description: The project ID associated with the external domain.
+        validation_token:
+          type: string
+          description: The validation token to set as a DNS TXT record at _scaleway-challenge.<domain>
+            to validate the external domain.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: The creation date of the external domain registration. (RFC
+            3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+      x-properties-order:
+      - domain
+      - organization_id
+      - project_id
+      - validation_token
+      - created_at
+    scaleway.domain.v2beta1.RenewableDomain:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: The domain name.
+        project_id:
+          type: string
+          description: The project ID associated with the domain.
+        organization_id:
+          type: string
+          description: The organization ID associated with the domain.
+        status:
+          description: The renewal status of the domain.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.RenewableDomain.Status'
+        renewable_duration_in_years:
+          type:
+          - integer
+          - "null"
+          description: Duration in years for which the domain can be renewed.
+          format: int32
+        expired_at:
+          type:
+          - string
+          - "null"
+          description: Date of expiration of the domain. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        limit_renew_at:
+          type:
+          - string
+          - "null"
+          description: Deadline to renew the domain before it enters the late renewal
+            period. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        limit_redemption_at:
+          type:
+          - string
+          - "null"
+          description: Deadline to renew the domain before it enters the redemption
+            period. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        estimated_delete_at:
+          type:
+          - string
+          - "null"
+          description: Estimated date at which the domain will be deleted. (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        tld:
+          description: TLD information of the domain.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Tld'
+        srn:
+          type: string
+          description: The SRN of the domain.
+          pattern: ^srn://domain\.[^/]+/domains/[^/]+$
+      x-properties-order:
+      - domain
+      - project_id
+      - organization_id
+      - status
+      - renewable_duration_in_years
+      - expired_at
+      - limit_renew_at
+      - limit_redemption_at
+      - estimated_delete_at
+      - tld
+      - srn
+    scaleway.domain.v2beta1.RenewableDomain.Status:
+      type: string
+      enum:
+      - unknown
+      - renewable
+      - late_reneweable
+      - not_renewable
+      x-enum-descriptions:
+        values:
+          unknown: If unspecified, the status is unknown by default.
+          renewable: The domain can be renewed.
+          late_reneweable: The domain is expired, but it still can be late renewed.
+          not_renewable: The domain cannot be renewed.
+      default: unknown
+    scaleway.domain.v2beta1.RetryInboundTransferResponse:
+      type: object
+    scaleway.domain.v2beta1.SearchAvailableDomainsResponse:
+      type: object
+      properties:
+        available_domains:
+          type: array
+          description: Array of available domains.
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.AvailableDomain'
+        exact_match_domain:
+          description: If an exact match was asked and found, the result is in this
+            field.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.AvailableDomain'
+      x-properties-order:
+      - available_domains
+      - exact_match_domain
+    scaleway.domain.v2beta1.Task:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the task.
+        project_id:
+          type: string
+          description: The project ID associated to the task.
+        organization_id:
+          type: string
+          description: The organization ID associated to the task.
+        domain:
+          type:
+          - string
+          - "null"
+          description: The domain name associated to the task.
+        type:
+          description: The type of the task.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Task.Type'
+        status:
+          description: The status of the task.
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Task.Status'
+        started_at:
+          type:
+          - string
+          - "null"
+          description: Start date of the task. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Last update of the task. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        message:
+          type:
+          - string
+          - "null"
+          description: Error message associated to the task.
+        contact_identifier:
+          type:
+          - string
+          - "null"
+          description: Human-friendly contact identifier used when the task concerns
+            a contact.
+        srn:
+          type: string
+          description: The SRN of the task.
+          pattern: ^srn://domain\.[^/]+/tasks/[^/]+$
+      x-properties-order:
+      - id
+      - project_id
+      - organization_id
+      - domain
+      - type
+      - status
+      - started_at
+      - updated_at
+      - message
+      - contact_identifier
+      - srn
+    scaleway.domain.v2beta1.Task.Status:
+      type: string
+      enum:
+      - unavailable
+      - new
+      - waiting_payment
+      - pending
+      - success
+      - error
+      x-enum-descriptions:
+        values:
+          unavailable: If unspecified, the status is unavailable by default.
+          new: The task has been created but it has not yet started.
+          waiting_payment: The task is waiting for a payment to be validated.
+          pending: The task is pending.
+          success: The task has been completed.
+          error: The task is in an error state.
+      default: unavailable
+    scaleway.domain.v2beta1.Task.Type:
+      type: string
+      enum:
+      - unknown
+      - create_domain
+      - create_external_domain
+      - renew_domain
+      - transfer_domain
+      - trade_domain
+      - lock_domain_transfer
+      - unlock_domain_transfer
+      - enable_dnssec
+      - disable_dnssec
+      - update_domain
+      - update_contact
+      - delete_domain
+      - cancel_task
+      - generate_ssl_certificate
+      - renew_ssl_certificate
+      - send_message
+      - delete_domain_expired
+      - delete_external_domain
+      - create_host
+      - update_host
+      - delete_host
+      - move_project
+      - transfer_online_domain
+      x-enum-descriptions:
+        values:
+          unknown: If unspecified, the status is unknown by default.
+          create_domain: Create a new internal domain.
+          create_external_domain: Create a new external domain.
+          renew_domain: Renew a domain.
+          transfer_domain: Transfer a domain to Scaleway Domains and DNS.
+          trade_domain: Trade a domain to a new owner.
+          lock_domain_transfer: Lock the transfer of a domain for protection.
+          unlock_domain_transfer: Unlock the transfer of a domain.
+          enable_dnssec: Enable DNSSEC for a domain.
+          disable_dnssec: Disable DNSSEC for a domain.
+          update_domain: Update the domain's information.
+          update_contact: Change the technical or administrative contact.
+          delete_domain: Delete a domain and destroy its zone versions, zones, and
+            SSL certificates.
+          cancel_task: Cancel a task that has not yet started.
+          generate_ssl_certificate: Generate a new SSL certificate.
+          renew_ssl_certificate: Renew an SSL certificate.
+          send_message: Send a message. For most cases, it will be followed by an
+            email.
+          delete_domain_expired: Delete a domain that has expired and not been restored
+            for at least 3 months.
+          delete_external_domain: Delete a newly registered external domain that has
+            not been validated after 48 hours or when the external domain fails to
+            point to our name servers for more than 14 days.
+          create_host: Create domain's hostname with glue IPs.
+          update_host: Update domain's hostname with glue IPs.
+          delete_host: Delete domain's hostname.
+          move_project: Move a domain to another Project.
+          transfer_online_domain: Transfer a domain from Online to Scaleway Domains
+            and DNS.
+      default: unknown
+    scaleway.domain.v2beta1.Tld:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The TLD name.
+        dnssec_support:
+          type: boolean
+          description: Indicates whether the TLD supports DNSSEC.
+        duration_in_years_min:
+          type: integer
+          description: Minimum registration duration in years for the TLD.
+          format: uint32
+        duration_in_years_max:
+          type: integer
+          description: Maximum registration duration in years for the TLD.
+          format: uint32
+        idn_support:
+          type: boolean
+          description: Indicates whether the TLD supports internationalized domain
+            names (IDN).
+        offers:
+          type: object
+          description: Map of available offers for the TLD, keyed by action string
+            (create, renew, transfer, etc.).
+          properties:
+            <offerKey>:
+              description: Map of available offers for the TLD, keyed by action string
+                (create, renew, transfer, etc.).
+              $ref: '#/components/schemas/scaleway.domain.v2beta1.Tld.Offer'
+          additionalProperties: true
+        specifications:
+          type: object
+          description: Additional specifications of the TLD.
+          properties:
+            <specificationKey>:
+              type: string
+              description: Additional specifications of the TLD.
+          additionalProperties: true
+        srn:
+          type: string
+          description: The SRN of the TLD.
+          pattern: ^srn://domain\.[^/]+/tlds/[^/]+$
+      x-properties-order:
+      - name
+      - dnssec_support
+      - duration_in_years_min
+      - duration_in_years_max
+      - idn_support
+      - offers
+      - specifications
+      - srn
+    scaleway.domain.v2beta1.Tld.Offer:
+      type: object
+      properties:
+        action:
+          type: string
+          description: The action of the offer (create, renew, transfer, etc.).
+        operation_path:
+          type: string
+          description: The billing SKU path of the offer (e.g. /network/domain/domains/fr/register).
+        price:
+          description: The price of the offer.
+          $ref: '#/components/schemas/google.type.Money'
+      x-properties-order:
+      - action
+      - operation_path
+      - price
+    scaleway.domain.v2beta1.TransferInDomainRequest.TransferRequest:
+      type: object
+      properties:
+        domain:
+          type: string
+        auth_code:
+          type: string
+      x-properties-order:
+      - domain
+      - auth_code
+    scaleway.domain.v2beta1.UpdateContactRequest.Question:
+      type: object
+      properties:
+        question:
+          $ref: '#/components/schemas/google.protobuf.StringValue'
+        answer:
+          $ref: '#/components/schemas/google.protobuf.StringValue'
+      x-properties-order:
+      - question
+      - answer
+    scaleway.std.LanguageCode:
+      type: string
+      enum:
+      - unknown_language_code
+      - en_US
+      - fr_FR
+      - de_DE
+      default: unknown_language_code
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /domain/v2beta1/buy-domains:
+    post:
+      tags:
+      - Order
+      operationId: BuyDomains
+      summary: Purchase domains
+      description: |-
+        Request the registration of domain names.
+        You can provide a domain's already existing contact or a new contact.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.OrderResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domains:
+                  type: array
+                  description: List of domains to purchase.
+                  items:
+                    type: string
+                duration_in_years:
+                  type: integer
+                  description: Duration in years for the domain registration. Subject
+                    to TLD-specific minimum and maximum constraints.
+                  format: uint32
+                project_id:
+                  type: string
+                  description: Project ID to create the domains in.
+                owner_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's owner.
+                    Precisely one of owner_contact_id, owner_contact can be set.
+                  x-one-of: owner_contact_type
+                owner_contact:
+                  description: |-
+                    New contact to create and use as the domain's owner.
+                    Precisely one of owner_contact_id, owner_contact can be set.
+                  x-one-of: owner_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                administrative_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's administrative contact. Optional; falls back to the owner contact if omitted.
+                    Precisely one of administrative_contact_id, administrative_contact can be set.
+                  x-one-of: administrative_contact_type
+                administrative_contact:
+                  description: |-
+                    New contact to create and use as the domain's administrative contact. Optional; falls back to the owner contact if omitted.
+                    Precisely one of administrative_contact_id, administrative_contact can be set.
+                  x-one-of: administrative_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                technical_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's technical contact. Optional; falls back to the owner contact if omitted.
+                    Precisely one of technical_contact_id, technical_contact can be set.
+                  x-one-of: technical_contact_type
+                technical_contact:
+                  description: |-
+                    New contact to create and use as the domain's technical contact. Optional; falls back to the owner contact if omitted.
+                    Precisely one of technical_contact_id, technical_contact can be set.
+                  x-one-of: technical_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                auto_renew:
+                  type: boolean
+                  description: Enable the `auto renew` feature for all the requested
+                    domains. This means the domain will be automatically renewed before
+                    its expiry date.
+              required:
+              - domains
+              x-properties-order:
+              - domains
+              - duration_in_years
+              - project_id
+              - owner_contact_id
+              - owner_contact
+              - administrative_contact_id
+              - administrative_contact
+              - technical_contact_id
+              - technical_contact
+              - auto_renew
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "auto_renew": false,
+              "domains": [
+                  "string"
+              ],
+              "duration_in_years": 42,
+              "project_id": "string"
+            }' \
+            "https://api.scaleway.com/domain/v2beta1/buy-domains"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/buy-domains" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            auto_renew:=false \
+            domains:='[
+              "string"
+            ]' \
+            duration_in_years:=42 \
+            project_id="string"
+  /domain/v2beta1/check-contacts-compatibility:
+    post:
+      tags:
+      - Contacts
+      operationId: CheckContactsCompatibility
+      summary: Check if contacts are compatible with a domain or a TLD
+      description: |-
+        Check whether contacts are compatible with a domain or a TLD.
+        If contacts are not compatible with either the domain or the TLD, the information that needs to be corrected is returned.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.CheckContactsCompatibilityResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domains:
+                  type: array
+                  description: List of domains to check contacts compatibility against.
+                  items:
+                    type: string
+                tlds:
+                  type: array
+                  description: List of TLDs to check contacts compatibility against.
+                  items:
+                    type: string
+                owner_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to check as the domain's owner.
+                    Precisely one of owner_contact_id, owner_contact can be set.
+                  x-one-of: owner_contact_type
+                owner_contact:
+                  description: |-
+                    New contact to check as the domain's owner.
+                    Precisely one of owner_contact_id, owner_contact can be set.
+                  x-one-of: owner_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                administrative_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to check as the domain's administrative contact.
+                    Precisely one of administrative_contact_id, administrative_contact can be set.
+                  x-one-of: administrative_contact_type
+                administrative_contact:
+                  description: |-
+                    New contact to check as the domain's administrative contact.
+                    Precisely one of administrative_contact_id, administrative_contact can be set.
+                  x-one-of: administrative_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                technical_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to check as the domain's technical contact.
+                    Precisely one of technical_contact_id, technical_contact can be set.
+                  x-one-of: technical_contact_type
+                technical_contact:
+                  description: |-
+                    New contact to check as the domain's technical contact.
+                    Precisely one of technical_contact_id, technical_contact can be set.
+                  x-one-of: technical_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+              x-properties-order:
+              - domains
+              - tlds
+              - owner_contact_id
+              - owner_contact
+              - administrative_contact_id
+              - administrative_contact
+              - technical_contact_id
+              - technical_contact
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/check-contacts-compatibility"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/check-contacts-compatibility" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/contacts:
+    get:
+      tags:
+      - Contacts
+      operationId: ListContacts
+      summary: List contacts
+      description: |-
+        Retrieve the list of contacts and their associated domains and roles.
+        You can filter the list by domain name.
+      parameters:
+      - in: query
+        name: page
+        description: Page number for the returned contacts.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Maximum number of contacts per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: domain
+        description: Filter contacts by domain name.
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        description: Filter contacts by project ID.
+        schema:
+          type: string
+      - in: query
+        name: organization_id
+        description: Filter contacts by organization ID.
+        schema:
+          type: string
+      - in: query
+        name: role
+        description: Filter contacts by role (owner, administrative, technical).
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.ListContactsRequest.Role'
+      - in: query
+        name: email_status
+        description: Filter contacts by email validation status.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.EmailStatus'
+      - in: query
+        name: order_by
+        description: Sort order of the returned contacts.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.ListContactsRequest.OrderBy'
+      - in: query
+        name: status
+        description: Filter by contact status.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.Status'
+      - in: query
+        name: legal_form
+        description: Filter by legal form.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.LegalForm'
+      - in: query
+        name: email
+        description: Filter by email address.
+        schema:
+          type: string
+      - in: query
+        name: search
+        description: Fuzzy search in firstname, lastname, email, and company_name.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.ListContactsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/contacts"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/contacts" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/contacts/{contact_id}:
+    get:
+      tags:
+      - Contacts
+      operationId: GetContact
+      summary: Get a contact
+      description: Retrieve a contact's details from the registrar using the given
+        contact's ID.
+      parameters:
+      - in: path
+        name: contact_id
+        description: ID of the contact to retrieve.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/contacts/{contact_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/contacts/{contact_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Contacts
+      operationId: UpdateContact
+      summary: Update contact
+      description: Edit the contact's information.
+      parameters:
+      - in: path
+        name: contact_id
+        description: ID of the contact to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type:
+                  - string
+                  - "null"
+                  description: Email address of the contact.
+                email_alt:
+                  type:
+                  - string
+                  - "null"
+                  description: Alternative email address of the contact.
+                phone_number:
+                  type:
+                  - string
+                  - "null"
+                  description: Phone number of the contact, normalized to +CC.NationalNumber
+                    format.
+                fax_number:
+                  type:
+                  - string
+                  - "null"
+                  description: Fax number of the contact, normalized to +CC.NationalNumber
+                    format.
+                address_line_1:
+                  type:
+                  - string
+                  - "null"
+                  description: First line of the contact's address.
+                address_line_2:
+                  type:
+                  - string
+                  - "null"
+                  description: Second line of the contact's address.
+                zip:
+                  type:
+                  - string
+                  - "null"
+                  description: Postal code of the contact.
+                city:
+                  type:
+                  - string
+                  - "null"
+                  description: City of the contact.
+                country:
+                  type:
+                  - string
+                  - "null"
+                  description: Country code of the contact (ISO 3166-1 alpha-2 format).
+                    Not updatable; returns an error if changed.
+                vat_identification_code:
+                  type:
+                  - string
+                  - "null"
+                  description: VAT identification code of the contact.
+                company_identification_code:
+                  type:
+                  - string
+                  - "null"
+                  description: Company identification code of the contact (SIRET/SIREN
+                    for French contacts, any format for others).
+                lang:
+                  description: Preferred language of the contact.
+                  $ref: '#/components/schemas/scaleway.std.LanguageCode'
+                resale:
+                  type:
+                  - boolean
+                  - "null"
+                  description: Indicates whether the contact's information can be
+                    resold.
+                extension_fr:
+                  description: Additional information required for AFNIC-managed TLDs
+                    (.fr, .re, .pm, .yt, .wf, .tf).
+                  $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionFR'
+                extension_eu:
+                  description: Additional information required for .eu domains. Conditionally
+                    required.
+                  $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionEU'
+                extension_nl:
+                  description: Additional information required for .nl domains. Auto-populated
+                    for individuals.
+                  $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionNL'
+                extension_it:
+                  description: Additional information required for .it domains. Contains
+                    a PIN.
+                  $ref: '#/components/schemas/scaleway.domain.v2beta1.Contact.ExtensionIT'
+                whois_opt_in:
+                  type:
+                  - boolean
+                  - "null"
+                  description: Indicates whether the contact's information is published
+                    in the WHOIS database.
+                state:
+                  type:
+                  - string
+                  - "null"
+                  description: State or region of the contact.
+                questions:
+                  type: array
+                  deprecated: true
+                  items:
+                    $ref: '#/components/schemas/scaleway.domain.v2beta1.UpdateContactRequest.Question'
+              x-properties-order:
+              - email
+              - email_alt
+              - phone_number
+              - fax_number
+              - address_line_1
+              - address_line_2
+              - zip
+              - city
+              - country
+              - vat_identification_code
+              - company_identification_code
+              - lang
+              - resale
+              - extension_fr
+              - extension_eu
+              - extension_nl
+              - extension_it
+              - whois_opt_in
+              - state
+              - questions
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/contacts/{contact_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/domain/v2beta1/contacts/{contact_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains:
+    get:
+      tags:
+      - Domains
+      operationId: ListDomains
+      summary: List domains
+      description: Retrieve the list of domains you own.
+      parameters:
+      - in: query
+        name: page
+        description: Page number for the returned domains.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Maximum number of domains per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Sort order of the returned domains.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.ListDomainsRequest.OrderBy'
+      - in: query
+        name: registrar
+        description: Filter domains by registrar.
+        schema:
+          type: string
+      - in: query
+        name: status
+        description: Filter domains by status.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain.Status'
+      - in: query
+        name: project_id
+        description: Filter domains by project ID.
+        schema:
+          type: string
+      - in: query
+        name: organization_id
+        description: Filter domains by organization ID.
+        schema:
+          type: string
+      - in: query
+        name: is_external
+        description: Filter domains by whether they are external (not managed by Scaleway
+          as registrar).
+        schema:
+          type: boolean
+      - in: query
+        name: domain
+        description: Filter domains by domain name.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.ListDomainsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/domains"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/domains" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}:
+    get:
+      tags:
+      - Domains
+      operationId: GetDomain
+      summary: Get domain
+      description: Retrieve a specific domain and display the domain's information.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to retrieve.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/domains/{domain}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Domains
+      operationId: UpdateDomain
+      summary: Update a domain's contacts
+      description: |-
+        Update contacts for a specific domain or create a new contact.<br/>
+        If you add the same contact for multiple roles (owner, administrative, technical), only one ID will be created and used for all of the roles.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                technical_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's technical contact.
+                    Precisely one of technical_contact_id, technical_contact can be set.
+                  x-one-of: technical_contact_info
+                technical_contact:
+                  description: |-
+                    New contact to create and use as the domain's technical contact.
+                    Precisely one of technical_contact_id, technical_contact can be set.
+                  x-one-of: technical_contact_info
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                owner_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    Deprecated. ID of the existing contact to use as the domain's owner.
+                    Precisely one of owner_contact_id, owner_contact can be set.
+                  deprecated: true
+                  x-one-of: owner_contact_info
+                owner_contact:
+                  description: |-
+                    Deprecated. New contact to create and use as the domain's owner.
+                    Precisely one of owner_contact_id, owner_contact can be set.
+                  deprecated: true
+                  x-one-of: owner_contact_info
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                administrative_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's administrative contact.
+                    Precisely one of administrative_contact_id, administrative_contact can be set.
+                  x-one-of: administrative_contact_info
+                administrative_contact:
+                  description: |-
+                    New contact to create and use as the domain's administrative contact.
+                    Precisely one of administrative_contact_id, administrative_contact can be set.
+                  x-one-of: administrative_contact_info
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+              x-properties-order:
+              - technical_contact_id
+              - technical_contact
+              - owner_contact_id
+              - owner_contact
+              - administrative_contact_id
+              - administrative_contact
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/domain/v2beta1/domains/{domain}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/auth-code:
+    get:
+      tags:
+      - Domains
+      operationId: GetDomainAuthCode
+      summary: Get a domain's authorization code
+      description: |-
+        Retrieve the authorization code to transfer an unlocked domain. The output returns an error if the domain is locked.
+        Some TLDs may have a different procedure to retrieve the authorization code. In that case, the information displays in the message field.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to retrieve the authorization code for.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.GetDomainAuthCodeResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/auth-code"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/domains/{domain}/auth-code" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/disable-auto-renew:
+    post:
+      tags:
+      - Domains
+      operationId: DisableDomainAutoRenew
+      summary: Disable auto renew
+      description: Disable the `auto renew` feature for a domain. This means the domain
+        will not be renewed before its expiry date.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to disable auto renew for.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/disable-auto-renew"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/{domain}/disable-auto-renew" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/disable-dnssec:
+    post:
+      tags:
+      - Domains
+      operationId: DisableDomainDNSSEC
+      summary: Disable a domain's DNSSEC
+      description: Disable DNSSEC for a domain.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to disable DNSSEC for.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/disable-dnssec"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/{domain}/disable-dnssec" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/enable-auto-renew:
+    post:
+      tags:
+      - Domains
+      operationId: EnableDomainAutoRenew
+      summary: Enable auto renew
+      description: Enable the `auto renew` feature for a domain. This means the domain
+        will be automatically renewed before its expiry date.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to enable auto renew for.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/enable-auto-renew"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/{domain}/enable-auto-renew" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/enable-dnssec:
+    post:
+      tags:
+      - Domains
+      operationId: EnableDomainDNSSEC
+      summary: Update domain DNSSEC
+      description: If your domain uses another registrar and has the default Scaleway
+        NS, you have to **update the DS record at your registrar**.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to enable DNSSEC for.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ds_record:
+                  description: The DS record to configure for DNSSEC. Required for
+                    domains using non-Scaleway nameservers. For Scaleway nameservers,
+                    auto-generated and must be omitted.
+                  $ref: '#/components/schemas/scaleway.domain.v2beta1.DSRecord'
+              x-properties-order:
+              - ds_record
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/enable-dnssec"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/{domain}/enable-dnssec" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/hosts:
+    get:
+      tags:
+      - Domains
+      operationId: ListDomainHosts
+      summary: List a domain's hostnames
+      description: List a domain's hostnames using their glue IPs.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to list hostnames for.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        description: Page number for the returned hostnames.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Maximum number of hostnames per page.
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.ListDomainHostsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/hosts"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/domains/{domain}/hosts" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Domains
+      operationId: CreateDomainHost
+      summary: Create a hostname for a domain
+      description: Create a hostname for a domain with glue IPs.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to create the hostname for.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Host'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The hostname to create.
+                ips:
+                  type: array
+                  description: List of glue IP addresses associated with the hostname.
+                    (IP address)
+                  example:
+                  - 1.2.3.4
+                  items:
+                    type: string
+              x-properties-order:
+              - name
+              - ips
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"string"}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/hosts"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/{domain}/hosts" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            name="string"
+  /domain/v2beta1/domains/{domain}/hosts/{name}:
+    patch:
+      tags:
+      - Domains
+      operationId: UpdateDomainHost
+      summary: Update a domain's hostname
+      description: Update a domain's hostname with glue IPs.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name of the hostname to update.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: name
+        description: The hostname to update.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Host'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ips:
+                  type:
+                  - array
+                  - "null"
+                  description: New list of glue IP addresses associated with the hostname.
+                    Optional.
+              x-properties-order:
+              - ips
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/hosts/{name}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/domain/v2beta1/domains/{domain}/hosts/{name}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Domains
+      operationId: DeleteDomainHost
+      summary: Delete a domain's hostname
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name of the hostname to delete.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: name
+        description: The hostname to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Host'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/hosts/{name}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/domain/v2beta1/domains/{domain}/hosts/{name}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/lock-transfer:
+    post:
+      tags:
+      - Domains
+      operationId: LockDomainTransfer
+      summary: Lock the transfer of a domain
+      description: Lock the transfer of a domain. This means that the domain cannot
+        be transferred and the authorization code cannot be requested to your current
+        registrar.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to lock for transfer.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/lock-transfer"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/{domain}/lock-transfer" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/trade:
+    post:
+      tags:
+      - Order
+      operationId: TradeDomain
+      summary: Trade a domain's contact
+      description: |-
+        Request to change a domain's contact owner.<br/>
+        If you specify the `organization_id` of the domain's new owner, the contact will change from the current owner's Scaleway account to the new owner's Scaleway account.<br/>
+        If the new owner's current contact information is not available, the first ever contact they have created for previous domains is taken into account to operate the change.<br/>
+        If the new owner has never created a contact to register domains before, an error message displays.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to trade (change of owner/registrant).
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.OrderResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type:
+                  - string
+                  - "null"
+                  description: Project ID to associate with the domain after the trade.
+                    Also used to filter the new owner's contacts.
+                new_owner_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's new owner.
+                    Precisely one of new_owner_contact_id, new_owner_contact can be set.
+                  x-one-of: new_owner_contact_type
+                new_owner_contact:
+                  description: |-
+                    New contact to create and use as the domain's new owner.
+                    Precisely one of new_owner_contact_id, new_owner_contact can be set.
+                  x-one-of: new_owner_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+              x-properties-order:
+              - project_id
+              - new_owner_contact_id
+              - new_owner_contact
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/trade"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/{domain}/trade" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/{domain}/unlock-transfer:
+    post:
+      tags:
+      - Domains
+      operationId: UnlockDomainTransfer
+      summary: Unlock the transfer of a domain
+      description: Unlock the transfer of a domain. This means that the domain can
+        be transferred and the authorization code can be requested to your current
+        registrar.
+      parameters:
+      - in: path
+        name: domain
+        description: The domain name to unlock for transfer.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.Domain'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/{domain}/unlock-transfer"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/{domain}/unlock-transfer" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/domains/transfer-domains:
+    post:
+      tags:
+      - Order
+      operationId: TransferInDomain
+      summary: Transfer a domain
+      description: Request the transfer of a domain from another registrar to Scaleway
+        Domains and DNS.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.OrderResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domains:
+                  type: array
+                  description: List of domains to transfer in, each with its optional
+                    auth code.
+                  items:
+                    $ref: '#/components/schemas/scaleway.domain.v2beta1.TransferInDomainRequest.TransferRequest'
+                project_id:
+                  type: string
+                  description: Project ID to transfer the domains into.
+                owner_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's owner.
+                    Precisely one of owner_contact_id, owner_contact can be set.
+                  x-one-of: owner_contact_type
+                owner_contact:
+                  description: |-
+                    New contact to create and use as the domain's owner.
+                    Precisely one of owner_contact_id, owner_contact can be set.
+                  x-one-of: owner_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                administrative_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's administrative contact.
+                    Precisely one of administrative_contact_id, administrative_contact can be set.
+                  x-one-of: administrative_contact_type
+                administrative_contact:
+                  description: |-
+                    New contact to create and use as the domain's administrative contact.
+                    Precisely one of administrative_contact_id, administrative_contact can be set.
+                  x-one-of: administrative_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+                technical_contact_id:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    ID of the existing contact to use as the domain's technical contact.
+                    Precisely one of technical_contact_id, technical_contact can be set.
+                  x-one-of: technical_contact_type
+                technical_contact:
+                  description: |-
+                    New contact to create and use as the domain's technical contact.
+                    Precisely one of technical_contact_id, technical_contact can be set.
+                  x-one-of: technical_contact_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.domain.v2beta1.NewContact'
+                  - type: "null"
+              required:
+              - domains
+              x-properties-order:
+              - domains
+              - project_id
+              - owner_contact_id
+              - owner_contact
+              - administrative_contact_id
+              - administrative_contact
+              - technical_contact_id
+              - technical_contact
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"domains":[""],"project_id":"string"}' \
+            "https://api.scaleway.com/domain/v2beta1/domains/transfer-domains"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/domains/transfer-domains" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            domains:='[""]' \
+            project_id="string"
+  /domain/v2beta1/external-domains:
+    post:
+      tags:
+      - Order
+      operationId: RegisterExternalDomain
+      summary: Register an external domain
+      description: Request the registration of an external domain name.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.RegisterExternalDomainResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domain:
+                  type: string
+                  description: The external domain name to register.
+                project_id:
+                  type: string
+                  description: Project ID to register the external domain in.
+              required:
+              - domain
+              x-properties-order:
+              - domain
+              - project_id
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"domain":"string","project_id":"string"}' \
+            "https://api.scaleway.com/domain/v2beta1/external-domains"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/external-domains" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            domain="string" \
+            project_id="string"
+  /domain/v2beta1/external-domains/{domain}:
+    delete:
+      tags:
+      - Order
+      operationId: DeleteExternalDomain
+      summary: Delete an external domain
+      description: Delete an external domain name.
+      parameters:
+      - in: path
+        name: domain
+        description: The external domain name to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.DeleteExternalDomainResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/external-domains/{domain}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/domain/v2beta1/external-domains/{domain}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/inbound-transfers:
+    get:
+      tags:
+      - Tasks
+      operationId: ListInboundTransfers
+      summary: List inbound domain transfers
+      description: |-
+        List all inbound transfer operations on the account.
+        You can filter the list of inbound transfers by domain name.
+      parameters:
+      - in: query
+        name: page
+        description: Page number for the returned inbound transfers.
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Maximum number of inbound transfers per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: project_id
+        description: Filter inbound transfers by project ID.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: organization_id
+        description: Filter inbound transfers by organization ID.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: domain
+        description: Filter inbound transfers by domain name.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.ListInboundTransfersResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/inbound-transfers?domain=string&organization_id=string&page=42&project_id=string"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/inbound-transfers" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            domain==string \
+            organization_id==string \
+            page==42 \
+            project_id==string
+  /domain/v2beta1/renew-domains:
+    post:
+      tags:
+      - Order
+      operationId: RenewDomains
+      summary: Renew domains
+      description: Request the renewal of one or more domain names.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.OrderResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domains:
+                  type: array
+                  description: List of domains to renew.
+                  items:
+                    type: string
+                duration_in_years:
+                  type: integer
+                  description: Duration in years for the domain renewal. Subject to
+                    TLD-specific minimum and maximum constraints.
+                  format: uint32
+                force_late_renewal:
+                  type:
+                  - boolean
+                  - "null"
+                  description: Confirm the late renewal (incurs extra fees).
+              required:
+              - domains
+              x-properties-order:
+              - domains
+              - duration_in_years
+              - force_late_renewal
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"domains":["string"],"duration_in_years":42}' \
+            "https://api.scaleway.com/domain/v2beta1/renew-domains"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/renew-domains" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            domains:='["string"]' \
+            duration_in_years:=42
+  /domain/v2beta1/renewable-domains:
+    get:
+      tags:
+      - Domains
+      operationId: ListRenewableDomains
+      summary: List domains that can be renewed
+      description: Retrieve the list of domains you own that can be renewed. You can
+        also see the maximum renewal duration in years for your domains that are renewable.
+      parameters:
+      - in: query
+        name: page
+        description: Page number for the returned renewable domains.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Maximum number of renewable domains per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Sort order of the returned renewable domains.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.ListRenewableDomainsRequest.OrderBy'
+      - in: query
+        name: project_id
+        description: Filter renewable domains by project ID.
+        schema:
+          type: string
+      - in: query
+        name: organization_id
+        description: Filter renewable domains by organization ID.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.ListRenewableDomainsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/renewable-domains"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/renewable-domains" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/retry-inbound-transfer:
+    post:
+      tags:
+      - Tasks
+      operationId: RetryInboundTransfer
+      summary: Retry the inbound transfer of a domain
+      description: Request a retry for the transfer of a domain from another registrar
+        to Scaleway Domains and DNS.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.RetryInboundTransferResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domain:
+                  type: string
+                  description: The domain being transferred.
+                project_id:
+                  type: string
+                  description: The project ID to associated with the inbound transfer.
+                auth_code:
+                  type:
+                  - string
+                  - "null"
+                  description: An optional new auth code to replace the previous one
+                    for the retry.
+              x-properties-order:
+              - domain
+              - project_id
+              - auth_code
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"domain":"string","project_id":"string"}' \
+            "https://api.scaleway.com/domain/v2beta1/retry-inbound-transfer"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/domain/v2beta1/retry-inbound-transfer" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            domain="string" \
+            project_id="string"
+  /domain/v2beta1/search-domains:
+    get:
+      tags:
+      - Domains
+      operationId: SearchAvailableDomains
+      summary: Search available domains
+      description: |-
+        Search a domain or a maximum of 10 domains that are available.
+
+        If the TLD list is empty or not set, the search returns the results from the most popular TLDs.
+      parameters:
+      - in: query
+        name: domains
+        description: A list of domain to search, TLD is optional.
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: tlds
+        description: Array of tlds to search on.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: strict_search
+        description: Search exact match.
+        required: true
+        schema:
+          type: boolean
+      - in: query
+        name: include_exact_match
+        description: If an exact match is found, include it in response as a separate
+          element.
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.SearchAvailableDomainsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/search-domains?domains=[string]&include_exact_match=false&strict_search=false"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/search-domains" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            domains==[string] \
+            include_exact_match==false \
+            strict_search==false
+  /domain/v2beta1/tasks:
+    get:
+      tags:
+      - Tasks
+      operationId: ListTasks
+      summary: List tasks
+      description: |-
+        List all operations performed on the account.
+        You can filter the list of tasks by domain name.
+      parameters:
+      - in: query
+        name: page
+        description: Page number for the returned tasks.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Maximum number of tasks per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: project_id
+        description: Filter tasks by project ID.
+        schema:
+          type: string
+      - in: query
+        name: organization_id
+        description: Filter tasks by organization ID.
+        schema:
+          type: string
+      - in: query
+        name: domain
+        description: Filter tasks by domain name.
+        schema:
+          type: string
+      - in: query
+        name: types
+        description: Filter tasks by type.
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.Task.Type'
+      - in: query
+        name: statuses
+        description: Filter tasks by status.
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.domain.v2beta1.Task.Status'
+      - in: query
+        name: order_by
+        description: Sort order of the returned tasks.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.ListTasksRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.ListTasksResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/tasks"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/tasks" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /domain/v2beta1/tlds:
+    get:
+      tags:
+      - Domains
+      operationId: ListTlds
+      summary: List TLD offers
+      description: Retrieve the list of TLDs and offers associated with them.
+      parameters:
+      - in: query
+        name: tlds
+        description: Array of TLDs to return.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: page
+        description: Page number for the returned Projects.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Maximum number of Project per page.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        description: Sort order of the returned TLDs.
+        schema:
+          $ref: '#/components/schemas/scaleway.domain.v2beta1.ListTldsRequest.OrderBy'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.domain.v2beta1.ListTldsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/domain/v2beta1/tlds"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/domain/v2beta1/tlds" \
+            X-Auth-Token:$SCW_SECRET_KEY

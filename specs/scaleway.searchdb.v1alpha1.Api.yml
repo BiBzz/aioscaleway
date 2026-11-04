@@ -1,0 +1,1421 @@
+openapi: 3.1.0
+info:
+  title: Cloud Essentials for Opensearch API
+  description: |-
+    Cloud Essential for Opensearch is Scaleway's product to provide a managed infrastructure for your OpenSearch.
+
+    The product is currently in Public Beta.
+
+    ## Quickstart
+
+    1. **Create a deployment**: Run the following command to create a deployment of 3 nodes with 5GB of storage per node and a public endpoint.
+
+    ```bash
+        curl -X POST \
+          -H "X-Auth-Token: $SCW_SECRET_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "project_id": $SCW_PROJECT_ID,
+            "name":"deployment-1",
+            "tags":[],
+            "node_count":1,
+            // "node_amount": 1, <-- DEPRECATED (use node_count instead)
+            "node_type":"SEARCHDB-DEDICATED-2C-8G",
+            "user_name":"awesomeUser",
+            "password":"MyAwesomeSecureP@ssword1",
+            "volume":{
+                "type":"sbs_5k",
+                "size_bytes":5000000000
+            },
+            "endpoints": [{"public": {}}],
+            "version":"2.0"
+            }' \
+          "https://api.scaleway.com/searchdb/v1alpha1/regions/fr-par/deployments"
+
+    ```
+
+    2. **Get a list of your deployments**: Run the following command to get a list of all the clusters in your account, with their details:
+
+    ```bash
+        curl -X GET \
+          -H "Content-Type: application/json" \
+          -H "X-Auth-Token: $SCW_SECRET_KEY" \
+          "https://api.scaleway.com/searchdb/v1alpha1/regions/fr-par/deployments"
+    ```
+
+    3. **Delete your deployment**: Run the following command to delete a cluster. Ensure that you replace `{resource-id}` in the URLwith the ID of the cluster you want to delete.
+
+    ```bash
+        curl -X DELETE \
+          -H "Content-Type: application/json" \
+          -H "X-Auth-Token: $SCW_SECRET_KEY" \
+          "https://api.scaleway.com/searchdb/v1alpha1/regions/fr-par/deployments/{resource-id}"
+    ```
+
+    ## Technical information
+
+    ### Regions
+
+    Scaleway's infrastructure spans different [regions and Availability Zones](https://www.scaleway.com/en/docs/account/reference-content/products-availability/).
+
+    Opensaerchis currently available in the Paris region, which is represented by the following path parameter:
+
+    - fr-par
+
+    ## Going further
+
+    For more information about Opensaerch, you can check out the following pages:
+
+    - [Cloud Essential for Opensearch Documentation](https://www.scaleway.com/en/docs/opensearch/)
+    - [Contact our support team](https://console.scaleway.com/support/tickets).
+  version: v1alpha1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Cloud Essentials for Opensearch
+  description: Manage your Opensearch engine
+components:
+  schemas:
+    scaleway.searchdb.v1alpha1.Deployment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the Deployment. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the Deployment.
+        organization_id:
+          type: string
+          description: ID of the Organization containing the Deployment. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        project_id:
+          type: string
+          description: ID of the Project containing the Deployment. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        status:
+          description: Status of the Deployment.
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Deployment.Status'
+        tags:
+          type: array
+          description: Tags of the Deployment.
+          items:
+            type: string
+        node_amount:
+          type: integer
+          description: 'DEPRECATED: Use node_count instead. Number of nodes allocated
+            per deployment.'
+          deprecated: true
+          format: uint32
+        node_count:
+          type: integer
+          description: Number of nodes allocated per deployment.
+          format: uint32
+        node_type:
+          type: string
+          description: Node type used in deployment.
+        volume:
+          description: Volume type and size.
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Volume'
+        endpoints:
+          type: array
+          description: Exposed endpoints.
+          items:
+            $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Endpoint'
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the Deployment. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Date when last update was done to the Deployment. (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        version:
+          type: string
+          description: Opensearch version of the Deployment.
+        region:
+          type: string
+          description: Region the Deployment is located.
+        srn:
+          type: string
+          description: The SRN of the Deployment.
+          pattern: ^srn://searchdb\.[^/]+/regions/[^/]+/deployments/[^/]+$
+      x-properties-order:
+      - id
+      - name
+      - organization_id
+      - project_id
+      - status
+      - tags
+      - node_amount
+      - node_count
+      - node_type
+      - volume
+      - endpoints
+      - created_at
+      - updated_at
+      - version
+      - region
+      - srn
+    scaleway.searchdb.v1alpha1.Deployment.Status:
+      type: string
+      enum:
+      - unknown_status
+      - ready
+      - creating
+      - initializing
+      - upgrading
+      - deleting
+      - error
+      - locked
+      - locking
+      - unlocking
+      default: unknown_status
+    scaleway.searchdb.v1alpha1.Endpoint:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the Endpoint. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        dns_record:
+          type: string
+          description: DNS entry to access to the service. Now deprecated. Use the
+            `url` field from `services` field instead.
+          deprecated: true
+        services:
+          type: array
+          description: List of available services, their ports and URLs.
+          items:
+            $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Endpoint.Service'
+        region:
+          type: string
+          description: Region of the Endpoint.
+        srn:
+          type: string
+          description: The SRN of the Endpoint.
+          pattern: ^srn://searchdb\.[^/]+/regions/[^/]+/endpoints/[^/]+$
+        public:
+          description: Precisely one of public, private_network can be set.
+          x-one-of: details
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Endpoint.PublicDetails'
+          - type: "null"
+        private_network:
+          description: Precisely one of public, private_network can be set.
+          x-one-of: details
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Endpoint.PrivateNetworkDetails'
+          - type: "null"
+      x-properties-order:
+      - id
+      - dns_record
+      - services
+      - region
+      - srn
+      - public
+      - private_network
+    scaleway.searchdb.v1alpha1.Endpoint.PrivateNetworkDetails:
+      type: object
+      properties:
+        private_network_id:
+          type: string
+          description: (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      x-properties-order:
+      - private_network_id
+    scaleway.searchdb.v1alpha1.Endpoint.PublicDetails:
+      type: object
+    scaleway.searchdb.v1alpha1.Endpoint.Service:
+      type: object
+      properties:
+        name:
+          type: string
+        port:
+          type: integer
+          format: uint32
+        url:
+          type: string
+      x-properties-order:
+      - name
+      - port
+      - url
+    scaleway.searchdb.v1alpha1.EndpointSpec:
+      type: object
+      properties:
+        public:
+          description: Precisely one of public, private_network can be set.
+          x-one-of: details
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.EndpointSpec.PublicDetails'
+          - type: "null"
+        private_network:
+          description: Precisely one of public, private_network can be set.
+          x-one-of: details
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.EndpointSpec.PrivateNetworkDetails'
+          - type: "null"
+      x-properties-order:
+      - public
+      - private_network
+    scaleway.searchdb.v1alpha1.EndpointSpec.PrivateNetworkDetails:
+      type: object
+      properties:
+        private_network_id:
+          type: string
+          description: (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      x-properties-order:
+      - private_network_id
+    scaleway.searchdb.v1alpha1.EndpointSpec.PublicDetails:
+      type: object
+    scaleway.searchdb.v1alpha1.ListDeploymentsRequest.OrderBy:
+      type: string
+      enum:
+      - created_at_asc
+      - created_at_desc
+      - name_asc
+      - name_desc
+      - updated_at_asc
+      - updated_at_desc
+      default: created_at_asc
+    scaleway.searchdb.v1alpha1.ListDeploymentsResponse:
+      type: object
+      properties:
+        deployments:
+          type: array
+          description: List of deployments available.
+          items:
+            $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Deployment'
+        total_count:
+          type: integer
+          description: Total number of objects.
+          format: uint64
+      x-properties-order:
+      - deployments
+      - total_count
+    scaleway.searchdb.v1alpha1.ListNodeTypesRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      - vcpus_asc
+      - vcpus_desc
+      - memory_asc
+      - memory_desc
+      default: name_asc
+    scaleway.searchdb.v1alpha1.ListNodeTypesResponse:
+      type: object
+      properties:
+        node_types:
+          type: array
+          description: Node types compatible with the cluster.
+          items:
+            $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.NodeType'
+        total_count:
+          type: integer
+          description: Number of available node types to return.
+          format: uint64
+      x-properties-order:
+      - node_types
+      - total_count
+    scaleway.searchdb.v1alpha1.ListUsersRequest.OrderBy:
+      type: string
+      enum:
+      - name_asc
+      - name_desc
+      default: name_asc
+    scaleway.searchdb.v1alpha1.ListUsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.User'
+        total_count:
+          type: integer
+          format: uint64
+      x-properties-order:
+      - users
+      - total_count
+    scaleway.searchdb.v1alpha1.ListVersionsRequest.OrderBy:
+      type: string
+      enum:
+      - version_asc
+      - version_desc
+      default: version_asc
+    scaleway.searchdb.v1alpha1.ListVersionsResponse:
+      type: object
+      properties:
+        versions:
+          type: array
+          description: List of versions.
+          items:
+            $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Version'
+        total_count:
+          type: integer
+          description: Number of versions in the list.
+          format: uint64
+      x-properties-order:
+      - versions
+      - total_count
+    scaleway.searchdb.v1alpha1.NodeType:
+      type: object
+      properties:
+        stock_status:
+          description: Stock status of the node type.
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.NodeType.StockStatus'
+        name:
+          type: string
+          description: Name of the node type.
+        description:
+          type: string
+          description: Description of the node type.
+        vcpus:
+          type: integer
+          description: Number of vCPUs available.
+          format: uint32
+        memory_bytes:
+          type: integer
+          description: Amount of memory available. (in bytes)
+          format: uint64
+        disabled:
+          type: boolean
+          description: Defines whether the node type is disabled.
+        beta:
+          type: boolean
+          description: Defines whether the node type is in beta.
+        instance_range:
+          type: string
+          description: Instance range associated with the NodeType offer.
+        available_volume_types:
+          type: array
+          description: Available storage options for the Node Type.
+          items:
+            $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.NodeType.VolumeType'
+        region:
+          type: string
+          description: Region of the node type.
+        srn:
+          type: string
+          description: The SRN of the node type.
+          pattern: ^srn://searchdb\.[^/]+/regions/[^/]+/node-types/[^/]+$
+      x-properties-order:
+      - stock_status
+      - name
+      - description
+      - vcpus
+      - memory_bytes
+      - disabled
+      - beta
+      - instance_range
+      - available_volume_types
+      - region
+      - srn
+    scaleway.searchdb.v1alpha1.NodeType.StockStatus:
+      type: string
+      enum:
+      - unknown_stock
+      - low_stock
+      - out_of_stock
+      - available
+      default: unknown_stock
+    scaleway.searchdb.v1alpha1.NodeType.VolumeType:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Volume.Type'
+        description:
+          type: string
+        min_size_bytes:
+          type: integer
+          description: (in bytes)
+          format: uint64
+        max_size_bytes:
+          type: integer
+          description: (in bytes)
+          format: uint64
+        chunk_size_bytes:
+          type: integer
+          description: (in bytes)
+          format: uint64
+      x-properties-order:
+      - type
+      - description
+      - min_size_bytes
+      - max_size_bytes
+      - chunk_size_bytes
+    scaleway.searchdb.v1alpha1.User:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username of the Deployment user.
+        deployment_id:
+          type: string
+          description: ID of the Deployment.
+        region:
+          type: string
+          description: Region of the user.
+        srn:
+          type: string
+          description: The SRN of the user.
+          pattern: ^srn://searchdb\.[^/]+/regions/[^/]+/deployments/[^/]+/users/[^/]+$
+      x-properties-order:
+      - username
+      - deployment_id
+      - region
+      - srn
+    scaleway.searchdb.v1alpha1.Version:
+      type: object
+      properties:
+        version:
+          type: string
+          description: Opensearch Version.
+        end_of_life:
+          type:
+          - string
+          - "null"
+          description: End of life date of the version. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        disabled:
+          type: boolean
+          description: Parameter that tell if the version is disabled.
+        beta:
+          type: boolean
+          description: Parameter that tell if the version is in beta.
+        region:
+          type: string
+          description: Region of the version.
+        srn:
+          type: string
+          description: The SRN of the version.
+          pattern: ^srn://searchdb\.[^/]+/regions/[^/]+/versions/[^/]+$
+      x-properties-order:
+      - version
+      - end_of_life
+      - disabled
+      - beta
+      - region
+      - srn
+    scaleway.searchdb.v1alpha1.Volume:
+      type: object
+      properties:
+        type:
+          description: Define the type of the Volume.
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Volume.Type'
+        size_bytes:
+          type: integer
+          description: Define the size of the Volume. (in bytes)
+          format: uint64
+      x-properties-order:
+      - type
+      - size_bytes
+    scaleway.searchdb.v1alpha1.Volume.Type:
+      type: string
+      enum:
+      - unknown_type
+      - sbs_5k
+      - sbs_15k
+      default: unknown_type
+    scaleway.std.File:
+      type: object
+      properties:
+        name:
+          type: string
+        content_type:
+          type: string
+        content:
+          type: string
+      x-properties-order:
+      - name
+      - content_type
+      - content
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /searchdb/v1alpha1/regions/{region}/deployments:
+    get:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: ListDeployments
+      summary: Retrieve a list of Cloud Essentials for OpenSearch deployments
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: organization_id
+        description: ID of the Organization containing the deployments.
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        description: ID of the Project containing the deployments.
+        schema:
+          type: string
+      - in: query
+        name: order_by
+        description: Define the order of the returned deployments.
+        schema:
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.ListDeploymentsRequest.OrderBy'
+      - in: query
+        name: page
+        description: The page number to return, from the paginated results.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Number of deployments to return.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: tags
+        description: Filter by tag, only deployments with one or more matching tags
+          will be returned.
+        schema:
+          type: array
+          items:
+            type: string
+      - in: query
+        name: name
+        description: Deployment name to filter for.
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9\-_]+$
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.ListDeploymentsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: CreateDeployment
+      summary: Create a new Cloud Essentials for OpenSearch deployment
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Deployment'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: Project ID in which to create the deployment. (UUID
+                    format)
+                  example: 6170692e-7363-616c-6577-61792e636f6d
+                name:
+                  type: string
+                  description: Name of the deployment.
+                  pattern: ^[A-Za-z0-9\-_]+$
+                tags:
+                  type: array
+                  description: Tags.
+                  items:
+                    type: string
+                    pattern: ^[0-9A-Za-z_\-=]+$
+                node_amount:
+                  type:
+                  - integer
+                  - "null"
+                  description: 'DEPRECATED: Use node_count instead. Number of nodes.'
+                  deprecated: true
+                  format: uint32
+                node_count:
+                  type:
+                  - integer
+                  - "null"
+                  description: Number of nodes.
+                  format: uint32
+                node_type:
+                  type: string
+                  description: Node type.
+                  pattern: ^[A-Za-z0-9\-_]+$
+                user_name:
+                  type:
+                  - string
+                  - "null"
+                  description: Username for the deployment user.
+                  pattern: ^[a-zA-Z0-9_$-]*$
+                password:
+                  type:
+                  - string
+                  - "null"
+                  description: Password for the deployment user.
+                volume:
+                  description: Volume.
+                  $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Volume'
+                endpoints:
+                  type: array
+                  description: Endpoints to access the deployment.
+                  items:
+                    $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.EndpointSpec'
+                version:
+                  type: string
+                  description: The Opensearch version to use.
+                  pattern: ^[0-9]+\.[0-9]+$
+              x-properties-order:
+              - project_id
+              - name
+              - tags
+              - node_amount
+              - node_count
+              - node_type
+              - user_name
+              - password
+              - volume
+              - endpoints
+              - version
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "string",
+              "node_type": "string",
+              "project_id": "6170692e-7363-616c-6577-61792e636f6d",
+              "version": "string"
+            }' \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            name="string" \
+            node_type="string" \
+            project_id="6170692e-7363-616c-6577-61792e636f6d" \
+            version="string"
+  /searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}:
+    get:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: GetDeployment
+      summary: Retrieve a specific Cloud Essentials for OpenSearch deployment
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        description: ID of the deployment.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Deployment'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    patch:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: UpdateDeployment
+      summary: Update a Cloud Essentials for OpenSearch deployment
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        description: UUID of the deployment to update. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Deployment'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type:
+                  - string
+                  - "null"
+                  description: Name of the deployment.
+                tags:
+                  type:
+                  - array
+                  - "null"
+                  description: Tags of a deployment.
+              x-properties-order:
+              - name
+              - tags
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: DeleteDeployment
+      summary: Delete a Cloud Essentials for OpenSearch deployment
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        description: ID of the deployment.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Deployment'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/certificate-authority:
+    get:
+      operationId: DownloadDeploymentCertificateAuthority
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.std.File'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/certificate-authority"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/certificate-authority" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/upgrade:
+    post:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: UpgradeDeployment
+      summary: Upgrade a Cloud Essentials for OpenSearch deployment
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        description: UUID of the Deployment to upgrade. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Deployment'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                node_amount:
+                  type:
+                  - integer
+                  - "null"
+                  description: |-
+                    DEPRECATED: Use node_count instead. Amount of node upgrade target.
+                    Precisely one of node_amount, node_count, volume_size_bytes can be set.
+                  deprecated: true
+                  format: uint32
+                  x-one-of: upgrade_target
+                node_count:
+                  type:
+                  - integer
+                  - "null"
+                  description: |-
+                    The target number of nodes for the upgrade.
+                    Precisely one of node_amount, node_count, volume_size_bytes can be set.
+                  format: uint32
+                  x-one-of: upgrade_target
+                volume_size_bytes:
+                  type:
+                  - integer
+                  - "null"
+                  description: |-
+                    Volume size upgrade target.
+                    Precisely one of node_amount, node_count, volume_size_bytes can be set.
+                  format: uint64
+                  x-one-of: upgrade_target
+              x-properties-order:
+              - node_amount
+              - node_count
+              - volume_size_bytes
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/upgrade"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/upgrade" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users:
+    get:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: ListUsers
+      summary: Retrieve a list of deployment users
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: order_by
+        schema:
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.ListUsersRequest.OrderBy'
+      - in: query
+        name: name
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9_\-]*$
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.ListUsersResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    post:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: CreateUser
+      summary: Create a new user
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        description: ID of the deployment in which to create the user.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.User'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Username of the deployment user.
+                  pattern: ^[a-zA-Z0-9_$-]*$
+                password:
+                  type: string
+                  description: Password of the deployment user.
+              x-properties-order:
+              - username
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"password":"string","username":"string"}' \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            password="string" \
+            username="string"
+  /searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users/{username}:
+    patch:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: UpdateUser
+      summary: Update an existing user
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        description: ID of the deployment in which to create the user.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: username
+        description: Username of the deployment user.
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9_$-]*$
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.User'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type:
+                  - string
+                  - "null"
+                  description: Password of the deployment user.
+              x-properties-order:
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X PATCH \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users/{username}"
+      - lang: HTTPie
+        source: |-
+          http PATCH "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users/{username}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+    delete:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: DeleteUser
+      summary: Delete an existing user
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: deployment_id
+        description: ID of the deployment in which to create the user.
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: username
+        description: Username of the deployment user.
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9_$-]*$
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users/{username}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/deployments/{deployment_id}/users/{username}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /searchdb/v1alpha1/regions/{region}/endpoints:
+    post:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: CreateEndpoint
+      summary: Create a new endpoint on a deployment
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.Endpoint'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deployment_id:
+                  type: string
+                  description: ID of the deployment for which to create an endpoint.
+                    (UUID format)
+                  example: 6170692e-7363-616c-6577-61792e636f6d
+                endpoint_spec:
+                  description: Specification of the endpoint you want to create.
+                  $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.EndpointSpec'
+              x-properties-order:
+              - deployment_id
+              - endpoint_spec
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"deployment_id":"6170692e-7363-616c-6577-61792e636f6d"}' \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/endpoints"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/endpoints" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            deployment_id="6170692e-7363-616c-6577-61792e636f6d"
+  /searchdb/v1alpha1/regions/{region}/endpoints/{endpoint_id}:
+    delete:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: DeleteEndpoint
+      summary: Delete an existing endpoint
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: endpoint_id
+        description: ID of the endpoint to delete.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X DELETE \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/endpoints/{endpoint_id}"
+      - lang: HTTPie
+        source: |-
+          http DELETE "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/endpoints/{endpoint_id}" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /searchdb/v1alpha1/regions/{region}/node-types:
+    get:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: ListNodeTypes
+      summary: Retrieve a list of available node types
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: order_by
+        description: Sort order of nodes in the response (name, vcpus or memory).
+        schema:
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.ListNodeTypesRequest.OrderBy'
+      - in: query
+        name: page
+        description: Page number to return, from the paginated results.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Number of node types to return.
+        schema:
+          type: integer
+          format: uint32
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.ListNodeTypesResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/node-types"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/node-types" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /searchdb/v1alpha1/regions/{region}/versions:
+    get:
+      tags:
+      - Cloud Essentials for Opensearch
+      operationId: ListVersions
+      summary: List available Cloud Essentials for OpenSearch versions
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: query
+        name: order_by
+        description: Define the order of the returned version.
+        schema:
+          $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.ListVersionsRequest.OrderBy'
+      - in: query
+        name: page
+        description: The page number to return, form the paginated results.
+        schema:
+          type: integer
+          format: int32
+      - in: query
+        name: page_size
+        description: Number of version to return.
+        schema:
+          type: integer
+          format: uint32
+      - in: query
+        name: version
+        description: Filter by version.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.searchdb.v1alpha1.ListVersionsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/versions"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/searchdb/v1alpha1/regions/{region}/versions" \
+            X-Auth-Token:$SCW_SECRET_KEY

@@ -1,0 +1,633 @@
+openapi: 3.1.0
+info:
+  title: WebHosting Dedibox API
+  description: This API allows to migrate your Dedibox hostings to your Scaleway account.
+  version: v1
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: DediboxHostings
+  description: |
+    A Dedibox web hosting associated with a domain name.
+components:
+  schemas:
+    google.type.Money:
+      type: object
+      properties:
+        currency_code:
+          type: string
+        units:
+          type: integer
+          format: int64
+        nanos:
+          type: integer
+          format: int32
+      x-properties-order:
+      - currency_code
+      - units
+      - nanos
+    scaleway.std.LanguageCode:
+      type: string
+      enum:
+      - unknown_language_code
+      - en_US
+      - fr_FR
+      - de_DE
+      default: unknown_language_code
+    scaleway.webhosting.v1.AutoConfigDomainDns:
+      type: object
+      properties:
+        nameservers:
+          type: boolean
+          description: Whether or not to synchronize domain nameservers.
+        web_records:
+          type: boolean
+          description: Whether or not to synchronize web records.
+        mail_records:
+          type: boolean
+          description: Whether or not to synchronize mail records.
+        all_records:
+          type: boolean
+          description: Whether or not to synchronize all types of records. Takes priority
+            over the other fields.
+        none:
+          type: boolean
+          description: No automatic domain configuration. Users must configure their
+            domain for the Web Hosting to work.
+      x-properties-order:
+      - nameservers
+      - web_records
+      - mail_records
+      - all_records
+      - none
+    scaleway.webhosting.v1.BillingMode:
+      type: string
+      enum:
+      - unknown_billing_mode
+      - sample
+      - purchase_order
+      default: unknown_billing_mode
+    scaleway.webhosting.v1.CommitmentType:
+      type: string
+      enum:
+      - unknown_commitment_type
+      - first_commitment
+      - next_commitment
+      default: unknown_commitment_type
+    scaleway.webhosting.v1.ControlPanel:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Control panel name.
+        available:
+          type: boolean
+          description: Define if the control panel type is available to order.
+        logo_url:
+          type: string
+          description: URL of the control panel's logo.
+        available_languages:
+          type: array
+          description: List of available languages for the control panel.
+          items:
+            $ref: '#/components/schemas/scaleway.std.LanguageCode'
+      x-properties-order:
+      - name
+      - available
+      - logo_url
+      - available_languages
+    scaleway.webhosting.v1.DnsRecords.Status:
+      type: string
+      enum:
+      - unknown_status
+      - valid
+      - invalid
+      default: unknown_status
+    scaleway.webhosting.v1.Domain.Status:
+      type: string
+      enum:
+      - unknown_status
+      - valid
+      - invalid
+      - validating
+      - error
+      x-enum-descriptions:
+        values:
+          unknown_status: The status of the domain is unknown.
+          valid: The domain is valid and operational.
+          invalid: The domain is invalid, potentially due to incorrect settings or
+            configuration issues.
+          validating: The domain is in the process of being validated.
+          error: The domain is in an error status, it should be checked in Domain&DNS.
+      default: unknown_status
+    scaleway.webhosting.v1.Hosting:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the Web Hosting plan.
+        srn:
+          type: string
+          description: SRN of the Web Hosting plan.
+          pattern: ^srn://webhosting\.[^/]+/regions/[^/]+/hostings/[^/]+$
+        project_id:
+          type: string
+          description: ID of the Scaleway Project the Web Hosting plan belongs to.
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Date on which the Web Hosting plan was last updated. (RFC 3339
+            format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Date on which the Web Hosting plan was created. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        status:
+          description: Status of the Web Hosting plan.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Hosting.Status'
+        domain:
+          type: string
+          description: Main domain associated with the Web Hosting plan (deprecated,
+            use domain_info).
+          deprecated: true
+        offer:
+          description: Details of the Web Hosting plan offer and options.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Offer'
+        platform:
+          description: Details of the hosting platform.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Platform'
+        tags:
+          type: array
+          description: List of tags associated with the Web Hosting plan.
+          items:
+            type: string
+        dns_status:
+          description: DNS status of the Web Hosting plan (deprecated, use domain_info).
+          deprecated: true
+          $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecords.Status'
+        ipv4:
+          type: string
+          description: Current IPv4 address of the hosting. (IPv4 address)
+          example: 1.2.3.4
+        protected:
+          type: boolean
+          description: Whether the hosting is protected or not.
+        user:
+          description: Details of the hosting user.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Hosting.User'
+        domain_status:
+          description: Main domain status of the Web Hosting plan (deprecated, use
+            domain_info).
+          deprecated: true
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Domain.Status'
+        region:
+          type: string
+          description: Region where the Web Hosting plan is hosted.
+        domain_info:
+          description: Domain configuration block (subdomain, optional custom domain,
+            and DNS settings).
+          $ref: '#/components/schemas/scaleway.webhosting.v1.HostingDomain'
+        commitment:
+          description: Commitment details to which the hosting is engaged.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.HostingCommitment'
+        provider:
+          description: Provider where the Web Hosting plan is managed (elements, dedibox).
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Hosting.Provider'
+      x-properties-order:
+      - id
+      - srn
+      - project_id
+      - updated_at
+      - created_at
+      - status
+      - domain
+      - offer
+      - platform
+      - tags
+      - dns_status
+      - ipv4
+      - protected
+      - user
+      - domain_status
+      - region
+      - domain_info
+      - commitment
+      - provider
+    scaleway.webhosting.v1.Hosting.Provider:
+      type: string
+      enum:
+      - unknown_provider
+      - elements
+      - dedibox
+      default: unknown_provider
+    scaleway.webhosting.v1.Hosting.Status:
+      type: string
+      enum:
+      - unknown_status
+      - delivering
+      - ready
+      - deleting
+      - error
+      - locked
+      - migrating
+      - updating
+      - payment_pending
+      - payment_failed
+      default: unknown_status
+    scaleway.webhosting.v1.Hosting.User:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Main Web Hosting control panel username.
+        one_time_password:
+          type:
+          - string
+          - "null"
+          description: One-time-password used for the first login to the control panel,
+            cleared after first use (deprecated, use password_b64 instead).
+          deprecated: true
+        contact_email:
+          type: string
+          description: Contact email used for the hosting.
+        one_time_password_b64:
+          type:
+          - string
+          - "null"
+          description: One-time-password used for the first login to the control panel,
+            cleared after first use, encoded in base64.
+      x-properties-order:
+      - username
+      - one_time_password
+      - contact_email
+      - one_time_password_b64
+    scaleway.webhosting.v1.HostingCommitment:
+      type: object
+      properties:
+        offer_commitment:
+          description: Offer commitment for the specified hosting.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.OfferCommitment'
+        start_at:
+          type:
+          - string
+          - "null"
+          description: Date and time the commitment started. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        end_at:
+          type:
+          - string
+          - "null"
+          description: Date and time the commitment ends. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        delete_hosting_at_end:
+          type: boolean
+          description: "Determines what happens at the end of the commitment period:.\nThe
+            hosting may be deleted, automatically renewed, or switched to\nits configured
+            post-commitment offer, which may have a different \nprice and billing
+            period."
+      x-properties-order:
+      - offer_commitment
+      - start_at
+      - end_at
+      - delete_hosting_at_end
+    scaleway.webhosting.v1.HostingDomain:
+      type: object
+      properties:
+        subdomain:
+          type: string
+          description: Optional free subdomain linked to the Web Hosting plan.
+        custom_domain:
+          description: Optional custom domain linked to the Web Hosting plan.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.HostingDomain.CustomDomain'
+      x-properties-order:
+      - subdomain
+      - custom_domain
+    scaleway.webhosting.v1.HostingDomain.CustomDomain:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: Custom domain linked to the hosting plan.
+        domain_status:
+          description: Status of the custom domain verification.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Domain.Status'
+        dns_status:
+          description: Status of the DNS configuration for the custom domain.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.DnsRecords.Status'
+        auto_config_domain_dns:
+          description: Indicates whether to auto-configure DNS for this domain.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.AutoConfigDomainDns'
+      x-properties-order:
+      - domain
+      - domain_status
+      - dns_status
+      - auto_config_domain_dns
+    scaleway.webhosting.v1.Offer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Offer ID.
+        name:
+          type: string
+          description: Offer name.
+        billing_operation_path:
+          type: string
+          description: Unique identifier used for billing.
+        options:
+          type: array
+          description: Options available for the offer.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.Offer.Option'
+        price:
+          description: Price of the offer.
+          $ref: '#/components/schemas/google.type.Money'
+        available:
+          type: boolean
+          description: If a hosting_id was specified in the call, defines whether
+            the offer is available for a specified hosting plan to migrate (update)
+            to.
+        control_panel_name:
+          type: string
+          description: Name of the control panel.
+        end_of_life:
+          type: boolean
+          description: Indicates if the offer has reached its end of life.
+        quota_warning:
+          description: Defines a warning if the maximum value for an option in the
+            offer is exceeded.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Offer.Option.Warning'
+        control_panels:
+          type: array
+          description: Lists available control panels for the specified offer.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.ControlPanel'
+        commitments:
+          type: array
+          description: Lists available offer commitments for the specified offer.
+          items:
+            $ref: '#/components/schemas/scaleway.webhosting.v1.OfferCommitment'
+        region:
+          type: string
+          description: Region where the offer is hosted.
+      x-properties-order:
+      - id
+      - name
+      - billing_operation_path
+      - options
+      - price
+      - available
+      - control_panel_name
+      - end_of_life
+      - quota_warning
+      - control_panels
+      - commitments
+      - region
+    scaleway.webhosting.v1.Offer.Option:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Option ID.
+        name:
+          description: Name of the option.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Offer.Option.Name'
+        billing_operation_path:
+          type: string
+          description: Unique identifier used for billing.
+        min_value:
+          type: integer
+          description: Minimum value for the option in the offer.
+          format: int32
+        current_value:
+          type: integer
+          description: If a hosting_id was specified in the call, defines the current
+            value of the option in the hosting.
+          format: int32
+        max_value:
+          type: integer
+          description: Maximum value for the option in the offer.
+          format: int32
+        quota_warning:
+          description: Defines a warning if the maximum value for the option has been
+            reached.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Offer.Option.Warning'
+        price:
+          description: Price of the option for 1 value.
+          $ref: '#/components/schemas/google.type.Money'
+      x-properties-order:
+      - id
+      - name
+      - billing_operation_path
+      - min_value
+      - current_value
+      - max_value
+      - quota_warning
+      - price
+    scaleway.webhosting.v1.Offer.Option.Name:
+      type: string
+      enum:
+      - unknown_name
+      - domain_count
+      - email_count
+      - storage_gb
+      - vcpu_count
+      - ram_gb
+      - backup
+      - dedicated_ip
+      - email_storage_gb
+      - database_count
+      - support
+      - additional_email
+      default: unknown_name
+    scaleway.webhosting.v1.Offer.Option.Warning:
+      type: string
+      enum:
+      - unknown_warning
+      - quota_exceeded_warning
+      - usage_low_warning
+      default: unknown_warning
+    scaleway.webhosting.v1.OfferCommitment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Offer commitment ID.
+        type:
+          description: Offer commitment type.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.CommitmentType'
+        is_default:
+          type: boolean
+          description: True if the commitment is the default one for that offer.
+        billing_mode:
+          description: Offer commitment name.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.BillingMode'
+        billing_operation_path:
+          type: string
+          description: Unique identifier used for billing.
+        price:
+          description: Price of the offer commitment.
+          $ref: '#/components/schemas/google.type.Money'
+        duration_in_month:
+          type: integer
+          description: Duration of the offer commitment in months.
+          format: int32
+        next:
+          description: Next offer commitment.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.OfferCommitment'
+      x-properties-order:
+      - id
+      - type
+      - is_default
+      - billing_mode
+      - billing_operation_path
+      - price
+      - duration_in_month
+      - next
+    scaleway.webhosting.v1.Platform:
+      type: object
+      properties:
+        hostname:
+          type: string
+          description: Hostname of the host platform.
+        number:
+          type: integer
+          description: Number of the host platform.
+          format: int32
+        group_name:
+          description: Group name of the hosting's host platform.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Platform.PlatformGroup'
+        ipv4:
+          type: string
+          description: IPv4 address of the hosting's host platform. (IPv4 address)
+          example: 1.2.3.4
+        ipv6:
+          type: string
+          description: IPv6 address of the hosting's host platform. (IPv6 address)
+          example: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+        control_panel:
+          description: Details of the platform control panel.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Platform.ControlPanel'
+      x-properties-order:
+      - hostname
+      - number
+      - group_name
+      - ipv4
+      - ipv6
+      - control_panel
+    scaleway.webhosting.v1.Platform.ControlPanel:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the control panel.
+        urls:
+          description: URL to connect to control panel dashboard and to Webmail interface.
+          $ref: '#/components/schemas/scaleway.webhosting.v1.Platform.ControlPanel.Urls'
+      x-properties-order:
+      - name
+      - urls
+    scaleway.webhosting.v1.Platform.ControlPanel.Urls:
+      type: object
+      properties:
+        dashboard:
+          type: string
+          description: URL to connect to the hosting control panel dashboard.
+        webmail:
+          type: string
+          description: URL to connect to the hosting Webmail interface.
+      x-properties-order:
+      - dashboard
+      - webmail
+    scaleway.webhosting.v1.Platform.PlatformGroup:
+      type: string
+      enum:
+      - unknown_group
+      - default
+      - premium
+      default: unknown_group
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /webhosting/v1/regions/{region}/dedibox-hostings/{domain}/migrate:
+    post:
+      tags:
+      - DediboxHostings
+      operationId: MigrateDediboxHosting
+      summary: Migrate a hosting from Dedibox to Scaleway account
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+          enum:
+          - fr-par
+      - in: path
+        name: domain
+        description: Domain linked with the Dedibox hosting.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.webhosting.v1.Hosting'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: Project ID to which the new migrated hosting will be
+                    attached.
+                email:
+                  type: string
+                  description: Email provided while generating the token.
+                token:
+                  type: string
+                  description: Token generated by the Dedibox console to validate
+                    the hosting migration.
+              x-properties-order:
+              - project_id
+              - email
+              - token
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "email": "string",
+              "project_id": "string",
+              "token": "string"
+            }' \
+            "https://api.scaleway.com/webhosting/v1/regions/{region}/dedibox-hostings/{domain}/migrate"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/webhosting/v1/regions/{region}/dedibox-hostings/{domain}/migrate" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            email="string" \
+            project_id="string" \
+            token="string"

@@ -1,0 +1,1709 @@
+openapi: 3.1.0
+info:
+  title: Unauthenticated User API
+  description: The User API allows you to manage a user without authentication.
+  version: v3
+servers:
+- url: https://api.scaleway.com
+tags:
+- name: Unauthenticated User
+  description: Methods to manage a user without authentication
+components:
+  schemas:
+    scaleway.account.v3.Account:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Request creation id. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        email:
+          type: string
+          description: Email used for the account request.
+        token:
+          type:
+          - string
+          - "null"
+          description: Token used to validate the account without email validation.
+        srn:
+          type: string
+          description: The SRN of the account.
+          pattern: ^srn://account\.[^/]+/accounts/[^/]+$
+      x-properties-order:
+      - id
+      - email
+      - token
+      - srn
+    scaleway.account.v3.Account.Type:
+      type: string
+      enum:
+      - unknown_type
+      - personal
+      - corporate
+      - startup
+      - consultant
+      - association
+      x-enum-descriptions:
+        values:
+          unknown_type: Unknown type
+          personal: Personal account
+          corporate: Professional account
+          startup: Startup account
+          consultant: Consultant account
+          association: Association account
+      default: unknown_type
+    scaleway.account.v3.AuthenticationResponse:
+      type: object
+      properties:
+        raw_id:
+          type: string
+          description: Unique identifier of the key used by the authenticator.
+        response:
+          description: Response provided by the authenticator to the authentication
+            challenge.
+          $ref: '#/components/schemas/scaleway.account.v3.AuthenticatorAssertionResponse'
+      required:
+      - response
+      x-properties-order:
+      - raw_id
+      - response
+    scaleway.account.v3.AuthenticatorAssertionResponse:
+      type: object
+      properties:
+        client_data_json:
+          type: string
+          description: JSON representation of the client data.
+        authenticator_data:
+          type: string
+          description: Data about the authenticator that performed the authentication.
+        signature:
+          type: string
+          description: Signature by the authenticator key of the authentication ceremony
+            data.
+      x-properties-order:
+      - client_data_json
+      - authenticator_data
+      - signature
+    scaleway.account.v3.CreateAccountRequest.EmailValidationMethod:
+      type: string
+      enum:
+      - unknown_email_validation_method
+      - magic_link
+      - authentication_code
+      default: unknown_email_validation_method
+    scaleway.account.v3.CreateAccountRequest.OIDC:
+      type: object
+      properties:
+        identity_provider:
+          $ref: '#/components/schemas/scaleway.account.v3.OIDCIdentityProvider'
+        access_token:
+          type: string
+      x-properties-order:
+      - identity_provider
+      - access_token
+    scaleway.account.v3.CreateAccountRequest.OrganizationOrigin:
+      type: string
+      enum:
+      - unknown_organization_origin
+      - direct
+      - dedibox
+      - web_cloud
+      - account
+      - book_my_name
+      default: unknown_organization_origin
+    scaleway.account.v3.CreateLoginSessionRequest.AuthenticationCode:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email of the user.
+        code:
+          type: string
+          description: 6 digits code sent by email.
+      x-properties-order:
+      - email
+      - code
+    scaleway.account.v3.CreateLoginSessionRequest.OIDC:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Code received from the identity provider.
+        identity_provider:
+          description: Identity provider to connect with.
+          $ref: '#/components/schemas/scaleway.account.v3.OIDCIdentityProvider'
+        account_redirect_uri:
+          type: string
+          description: URI to which the identity provider will redirect after the
+            authentication phase.
+      x-properties-order:
+      - code
+      - identity_provider
+      - account_redirect_uri
+    scaleway.account.v3.CreateLoginSessionRequest.Password:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email of the user.
+        password:
+          type: string
+          description: Password of the user.
+        redirect_url:
+          type: string
+          description: Origin of the login request.
+        captcha:
+          type:
+          - string
+          - "null"
+          description: Captcha response.
+      x-properties-order:
+      - email
+      - password
+      - redirect_url
+      - captcha
+    scaleway.account.v3.CreateLoginSessionRequest.Passwordless:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email of the user.
+        token:
+          type: string
+          description: Token of the magic link.
+      x-properties-order:
+      - email
+      - token
+    scaleway.account.v3.FinishWebAuthnAuthenticationRequest:
+      type: object
+      properties:
+        ceremony_id:
+          type: string
+          description: ID of the authentication ceremony to finish.
+        authentication_response:
+          description: WebAuthn response to the authentication ceremony.
+          $ref: '#/components/schemas/scaleway.account.v3.AuthenticationResponse'
+        origin:
+          type: string
+          description: The domain on which the authentication is occurring.
+      required:
+      - authentication_response
+      x-properties-order:
+      - ceremony_id
+      - authentication_response
+      - origin
+    scaleway.account.v3.InitiateAuthenticationCodeLoginResponse:
+      type: object
+    scaleway.account.v3.InitiateOIDCLoginResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL to redirect the user to.
+        security_token:
+          type: string
+          description: Security token to check when receiving a code from the identity
+            provider.
+      x-properties-order:
+      - url
+      - security_token
+    scaleway.account.v3.InitiateOIDCSignupResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL to redirect the user to.
+        security_token:
+          type: string
+          description: Security token to check when receiving a code from the identity
+            provider.
+      x-properties-order:
+      - url
+      - security_token
+    scaleway.account.v3.JWT:
+      type: object
+      properties:
+        jti:
+          type: string
+          description: JTI of the JWT.
+        issuer_id:
+          type: string
+          description: IAM user ID of the JWT issuer.
+        audience_id:
+          type: string
+          description: IAM user ID of the JWT audience.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Creation date of the JWT. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Renewal date of the JWT. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        expires_at:
+          type:
+          - string
+          - "null"
+          description: Expiration date of the JWT. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        ip:
+          type: string
+          description: Source IP address for the JWT creation. (IP address)
+          example: 1.2.3.4
+        user_agent:
+          type: string
+          description: User agent for the JWT creation.
+      x-properties-order:
+      - jti
+      - issuer_id
+      - audience_id
+      - created_at
+      - updated_at
+      - expires_at
+      - ip
+      - user_agent
+    scaleway.account.v3.LogInOrganizationsResponse:
+      type: object
+      properties:
+        organizations_login_information:
+          type: array
+          description: List of organizations and their associated login information.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.OrganizationLogin'
+        webauthn:
+          description: Precisely one of webauthn can be set.
+          x-one-of: method_metadata
+          oneOf:
+          - $ref: '#/components/schemas/scaleway.account.v3.LogInOrganizationsResponse.WebAuthnMetadata'
+          - type: "null"
+      x-properties-order:
+      - organizations_login_information
+      - webauthn
+    scaleway.account.v3.LogInOrganizationsResponse.WebAuthnMetadata:
+      type: object
+      properties:
+        uv_verified_set:
+          type: boolean
+      x-properties-order:
+      - uv_verified_set
+    scaleway.account.v3.LogInResponse:
+      type: object
+      properties:
+        jwt:
+          description: Data of the JWT created by the login request.
+          $ref: '#/components/schemas/scaleway.account.v3.JWT'
+        token:
+          type: string
+          description: Encoded JWT token.
+        renew_token:
+          type: string
+          description: Encoded JWT renew token.
+      x-properties-order:
+      - jwt
+      - token
+      - renew_token
+    scaleway.account.v3.LoginSession:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the login session.
+      x-properties-order:
+      - id
+    scaleway.account.v3.OIDCIdentityProvider:
+      type: string
+      enum:
+      - unknown_identity_provider
+      - google
+      - microsoft
+      - github
+      x-enum-descriptions:
+        values:
+          unknown_identity_provider: Unknown identity provider
+          google: Sign in with Google
+          microsoft: Sign in with Microsoft
+          github: Sign in with GitHub
+      default: unknown_identity_provider
+    scaleway.account.v3.Organization.CorporateIndustry:
+      type: string
+      enum:
+      - unknown_corporate_industry
+      - consulting_services
+      - cybersecurity_software
+      - ecommerce_retail
+      - education
+      - energy
+      - financial_services_insurance
+      - gaming_entertainment
+      - hospitality_leisure
+      - lifescience_healthcare_pharmaceuticals
+      - manufacturing
+      - media_press_tv
+      - public_sector
+      - telecommunications
+      - technology
+      - other
+      x-enum-descriptions:
+        values:
+          unknown_corporate_industry: Unknown corporate industry
+          consulting_services: Consulting & Services
+          cybersecurity_software: Cybersecurity & software
+          ecommerce_retail: E-commerce & retail
+          education: Education
+          energy: Energy
+          financial_services_insurance: Financial Services & Insurance
+          gaming_entertainment: Gaming & Entertainment
+          hospitality_leisure: Hospitality & Leisure
+          lifescience_healthcare_pharmaceuticals: Lifescience, Healthcare & Pharmaceuticals
+          manufacturing: Manufacturing
+          media_press_tv: Media - Press & TV
+          public_sector: Public Sector
+          telecommunications: Telecommunications
+          technology: Technology
+          other: Other
+      default: unknown_corporate_industry
+    scaleway.account.v3.Organization.Type:
+      type: string
+      enum:
+      - unknown_type
+      - individual
+      - professional
+      - internal
+      x-enum-descriptions:
+        values:
+          unknown_type: Unknown type
+          individual: Individual
+          professional: Professional
+          internal: Internal
+      default: unknown_type
+    scaleway.account.v3.OrganizationLogin:
+      type: object
+      properties:
+        organization_id:
+          type: string
+          description: ID of the organization. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        organization_name:
+          type: string
+          description: Name of the organization.
+        jwt:
+          description: Data of the JWT created by the login request.
+          $ref: '#/components/schemas/scaleway.account.v3.JWT'
+        token:
+          type: string
+          description: Encoded JWT token.
+        renew_token:
+          type: string
+          description: Encoded JWT renew token.
+      x-properties-order:
+      - organization_id
+      - organization_name
+      - jwt
+      - token
+      - renew_token
+    scaleway.account.v3.OrganizationSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the Organization. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        name:
+          type: string
+          description: Name of the Organization.
+        owner:
+          type: boolean
+          description: Defines whether the user_id created the Organization.
+        locked:
+          type: boolean
+          description: Defines whether we have locking warnings.
+        mfa_enforced:
+          type: boolean
+          description: Defines whether MFA is required for the Organization.
+        picture_link:
+          type:
+          - string
+          - "null"
+          description: Organization's picture URL.
+        organization_type:
+          description: Organization Type.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.Type'
+        corporate_industry:
+          description: Organization Corporate Industry.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.CorporateIndustry'
+        is_startup:
+          type: boolean
+          description: Deprecated. Defines whether the organization is a startup.
+          deprecated: true
+        srn:
+          type: string
+          description: The SRN of the organization.
+      x-properties-order:
+      - id
+      - name
+      - owner
+      - locked
+      - mfa_enforced
+      - picture_link
+      - organization_type
+      - corporate_industry
+      - is_startup
+      - srn
+    scaleway.account.v3.PersonalOrganization:
+      type: object
+      properties:
+        newsletter_subscription:
+          type: boolean
+          description: Defines whether the user wants to be subscribed to the Scaleway
+            mailing list.
+      x-properties-order:
+      - newsletter_subscription
+    scaleway.account.v3.ProfessionalOrganization:
+      type: object
+      properties:
+        corporate_industry:
+          description: Main industry the organization is associated with.
+          $ref: '#/components/schemas/scaleway.account.v3.Organization.CorporateIndustry'
+      x-properties-order:
+      - corporate_industry
+    scaleway.account.v3.PublicKeyCredentialDescriptor:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the key.
+      x-properties-order:
+      - id
+    scaleway.account.v3.PublicKeyCredentialRequestOptions:
+      type: object
+      properties:
+        challenge:
+          type: string
+          description: Random bytes constituting the challenge to solve for the credentials
+            assertion.
+        timeout:
+          type: integer
+          description: Maximum duration of the authentication ceremony (milliseconds).
+          format: uint32
+        allow_credentials:
+          type: array
+          description: List of credentials, if any, which can be used to perform the
+            ceremony.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.PublicKeyCredentialDescriptor'
+        user_verification:
+          description: User verification requirement for this authentication ceremony.
+          $ref: '#/components/schemas/scaleway.account.v3.UserVerificationRequirement'
+      x-properties-order:
+      - challenge
+      - timeout
+      - allow_credentials
+      - user_verification
+    scaleway.account.v3.ResendAuthenticationCodeRequest.Operation:
+      type: string
+      enum:
+      - unknown_operation
+      - sign_up
+      - sign_in
+      x-enum-descriptions:
+        values:
+          unknown_operation: Unknown operation
+          sign_up: Sign up operation
+          sign_in: Sign in operation
+      default: unknown_operation
+    scaleway.account.v3.StartWebAuthnAuthenticationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the ceremony which will be needed for completion.
+        public_key_credential_request:
+          description: WebAuthn challenge to solve to finish the ceremony.
+          $ref: '#/components/schemas/scaleway.account.v3.PublicKeyCredentialRequestOptions'
+      x-properties-order:
+      - id
+      - public_key_credential_request
+    scaleway.account.v3.User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the user. (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        first_name:
+          type: string
+          description: First name of the user.
+        last_name:
+          type: string
+          description: Last name of the user.
+        email:
+          type: string
+          description: Email of the user.
+        phone_number:
+          type: string
+          description: Phone number of the user.
+        created_at:
+          type:
+          - string
+          - "null"
+          description: Date the user was created. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        updated_at:
+          type:
+          - string
+          - "null"
+          description: Date the user was updated. (RFC 3339 format)
+          format: date-time
+          example: "2022-03-22T12:34:56.123456Z"
+        mfa:
+          type: boolean
+          description: Defines whether multi-factor authentication is enabled for
+            the user.
+        mfa_methods:
+          description: Defines for each multi-factor authentication method whether
+            the user has it enabled or not.
+          $ref: '#/components/schemas/scaleway.account.v3.UserMFAMethods'
+        locale:
+          description: Locale of the user.
+          $ref: '#/components/schemas/scaleway.std.LanguageCode'
+        has_password:
+          type: boolean
+          description: Defines whether the user has a password set.
+        is_professional_email:
+          type: boolean
+          description: Defines whether the user has a professional email or not.
+        srn:
+          type: string
+          description: The SRN of the usr.
+          pattern: ^srn://account\.[^/]+/users/[^/]+$
+      x-properties-order:
+      - id
+      - first_name
+      - last_name
+      - email
+      - phone_number
+      - created_at
+      - updated_at
+      - mfa
+      - mfa_methods
+      - locale
+      - has_password
+      - is_professional_email
+      - srn
+    scaleway.account.v3.UserMFAMethods:
+      type: object
+      properties:
+        totp:
+          type: boolean
+          description: True if the user has setup a TOTP.
+        web_authn:
+          type: boolean
+          description: True if the user has at least one WebAuthn authenticator.
+      x-properties-order:
+      - totp
+      - web_authn
+    scaleway.account.v3.UserVerificationRequirement:
+      type: string
+      enum:
+      - user_verification_requirement_unknown
+      - user_verification_requirement_required
+      - user_verification_requirement_preferred
+      - user_verification_requirement_discouraged
+      x-enum-descriptions:
+        values:
+          user_verification_requirement_unknown: Unknown or unspecified requirement
+          user_verification_requirement_required: User verification is required
+          user_verification_requirement_preferred: User verification is preferred
+            but not required
+          user_verification_requirement_discouraged: User verification is discouraged
+            (e.g., when already verified)
+      default: user_verification_requirement_unknown
+    scaleway.account.v3.ValidateAccountResponse:
+      type: object
+      properties:
+        user:
+          description: User created.
+          $ref: '#/components/schemas/scaleway.account.v3.User'
+        organization_summary:
+          description: Summary of the organization created for the user.
+          $ref: '#/components/schemas/scaleway.account.v3.OrganizationSummary'
+        login_informations:
+          type: array
+          description: List of organizations with their login information (JWT tokens)
+            for auto-login after account validation.
+          items:
+            $ref: '#/components/schemas/scaleway.account.v3.OrganizationLogin'
+      x-properties-order:
+      - user
+      - organization_summary
+      - login_informations
+    scaleway.account.v3.ValidateAuthenticationCodeSignUpResponse:
+      type: object
+      properties:
+        secret:
+          type: string
+          description: Secret authenticating the user.
+        first_name:
+          type: string
+          description: First name of the user.
+        last_name:
+          type: string
+          description: Last name of the user.
+      x-properties-order:
+      - secret
+      - first_name
+      - last_name
+    scaleway.account.v3.ValidateOIDCSignupResponse:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email to sign-up.
+        access_token:
+          type: string
+          description: Access token to get user's protected resources.
+        first_name:
+          type:
+          - string
+          - "null"
+          description: User first name as reported by the OIDC provider.
+        last_name:
+          type:
+          - string
+          - "null"
+          description: User last name as reported by the OIDC provider.
+      x-properties-order:
+      - email
+      - access_token
+      - first_name
+      - last_name
+    scaleway.std.LanguageCode:
+      type: string
+      enum:
+      - unknown_language_code
+      - en_US
+      - fr_FR
+      - de_DE
+      default: unknown_language_code
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /account/v3/accounts:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: CreateAccount
+      summary: Create a new user request
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.Account'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    Email of the user.
+                    Precisely one of email, oidc can be set.
+                  x-one-of: method
+                oidc:
+                  description: |-
+                    OpenID Connect authentication information that allows a user to authenticate through an external identity provider.
+                    If this field is used, the `email` field must not be set.
+                    Precisely one of email, oidc can be set.
+                  x-one-of: method
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.CreateAccountRequest.OIDC'
+                  - type: "null"
+                captcha:
+                  type: string
+                  description: |-
+                    Captcha.
+                    Captcha validation code. This is required as an anti-fraud measure.
+                email_validation_method:
+                  description: |-
+                    In case of account creation by email, we can choose to receive a magic_link or an authentication_code by email.
+                    By default a magic_link will be sent.
+                  $ref: '#/components/schemas/scaleway.account.v3.CreateAccountRequest.EmailValidationMethod'
+                origin:
+                  description: Origin of the organization creation request.
+                  $ref: '#/components/schemas/scaleway.account.v3.CreateAccountRequest.OrganizationOrigin'
+                first_name:
+                  type: string
+                  description: First name of the user.
+                last_name:
+                  type: string
+                  description: Last name of the user.
+              x-properties-order:
+              - email
+              - oidc
+              - captcha
+              - email_validation_method
+              - origin
+              - first_name
+              - last_name
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "captcha": "string",
+              "first_name": "string",
+              "last_name": "string"
+            }' \
+            "https://api.scaleway.com/account/v3/accounts"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/accounts" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            captcha="string" \
+            first_name="string" \
+            last_name="string"
+  /account/v3/accounts/{email}/notify:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: NotifyAccount
+      summary: Send the validation email for the user request
+      parameters:
+      - in: path
+        name: email
+        description: Email associated to the user account.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/accounts/{email}/notify"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/accounts/{email}/notify" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/finish-webauthn-authentication:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: FinishWebAuthnAuthentication
+      summary: Finish a WebAuthn authentication ceremony and log in. Supports passkey
+        authentication without email.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.LogInOrganizationsResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ceremony_id:
+                  type: string
+                  description: ID of the authentication ceremony to finish.
+                authentication_response:
+                  description: WebAuthn response to the authentication ceremony.
+                  $ref: '#/components/schemas/scaleway.account.v3.AuthenticationResponse'
+                origin:
+                  type: string
+                  description: The domain on which the authentication is occurring.
+              required:
+              - authentication_response
+              x-properties-order:
+              - ceremony_id
+              - authentication_response
+              - origin
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "authentication_response": "",
+              "ceremony_id": "string",
+              "origin": "string"
+            }' \
+            "https://api.scaleway.com/account/v3/finish-webauthn-authentication"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/finish-webauthn-authentication" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            authentication_response="" \
+            ceremony_id="string" \
+            origin="string"
+  /account/v3/initiate-authentication-code-login:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: InitiateAuthenticationCodeLogin
+      summary: Initiate an authentication code login attempt and send an email with
+        the code to the user
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.InitiateAuthenticationCodeLoginResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email of the user to login.
+              x-properties-order:
+              - email
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"string"}' \
+            "https://api.scaleway.com/account/v3/initiate-authentication-code-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/initiate-authentication-code-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            email="string"
+  /account/v3/initiate-oidc-login:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: InitiateOIDCLogin
+      summary: Initiate a OpenID connect login
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.InitiateOIDCLoginResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identity_provider:
+                  description: Identity provider to connect with.
+                  $ref: '#/components/schemas/scaleway.account.v3.OIDCIdentityProvider'
+                redirect_url:
+                  type: string
+                  description: URL to redirect to after login.
+                account_redirect_uri:
+                  type: string
+                  description: URI to which the identity provider will redirect after
+                    the authentication phase.
+              x-properties-order:
+              - identity_provider
+              - redirect_url
+              - account_redirect_uri
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"account_redirect_uri":"string","redirect_url":"string"}' \
+            "https://api.scaleway.com/account/v3/initiate-oidc-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/initiate-oidc-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            account_redirect_uri="string" \
+            redirect_url="string"
+  /account/v3/initiate-oidc-signup:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: InitiateOIDCSignup
+      summary: Initiate an OpenID sign-up
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.InitiateOIDCSignupResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identity_provider:
+                  description: Identity provider to connect with.
+                  $ref: '#/components/schemas/scaleway.account.v3.OIDCIdentityProvider'
+                account_type:
+                  description: Type of account to create.
+                  deprecated: true
+                  $ref: '#/components/schemas/scaleway.account.v3.Account.Type'
+                redirect_url:
+                  type: string
+                  description: URL to redirect the user to after login.
+                account_redirect_uri:
+                  type: string
+                  description: URI to which the identity provider will redirect after
+                    the authentication phase.
+              x-properties-order:
+              - identity_provider
+              - account_type
+              - redirect_url
+              - account_redirect_uri
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"account_redirect_uri":"string","redirect_url":"string"}' \
+            "https://api.scaleway.com/account/v3/initiate-oidc-signup"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/initiate-oidc-signup" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            account_redirect_uri="string" \
+            redirect_url="string"
+  /account/v3/initiate-passwordless-login:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: InitiatePasswordlessLogin
+      summary: Send a magic link for passwordless login
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email of the user.
+                redirect_url:
+                  type: string
+                  description: Origin of the login request.
+              x-properties-order:
+              - email
+              - redirect_url
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"string","redirect_url":"string"}' \
+            "https://api.scaleway.com/account/v3/initiate-passwordless-login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/initiate-passwordless-login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            email="string" \
+            redirect_url="string"
+  /account/v3/login:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: LogIn
+      summary: Log in with a session
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.LogInResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login_session_id:
+                  type: string
+                  description: ID of the login session.
+                otp:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    OTP of the user.
+                    Precisely one of otp, webauthn can be set.
+                  pattern: ^[A-Z0-9]+$
+                  x-one-of: mfa
+                organization_id:
+                  type:
+                  - string
+                  - "null"
+                  description: Optional organization_id to specify the organization
+                    we want to log in.
+                webauthn:
+                  description: |-
+                    WebAuthn response to the authentication ceremony.
+                    Precisely one of otp, webauthn can be set.
+                  x-one-of: mfa
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.FinishWebAuthnAuthenticationRequest'
+                  - type: "null"
+              x-properties-order:
+              - login_session_id
+              - otp
+              - organization_id
+              - webauthn
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"login_session_id":"string"}' \
+            "https://api.scaleway.com/account/v3/login"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/login" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            login_session_id="string"
+  /account/v3/login-organizations:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: LogInOrganizations
+      summary: Log in to retrieve all organizations
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.LogInOrganizationsResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login_session_id:
+                  type: string
+                  description: ID of the login session.
+                otp:
+                  type:
+                  - string
+                  - "null"
+                  description: |-
+                    OTP of the user.
+                    Precisely one of otp, webauthn can be set.
+                  pattern: ^[A-Z0-9]+$
+                  x-one-of: mfa
+                webauthn:
+                  description: |-
+                    WebAuthn response to the authentication ceremony.
+                    Precisely one of otp, webauthn can be set.
+                  x-one-of: mfa
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.FinishWebAuthnAuthenticationRequest'
+                  - type: "null"
+              x-properties-order:
+              - login_session_id
+              - otp
+              - webauthn
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"login_session_id":"string"}' \
+            "https://api.scaleway.com/account/v3/login-organizations"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/login-organizations" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            login_session_id="string"
+  /account/v3/login-session:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: CreateLoginSession
+      summary: Create a login session
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.LoginSession'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  description: |-
+                    Log in with password.
+                    One of password, passwordless, oidc, authentication_code is required.
+                  x-one-of: method
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.CreateLoginSessionRequest.Password'
+                  - type: "null"
+                passwordless:
+                  description: |-
+                    Log in with passwordless.
+                    One of password, passwordless, oidc, authentication_code is required.
+                  x-one-of: method
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.CreateLoginSessionRequest.Passwordless'
+                  - type: "null"
+                oidc:
+                  description: |-
+                    Log in with OpenID Connect.
+                    One of password, passwordless, oidc, authentication_code is required.
+                  x-one-of: method
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.CreateLoginSessionRequest.OIDC'
+                  - type: "null"
+                authentication_code:
+                  description: One of password, passwordless, oidc, authentication_code
+                    is required.
+                  x-one-of: method
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.CreateLoginSessionRequest.AuthenticationCode'
+                  - type: "null"
+              x-properties-order:
+              - password
+              - passwordless
+              - oidc
+              - authentication_code
+              oneOf:
+              - required:
+                - password
+              - required:
+                - passwordless
+              - required:
+                - oidc
+              - required:
+                - authentication_code
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "https://api.scaleway.com/account/v3/login-session"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/login-session" \
+            X-Auth-Token:$SCW_SECRET_KEY
+  /account/v3/resend-authentication-code:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: ResendAuthenticationCode
+      summary: Resend an authentication code for sign in or sign up operation
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email of the user.
+                operation:
+                  description: Sign up or sign in operation.
+                  $ref: '#/components/schemas/scaleway.account.v3.ResendAuthenticationCodeRequest.Operation'
+              x-properties-order:
+              - email
+              - operation
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"string"}' \
+            "https://api.scaleway.com/account/v3/resend-authentication-code"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/resend-authentication-code" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            email="string"
+  /account/v3/reset-password:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: ResetPassword
+      summary: Reset password
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Token received to reset the password.
+                password:
+                  type: string
+                  description: New password.
+              x-properties-order:
+              - token
+              - password
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"password":"string","token":"string"}' \
+            "https://api.scaleway.com/account/v3/reset-password"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/reset-password" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            password="string" \
+            token="string"
+  /account/v3/send-reset-password-email:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: SendResetPasswordEmail
+      summary: Send reset password link as an email
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email associated to the user account.
+                captcha:
+                  type: string
+                  description: Captcha response.
+              x-properties-order:
+              - email
+              - captcha
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"captcha":"string","email":"string"}' \
+            "https://api.scaleway.com/account/v3/send-reset-password-email"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/send-reset-password-email" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            captcha="string" \
+            email="string"
+  /account/v3/start-webauthn-authentication:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: StartWebAuthnAuthentication
+      summary: Start a WebAuthn authentication ceremony to use MFA for the LogIn API
+        request.
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.StartWebAuthnAuthenticationResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login_session_id:
+                  type:
+                  - string
+                  - "null"
+                  description: ID of the login session.
+                origin:
+                  type: string
+                  description: The domain on which the authentication is occurring.
+              x-properties-order:
+              - login_session_id
+              - origin
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"origin":"string"}' \
+            "https://api.scaleway.com/account/v3/start-webauthn-authentication"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/start-webauthn-authentication" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            origin="string"
+  /account/v3/users/{account_root_user_id}/reject-email-update:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: RejectEmailUpdate
+      summary: Reject email update
+      parameters:
+      - in: path
+        name: account_root_user_id
+        description: ID of the user.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Token received to reject the email update.
+              x-properties-order:
+              - token
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"token":"string"}' \
+            "https://api.scaleway.com/account/v3/users/{account_root_user_id}/reject-email-update"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/users/{account_root_user_id}/reject-email-update" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            token="string"
+  /account/v3/users/{account_root_user_id}/validate-email-update:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: ValidateEmailUpdate
+      summary: Validate email update
+      parameters:
+      - in: path
+        name: account_root_user_id
+        description: ID of the user.
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Token received to validate the email update.
+              x-properties-order:
+              - token
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"token":"string"}' \
+            "https://api.scaleway.com/account/v3/users/{account_root_user_id}/validate-email-update"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/users/{account_root_user_id}/validate-email-update" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            token="string"
+  /account/v3/validate-account:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: ValidateAccount
+      summary: Validate the user request
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ValidateAccountResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email used for the account request.
+                token:
+                  type: string
+                  description: Token received to validate the account.
+                professional_organization:
+                  description: |-
+                    Details of the professional organization.
+                    Precisely one of professional_organization, personal_organization can be set.
+                  x-one-of: organization_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.ProfessionalOrganization'
+                  - type: "null"
+                personal_organization:
+                  description: |-
+                    Details of the personal organization.
+                    Precisely one of professional_organization, personal_organization can be set.
+                  x-one-of: organization_type
+                  oneOf:
+                  - $ref: '#/components/schemas/scaleway.account.v3.PersonalOrganization'
+                  - type: "null"
+                account_type:
+                  description: Type of the account.
+                  $ref: '#/components/schemas/scaleway.account.v3.Account.Type'
+                organization_name:
+                  type: string
+                  description: Name of the organization.
+                country_code:
+                  type:
+                  - string
+                  - "null"
+                  description: Country code of the organization (ISO 3166-2).
+                  pattern: '[A-Z]{2}'
+              x-properties-order:
+              - email
+              - token
+              - professional_organization
+              - personal_organization
+              - account_type
+              - organization_name
+              - country_code
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "email": "string",
+              "organization_name": "string",
+              "token": "string"
+            }' \
+            "https://api.scaleway.com/account/v3/validate-account"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/validate-account" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            email="string" \
+            organization_name="string" \
+            token="string"
+  /account/v3/validate-authentication-code-sign-up:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: ValidateAuthenticationCodeSignUp
+      summary: Validate an authentication code during a sign up workflow
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ValidateAuthenticationCodeSignUpResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email of the user.
+                code:
+                  type: string
+                  description: Authentication code sent by email.
+              x-properties-order:
+              - email
+              - code
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"code":"string","email":"string"}' \
+            "https://api.scaleway.com/account/v3/validate-authentication-code-sign-up"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/validate-authentication-code-sign-up" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            code="string" \
+            email="string"
+  /account/v3/validate-oidc-signup:
+    post:
+      tags:
+      - Unauthenticated User
+      operationId: ValidateOIDCSignup
+      summary: Validate an OpenID connect during sign-up
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.account.v3.ValidateOIDCSignupResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identity_provider:
+                  description: Identity provider to connect with.
+                  $ref: '#/components/schemas/scaleway.account.v3.OIDCIdentityProvider'
+                account_type:
+                  description: Type of account to create.
+                  deprecated: true
+                  $ref: '#/components/schemas/scaleway.account.v3.Account.Type'
+                code:
+                  type: string
+                  description: Authorization code returned initially by the identity
+                    provider.
+                account_redirect_uri:
+                  type: string
+                  description: URI to which the identity provider will redirect after
+                    the authentication phase.
+              x-properties-order:
+              - identity_provider
+              - account_type
+              - code
+              - account_redirect_uri
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"account_redirect_uri":"string","code":"string"}' \
+            "https://api.scaleway.com/account/v3/validate-oidc-signup"
+      - lang: HTTPie
+        source: |-
+          http POST "https://api.scaleway.com/account/v3/validate-oidc-signup" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            account_redirect_uri="string" \
+            code="string"

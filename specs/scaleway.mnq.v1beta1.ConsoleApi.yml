@@ -1,0 +1,113 @@
+openapi: 3.1.0
+info:
+  title: MnQ Console API
+  description: Provides information for the console about all MnQ protocols of a user.
+  version: v1beta1
+servers:
+- url: https://api.scaleway.com
+components:
+  schemas:
+    scaleway.mnq.v1beta1.GetProtocolsResponse:
+      type: object
+      properties:
+        protocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/scaleway.mnq.v1beta1.Protocol'
+      x-properties-order:
+      - protocols
+    scaleway.mnq.v1beta1.Protocol:
+      type: object
+      properties:
+        type:
+          description: Protocol type.
+          $ref: '#/components/schemas/scaleway.mnq.v1beta1.Protocol.Type'
+        active:
+          type:
+          - boolean
+          - "null"
+          description: Protocol status.
+        region:
+          type: string
+          description: The region you want to target
+        credentials:
+          type:
+          - integer
+          - "null"
+          description: Number of credentials for this protocol.
+          format: int32
+        project_id:
+          type: string
+          description: (UUID format)
+          example: 6170692e-7363-616c-6577-61792e636f6d
+        resources:
+          type:
+          - integer
+          - "null"
+          description: Number of resources, only used for NATS protocol.
+          format: int32
+      required:
+      - type
+      - active
+      - region
+      - credentials
+      - project_id
+      x-properties-order:
+      - type
+      - active
+      - region
+      - credentials
+      - project_id
+      - resources
+    scaleway.mnq.v1beta1.Protocol.Type:
+      type: string
+      enum:
+      - unknown
+      - nats
+      - sqs
+      - sns
+      default: unknown
+  securitySchemes:
+    scaleway:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
+paths:
+  /mnq/v1beta1/regions/{region}/protocols:
+    get:
+      operationId: GetProtocols
+      summary: Get information about all MnQ protocols
+      parameters:
+      - in: path
+        name: region
+        description: The region you want to target
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        description: Get protocols info for this project ID. (UUID format)
+        required: true
+        schema:
+          type: string
+          example: 6170692e-7363-616c-6577-61792e636f6d
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scaleway.mnq.v1beta1.GetProtocolsResponse'
+      security:
+      - scaleway: []
+      x-codeSamples:
+      - lang: cURL
+        source: |-
+          curl -X GET \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/mnq/v1beta1/regions/{region}/protocols?project_id=6170692e-7363-616c-6577-61792e636f6d"
+      - lang: HTTPie
+        source: |-
+          http GET "https://api.scaleway.com/mnq/v1beta1/regions/{region}/protocols" \
+            X-Auth-Token:$SCW_SECRET_KEY \
+            project_id==6170692e-7363-616c-6577-61792e636f6d

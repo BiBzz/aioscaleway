@@ -2,38 +2,50 @@
 
 Asynchronous, fully typed Python client for every
 [Scaleway API](https://www.scaleway.com/en/developers/api/), built on
-[httpx2](https://pypi.org/project/httpx2/) and
-[pydantic](https://docs.pydantic.dev/).
-
-The modules and class names follow the official
-[`scaleway`](https://pypi.org/project/scaleway/) SDK, so moving code over is
-mostly a matter of adding `await`:
+[httpx2](https://pypi.org/project/httpx2/), [pydantic](https://docs.pydantic.dev/)
+and [whenever](https://whenever.readthedocs.io/).
 
 ```python
-from scaleway.billing.v2beta1 import BillingV2Beta1API  # official, blocking
-from aioscaleway.billing.v2beta1 import BillingV2Beta1API  # this package
+from aioscaleway import Scaleway
+
+async with Scaleway() as scw:  # SCW_* from the environment
+    server = await scw.compute.servers(server_id)  # load
+    print(server.name, server.state)
+    await server.reboot()
+
+    async for server in scw.compute.servers.filter(name="web"):
+        await server.power_off()
+
+    async for line in scw.billing.consumptions.filter(billing_period="2026-10"):
+        print(line.sku, line.value.to_decimal() if line.value else 0)
 ```
 
 ## Why it exists
 
-The official SDK comes in two flavours, `scaleway` and `scaleway-async`, and
-both send their requests through `requests`. The `async def` methods of
-`scaleway-async` call it directly, so every request blocks the event loop
-while it waits for Scaleway. `aioscaleway` is asynchronous down to the socket:
+The official SDK, `scaleway` and `scaleway-async`, sends its requests through
+`requests`: the `async def` methods of `scaleway-async` block the event loop
+while they wait. It also mirrors the API's own layout, one class per product
+and version (`InstanceV1API`, `BillingV2Beta1API`) with flat methods.
 
-- one `httpx2.AsyncClient` per `ScalewayClient`, connections reused;
-- every request and response is a pydantic model, checked by `mypy --strict`;
-- throttling (`429`) and transient failures (`502`, `503`, `504`, broken
-  connections) are retried with [stamina](https://stamina.hynek.me/), honouring
-  `Retry-After`, and a `POST` is only retried when Scaleway cannot have
-  processed it;
-- every paginated listing has an `_iter` and an `_all` variant;
-- API errors are typed (`ResourceNotFoundError`, `QuotasExceededError`, and
-  so on) and keep Scaleway's message.
+`aioscaleway` is asynchronous down to the socket and organised around what you
+manipulate rather than where Scaleway files it:
 
-The code is generated from the OpenAPI files Scaleway publishes, which are
-committed in [`specs/`](specs/): 59 API versions and around 1,500 operations,
-not only the popular ones.
+- **business areas** shared with its sibling [aioovh](https://pypi.org/project/aioovh/):
+  `compute`, `storage`, `network`, `kubernetes`, `databases`, `billing`...;
+- **collections** you iterate with `async for`, narrowed with `filter()`, every
+  page read for you;
+- **references** (`scw.compute.servers(server_id)`) that act without a
+  request to read them first, and that `await` loads;
+- **objects** that are references too, with typed fields;
+- **one method per action**: `server.reboot()`, `server.power_off()`,
+  `server.attach_volume(volume_id=volume)`;
+- **no API version in any name**: the library picks the latest stable version
+  of each API, else the latest preview, and says so in the docstring.
+
+Everything is generated from the OpenAPI files Scaleway publishes, committed in
+[`specs/`](specs/): 59 API versions and about 1,500 operations. Every
+operation is reachable, either through the objects or through `scw.raw`, and
+[`docs/coverage.md`](docs/coverage.md) says where.
 
 ## Installation
 
@@ -41,84 +53,69 @@ not only the popular ones.
 uv add aioscaleway
 ```
 
-or:
-
-```bash
-pip install aioscaleway
-```
-
 Python 3.12 or later.
 
 ## Usage
 
-```python
-import asyncio
-
-from aioscaleway import ScalewayClient, ScalewaySettings
-from aioscaleway.billing.v2beta1 import BillingV2Beta1API
-from aioscaleway.instance.v1 import InstanceV1API
-
-
-async def main() -> None:
-    settings = ScalewaySettings(
-        secret_key="...",
-        default_region="fr-par",
-        default_zone="fr-par-1",
-        default_project_id="...",
-    )
-    async with ScalewayClient(settings) as client:
-        billing = BillingV2Beta1API(client)
-        for line in await billing.list_consumptions_all(billing_period="2026-10"):
-            print(line.sku, line.value.to_decimal() if line.value else 0)
-
-        instance = InstanceV1API(client)
-        async for server in instance.list_servers_iter():
-            print(server.name, server.state)
-
-
-asyncio.run(main())
-```
-
-### Configuration
-
-`ScalewaySettings` is a `pydantic-settings` object. Left empty, it reads the
-same environment variables as the Scaleway CLI and the official SDK:
-
-| Variable                      | Setting                   |
-| ----------------------------- | ------------------------- |
-| `SCW_SECRET_KEY`              | `secret_key`              |
-| `SCW_ACCESS_KEY`              | `access_key`              |
-| `SCW_API_URL`                 | `api_url`                 |
-| `SCW_DEFAULT_REGION`          | `default_region`          |
-| `SCW_DEFAULT_ZONE`            | `default_zone`            |
-| `SCW_DEFAULT_PROJECT_ID`      | `default_project_id`      |
-| `SCW_DEFAULT_ORGANIZATION_ID` | `default_organization_id` |
+### Client
 
 ```python
-client = ScalewayClient()  # reads SCW_* from the environment
+scw = Scaleway(
+    secret_key="...",
+    default_region="fr-par",
+    default_zone="fr-par-1",
+    default_project_id="...",
+)
+nl = scw.with_options(default_zone="nl-ams-1")  # same connections, other defaults
 ```
 
-Timeouts and the retry policy are settings too: `timeout`, `retry_attempts`,
-`retry_timeout`, `retry_wait_initial` and `retry_wait_max`.
+Every value left out is read from the variables of the Scaleway CLI
+(`SCW_SECRET_KEY`, `SCW_DEFAULT_REGION`, `SCW_DEFAULT_ZONE`,
+`SCW_DEFAULT_PROJECT_ID`, `SCW_DEFAULT_ORGANIZATION_ID`, `SCW_API_URL`).
+Use it as an async context manager, or call `await scw.aclose()`.
 
-### Regions, zones and owners
+### Collections, references, objects
 
-A method whose path contains a region or a zone takes an optional `region` or
-`zone` argument, and falls back to the configured default. Creating a
-resource without a `project_id` uses `default_project_id`, as the official SDK
-does; when an operation accepts either a project or an organization, only one
-of them is sent.
+| You write | You get | Requests |
+| --- | --- | --- |
+| `scw.compute.servers` | a collection | none |
+| `scw.compute.servers.filter(name="web")` | the same collection, narrowed | none |
+| `async for s in scw.compute.servers` | loaded objects | one per page |
+| `scw.compute.servers(server_id)` | a reference | none |
+| `await scw.compute.servers(server_id)` | a loaded object | one |
+| `await scw.compute.servers(server_id).reboot()` | the action's result | one |
+| `await scw.compute.servers.create(name=..., commercial_type=...)` | the created object | one |
 
-### Pagination
+A loaded object is also a reference: anything that takes a reference takes an
+object. It cannot load itself when printed or read, because those are
+synchronous; mypy flags a field read on a bare reference. `repr()` tells which
+one you hold.
 
-Every listing that pages with `page` and `page_size` (or `per_page`) gets two
-helpers next to the plain method:
+Sub-resources hang off their parent:
 
 ```python
-async for project in api.list_projects_iter():
-    ...  # page after page
-projects = await api.list_projects_all()  # every page, as a list
+async for pool in scw.kubernetes.clusters(cluster_id).pools:
+    print(pool.name, pool.size)
+async for nic in scw.compute.servers(server_id).nics:
+    ...
 ```
+
+A resource with a zone or a region takes it as a keyword
+(`scw.compute.servers(server_id, zone="nl-ams-1")`,
+`servers.filter(zone="nl-ams-1")`), defaulting to the client's.
+
+### Types
+
+Arguments and fields are typed. Enumerations and nested models of an area live
+in its `types` module:
+
+```python
+from aioscaleway.compute.types import ServerState, BootType
+```
+
+Dates are `whenever.Instant`, amounts `Money` (`.to_decimal()`).
+Enumerations are open: a value Scaleway adds later is accepted instead of
+failing the response.
 
 ### Errors
 
@@ -126,31 +123,35 @@ projects = await api.list_projects_all()  # every page, as a list
 from aioscaleway import ResourceNotFoundError, ScalewayAPIError
 
 try:
-    await instance.get_server(server_id="...")
+    await scw.compute.servers(server_id)
 except ResourceNotFoundError:
     ...
 except ScalewayAPIError as error:
     print(error.status_code, error.type, error.message)
 ```
 
-`ScalewayTransportError` reports a request that never got an answer, and
-`ScalewayConfigurationError` a missing region, zone or path parameter.
+`ScalewayTransportError` reports a request that got no answer. Throttling and
+transient failures are retried with [stamina](https://stamina.hynek.me/),
+honouring `Retry-After`; a `POST` is only retried when Scaleway cannot have
+processed it.
 
-### Values added after generation
+### The raw layer
 
-Enumerations are open: a status Scaleway adds later is accepted and keeps its
-value (`ServerState("hibernating")`), instead of failing the whole response.
-Fields unknown to the models are kept in `model_extra`.
+`scw.raw` is the underlying client, for a call the objects do not cover:
+
+```python
+await scw.raw.request_json("GET", "/instance/v1/zones/fr-par-1/dashboard")
+```
 
 ## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The design choices are in
-[docs/architecture.md](docs/architecture.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and
+[docs/architecture.md](docs/architecture.md). The full object tree is in
+[docs/objects.md](docs/objects.md).
 
 The source lives on
 [GitLab](https://gitlab.com/businessagile/libraries/aioscaleway), mirrored to
-[GitHub](https://github.com/BiBzz/aioscaleway). A sibling package covers
-OVHcloud: [aioovh](https://pypi.org/project/aioovh/).
+[GitHub](https://github.com/BiBzz/aioscaleway).
 
 ## License
 

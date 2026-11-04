@@ -356,7 +356,7 @@ class DnsZoneCollection(_Collection[DnsZone]):
 
     async def _items(self) -> AsyncIterator[DnsZone]:
         async for data in self._session.api(_DomainAPI).list_dns_zones_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield DnsZone._from(self._session, self._scope, data)
 
@@ -369,7 +369,7 @@ class DnsZoneCollection(_Collection[DnsZone]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -417,7 +417,7 @@ class NameserverCollection(_Collection[DomainNameserver]):
     async def _items(self) -> AsyncIterator[DomainNameserver]:
         response = await self._session.api(_DomainAPI).list_dns_zone_nameservers(
             dns_zone=_required(self._scope, "dns_zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.ns or []:
             yield data
@@ -449,7 +449,7 @@ class RecordCollection(_Collection[DomainRecord]):
     async def _items(self) -> AsyncIterator[DomainRecord]:
         async for data in self._session.api(_DomainAPI).list_dns_zone_records_iter(
             dns_zone=_required(self._scope, "dns_zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -463,7 +463,7 @@ class RecordCollection(_Collection[DomainRecord]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -488,7 +488,7 @@ class VersionCollection(_Collection[DNSZoneVersion]):
     async def _items(self) -> AsyncIterator[DNSZoneVersion]:
         async for data in self._session.api(_DomainAPI).list_dns_zone_versions_iter(
             dns_zone=_required(self._scope, "dns_zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -502,7 +502,7 @@ class VersionCollection(_Collection[DNSZoneVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -639,7 +639,7 @@ class SslCertificateCollection(_Collection[SslCertificate]):
 
     async def _items(self) -> AsyncIterator[SslCertificate]:
         async for data in self._session.api(_DomainAPI).list_ssl_certificates_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield SslCertificate._from(self._session, self._scope, data)
 
@@ -652,7 +652,7 @@ class SslCertificateCollection(_Collection[SslCertificate]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -818,7 +818,7 @@ class ContactCollection(_Collection[ContactSummary]):
 
     async def _items(self) -> AsyncIterator[ContactSummary]:
         async for data in self._session.api(_DomainRegistrarAPI).list_contacts_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield ContactSummary._from(self._session, self._scope, data)
 
@@ -831,7 +831,7 @@ class ContactCollection(_Collection[ContactSummary]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1116,7 +1116,7 @@ class DomainCollection(_Collection[DomainSummary]):
 
     async def _items(self) -> AsyncIterator[DomainSummary]:
         async for data in self._session.api(_DomainRegistrarAPI).list_domains_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield DomainSummary._from(self._session, self._scope, data)
 
@@ -1129,7 +1129,7 @@ class DomainCollection(_Collection[DomainSummary]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1212,7 +1212,7 @@ class HostCollection(_Collection[Host]):
     async def _items(self) -> AsyncIterator[Host]:
         async for data in self._session.api(_DomainRegistrarAPI).list_domain_hosts_iter(
             domain=_required(self._scope, "domain"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Host._from(self._session, self._scope, data)
 
@@ -1226,7 +1226,7 @@ class HostCollection(_Collection[Host]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1326,7 +1326,7 @@ class InboundTransferCollection(_Collection[DomainInboundTransfer]):
         async for data in self._session.api(
             _DomainRegistrarAPI
         ).list_inbound_transfers_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield data
 
@@ -1341,7 +1341,7 @@ class InboundTransferCollection(_Collection[DomainInboundTransfer]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1375,7 +1375,7 @@ class RenewableDomainCollection(_Collection[DomainRenewableDomain]):
         async for data in self._session.api(
             _DomainRegistrarAPI
         ).list_renewable_domains_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield data
 
@@ -1390,7 +1390,7 @@ class RenewableDomainCollection(_Collection[DomainRenewableDomain]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1428,7 +1428,7 @@ class TaskCollection(_Collection[DomainTask]):
 
     async def _items(self) -> AsyncIterator[DomainTask]:
         async for data in self._session.api(_DomainRegistrarAPI).list_tasks_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield data
 
@@ -1441,7 +1441,7 @@ class TaskCollection(_Collection[DomainTask]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1467,7 +1467,7 @@ class TldCollection(_Collection[DomainTld]):
 
     async def _items(self) -> AsyncIterator[DomainTld]:
         async for data in self._session.api(_DomainRegistrarAPI).list_tlds_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield data
 
@@ -1480,7 +1480,7 @@ class TldCollection(_Collection[DomainTld]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1504,7 +1504,7 @@ class SuggestionCollection(_Collection[str]):
 
     async def _items(self) -> AsyncIterator[str]:
         response = await self._session.api(_DomainSuggestionAPI).list_suggestions(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         )
         for data in response.suggestions or []:
             yield data

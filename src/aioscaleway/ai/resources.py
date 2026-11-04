@@ -353,7 +353,7 @@ class DeploymentCollection(_Collection[Deployment]):
     async def _items(self) -> AsyncIterator[Deployment]:
         async for data in self._session.api(_InferenceAPI).list_deployments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Deployment._from(self._session, self._scope, data)
 
@@ -367,7 +367,7 @@ class DeploymentCollection(_Collection[Deployment]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -583,7 +583,7 @@ class ModelCollection(_Collection[Model]):
     async def _items(self) -> AsyncIterator[Model]:
         async for data in self._session.api(_InferenceAPI).list_models_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Model._from(self._session, self._scope, data)
 
@@ -597,7 +597,7 @@ class ModelCollection(_Collection[Model]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -682,7 +682,7 @@ class QuantumApplicationCollection(_Collection[QuantumApplication]):
 
     async def _items(self) -> AsyncIterator[QuantumApplication]:
         async for data in self._session.api(_QaasAPI).list_applications_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield QuantumApplication._from(self._session, self._scope, data)
 
@@ -695,7 +695,7 @@ class QuantumApplicationCollection(_Collection[QuantumApplication]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -776,7 +776,7 @@ class QuantumBookingCollection(_Collection[QuantumBooking]):
 
     async def _items(self) -> AsyncIterator[QuantumBooking]:
         async for data in self._session.api(_QaasAPI).list_bookings_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield QuantumBooking._from(self._session, self._scope, data)
 
@@ -789,7 +789,7 @@ class QuantumBookingCollection(_Collection[QuantumBooking]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -923,7 +923,7 @@ class QuantumJobCollection(_Collection[QuantumJob]):
 
     async def _items(self) -> AsyncIterator[QuantumJob]:
         async for data in self._session.api(_QaasAPI).list_jobs_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield QuantumJob._from(self._session, self._scope, data)
 
@@ -936,7 +936,7 @@ class QuantumJobCollection(_Collection[QuantumJob]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -994,7 +994,7 @@ class QuantumJobResultCollection(_Collection[JobResult]):
     async def _items(self) -> AsyncIterator[JobResult]:
         async for data in self._session.api(_QaasAPI).list_job_results_iter(
             job_id=_required(self._scope, "job_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1008,7 +1008,7 @@ class QuantumJobResultCollection(_Collection[JobResult]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1065,7 +1065,7 @@ class QuantumModelCollection(_Collection[QuantumModel]):
 
     async def _items(self) -> AsyncIterator[QuantumModel]:
         async for data in self._session.api(_QaasAPI).list_models_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield QuantumModel._from(self._session, self._scope, data)
 
@@ -1078,7 +1078,7 @@ class QuantumModelCollection(_Collection[QuantumModel]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1167,7 +1167,7 @@ class QuantumPlatformCollection(_Collection[QuantumPlatform]):
 
     async def _items(self) -> AsyncIterator[QuantumPlatform]:
         async for data in self._session.api(_QaasAPI).list_platforms_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield QuantumPlatform._from(self._session, self._scope, data)
 
@@ -1180,7 +1180,7 @@ class QuantumPlatformCollection(_Collection[QuantumPlatform]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1300,7 +1300,7 @@ class QuantumProcessCollection(_Collection[QuantumProcess]):
 
     async def _items(self) -> AsyncIterator[QuantumProcess]:
         async for data in self._session.api(_QaasAPI).list_processes_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield QuantumProcess._from(self._session, self._scope, data)
 
@@ -1313,7 +1313,7 @@ class QuantumProcessCollection(_Collection[QuantumProcess]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1369,7 +1369,7 @@ class QuantumProcessResultCollection(_Collection[ProcessResult]):
     async def _items(self) -> AsyncIterator[ProcessResult]:
         async for data in self._session.api(_QaasAPI).list_process_results_iter(
             process_id=_required(self._scope, "process_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1383,7 +1383,7 @@ class QuantumProcessResultCollection(_Collection[ProcessResult]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1510,7 +1510,7 @@ class QuantumSessionCollection(_Collection[QuantumSession]):
 
     async def _items(self) -> AsyncIterator[QuantumSession]:
         async for data in self._session.api(_QaasAPI).list_sessions_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield QuantumSession._from(self._session, self._scope, data)
 
@@ -1523,7 +1523,7 @@ class QuantumSessionCollection(_Collection[QuantumSession]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1590,7 +1590,7 @@ class AcLCollection(_Collection[SessionAccess]):
     async def _items(self) -> AsyncIterator[SessionAccess]:
         async for data in self._session.api(_QaasAPI).list_session_ac_ls_iter(
             session_id=_required(self._scope, "session_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1604,7 +1604,7 @@ class AcLCollection(_Collection[SessionAccess]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1640,7 +1640,7 @@ class ConsumptionLimitCollection(_Collection[ConsumptionLimitsResponse]):
         async for data in self._session.api(
             _GenerativeApisAPI
         ).list_consumption_limits_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield data
 
@@ -1655,7 +1655,7 @@ class ConsumptionLimitCollection(_Collection[ConsumptionLimitsResponse]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1686,7 +1686,7 @@ class InferenceNodeTypeCollection(_Collection[NodeType]):
     async def _items(self) -> AsyncIterator[NodeType]:
         async for data in self._session.api(_InferenceAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1700,7 +1700,7 @@ class InferenceNodeTypeCollection(_Collection[NodeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )

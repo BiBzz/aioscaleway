@@ -321,7 +321,7 @@ class ClusterCollection(_Collection[Cluster]):
     async def _items(self) -> AsyncIterator[Cluster]:
         async for data in self._session.api(_K8SAPI).list_clusters_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Cluster._from(self._session, self._scope, data)
 
@@ -335,7 +335,7 @@ class ClusterCollection(_Collection[Cluster]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -452,7 +452,7 @@ class AclCollection(_Collection[Acl]):
         async for data in self._session.api(_K8SAPI).list_cluster_acl_rules_iter(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Acl._from(self._session, self._scope, data)
 
@@ -467,7 +467,7 @@ class AclCollection(_Collection[Acl]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -633,7 +633,7 @@ class NodeCollection(_Collection[Node]):
         async for data in self._session.api(_K8SAPI).list_nodes_iter(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Node._from(self._session, self._scope, data)
 
@@ -648,7 +648,7 @@ class NodeCollection(_Collection[Node]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -863,7 +863,7 @@ class PoolCollection(_Collection[Pool]):
         async for data in self._session.api(_K8SAPI).list_pools_iter(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Pool._from(self._session, self._scope, data)
 
@@ -878,7 +878,7 @@ class PoolCollection(_Collection[Pool]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1019,7 +1019,7 @@ class UserDataCollection(_Collection[UserDataSummary]):
         response = await self._session.api(_K8SAPI).list_user_data(
             region=self._criteria.get("region"),
             pool_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.user_data or []:
             yield UserDataSummary._from(self._session, self._scope, data)
@@ -1040,7 +1040,7 @@ class AvailableTypeCollection(_Collection[K8SClusterType]):
         response = await self._session.api(_K8SAPI).list_cluster_available_types(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.cluster_types or []:
             yield data
@@ -1061,7 +1061,7 @@ class AvailableVersionCollection(_Collection[_K8SVersion]):
         response = await self._session.api(_K8SAPI).list_cluster_available_versions(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.versions or []:
             yield data
@@ -1115,7 +1115,7 @@ class VersionCollection(_Collection[Version]):
     async def _items(self) -> AsyncIterator[Version]:
         response = await self._session.api(_K8SAPI).list_versions(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.versions or []:
             yield Version._from(self._session, self._scope, data)
@@ -1226,7 +1226,7 @@ class RegistryImageCollection(_Collection[RegistryImage]):
     async def _items(self) -> AsyncIterator[RegistryImage]:
         async for data in self._session.api(_RegistryAPI).list_images_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield RegistryImage._from(self._session, self._scope, data)
 
@@ -1240,7 +1240,7 @@ class RegistryImageCollection(_Collection[RegistryImage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1323,7 +1323,7 @@ class TagCollection(_Collection[Tag]):
         async for data in self._session.api(_RegistryAPI).list_tags_iter(
             region=self._criteria.get("region"),
             image_id=_required(self._scope, "image_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Tag._from(self._session, self._scope, data)
 
@@ -1338,7 +1338,7 @@ class TagCollection(_Collection[Tag]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1450,7 +1450,7 @@ class RegistryCollection(_Collection[Registry]):
     async def _items(self) -> AsyncIterator[Registry]:
         async for data in self._session.api(_RegistryAPI).list_namespaces_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Registry._from(self._session, self._scope, data)
 
@@ -1464,7 +1464,7 @@ class RegistryCollection(_Collection[Registry]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1520,7 +1520,7 @@ class ClusterTypeCollection(_Collection[K8SClusterType]):
     async def _items(self) -> AsyncIterator[K8SClusterType]:
         async for data in self._session.api(_K8SAPI).list_cluster_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1534,7 +1534,7 @@ class ClusterTypeCollection(_Collection[K8SClusterType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )

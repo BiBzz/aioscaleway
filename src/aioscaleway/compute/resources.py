@@ -399,7 +399,7 @@ class MacOsCollection(_Collection[MacOs]):
     async def _items(self) -> AsyncIterator[MacOs]:
         async for data in self._session.api(_ApplesiliconAPI).list_os_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield MacOs._from(self._session, self._scope, data)
 
@@ -413,7 +413,7 @@ class MacOsCollection(_Collection[MacOs]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -511,7 +511,7 @@ class MacRunnerCollection(_Collection[MacRunner]):
     async def _items(self) -> AsyncIterator[MacRunner]:
         async for data in self._session.api(_ApplesiliconAPI).list_runners_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield MacRunner._from(self._session, self._scope, data)
 
@@ -525,7 +525,7 @@ class MacRunnerCollection(_Collection[MacRunner]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -751,7 +751,7 @@ class MacServerCollection(_Collection[MacServer]):
     async def _items(self) -> AsyncIterator[MacServer]:
         async for data in self._session.api(_ApplesiliconAPI).list_servers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield MacServer._from(self._session, self._scope, data)
 
@@ -765,7 +765,7 @@ class MacServerCollection(_Collection[MacServer]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1070,7 +1070,7 @@ class AutoscalingGroupCollection(_Collection[AutoscalingGroupSummary]):
     async def _items(self) -> AsyncIterator[AutoscalingGroupSummary]:
         response = await self._session.api(_AutoscalingAPI).list_groups(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.group_summaries or []:
             yield AutoscalingGroupSummary._from(self._session, self._scope, data)
@@ -1165,7 +1165,7 @@ class ElasticMetalOfferCollection(_Collection[ElasticMetalOffer]):
     async def _items(self) -> AsyncIterator[ElasticMetalOffer]:
         async for data in self._session.api(_BaremetalAPI).list_offers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield ElasticMetalOffer._from(self._session, self._scope, data)
 
@@ -1179,7 +1179,7 @@ class ElasticMetalOfferCollection(_Collection[ElasticMetalOffer]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1242,7 +1242,7 @@ class ElasticMetalOptionCollection(_Collection[ElasticMetalOption]):
     async def _items(self) -> AsyncIterator[ElasticMetalOption]:
         async for data in self._session.api(_BaremetalAPI).list_options_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield ElasticMetalOption._from(self._session, self._scope, data)
 
@@ -1256,7 +1256,7 @@ class ElasticMetalOptionCollection(_Collection[ElasticMetalOption]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1314,7 +1314,7 @@ class ElasticMetalOsCollection(_Collection[ElasticMetalOs]):
     async def _items(self) -> AsyncIterator[ElasticMetalOs]:
         async for data in self._session.api(_BaremetalAPI).list_os_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield ElasticMetalOs._from(self._session, self._scope, data)
 
@@ -1328,7 +1328,7 @@ class ElasticMetalOsCollection(_Collection[ElasticMetalOs]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1689,7 +1689,7 @@ class ElasticMetalServerCollection(_Collection[ElasticMetalServer]):
     async def _items(self) -> AsyncIterator[ElasticMetalServer]:
         async for data in self._session.api(_BaremetalAPI).list_servers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield ElasticMetalServer._from(self._session, self._scope, data)
 
@@ -1703,7 +1703,7 @@ class ElasticMetalServerCollection(_Collection[ElasticMetalServer]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1929,7 +1929,7 @@ class ElasticMetalServerEventCollection(_Collection[BaremetalServerEvent]):
         async for data in self._session.api(_BaremetalAPI).list_server_events_iter(
             zone=self._criteria.get("zone"),
             server_id=_required(self._scope, "server_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1944,7 +1944,7 @@ class ElasticMetalServerEventCollection(_Collection[BaremetalServerEvent]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -2018,7 +2018,7 @@ class ElasticMetalSettingCollection(_Collection[ElasticMetalSetting]):
     async def _items(self) -> AsyncIterator[ElasticMetalSetting]:
         async for data in self._session.api(_BaremetalAPI).list_settings_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield ElasticMetalSetting._from(self._session, self._scope, data)
 
@@ -2032,7 +2032,7 @@ class ElasticMetalSettingCollection(_Collection[ElasticMetalSetting]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -2140,7 +2140,7 @@ class FailoverIpCollection(_Collection[FailoverIp]):
     async def _items(self) -> AsyncIterator[FailoverIp]:
         async for data in self._session.api(_DediboxAPI).list_failover_i_ps_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield FailoverIp._from(self._session, self._scope, data)
 
@@ -2154,7 +2154,7 @@ class FailoverIpCollection(_Collection[FailoverIp]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -2255,7 +2255,7 @@ class DediboxOfferCollection(_Collection[DediboxOffer]):
     async def _items(self) -> AsyncIterator[DediboxOffer]:
         async for data in self._session.api(_DediboxAPI).list_offers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield DediboxOffer._from(self._session, self._scope, data)
 
@@ -2269,7 +2269,7 @@ class DediboxOfferCollection(_Collection[DediboxOffer]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -2393,7 +2393,7 @@ class DediboxOsCollection(_Collection[DediboxOs]):
     async def _items(self) -> AsyncIterator[DediboxOs]:
         async for data in self._session.api(_DediboxAPI).list_os_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield DediboxOs._from(self._session, self._scope, data)
 
@@ -2407,7 +2407,7 @@ class DediboxOsCollection(_Collection[DediboxOs]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -2849,7 +2849,7 @@ class DediboxServerCollection(_Collection[DediboxServerSummary]):
     async def _items(self) -> AsyncIterator[DediboxServerSummary]:
         async for data in self._session.api(_DediboxAPI).list_servers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield DediboxServerSummary._from(self._session, self._scope, data)
 
@@ -2863,7 +2863,7 @@ class DediboxServerCollection(_Collection[DediboxServerSummary]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -2959,7 +2959,7 @@ class DiskCollection(_Collection[ServerDisk]):
         async for data in self._session.api(_DediboxAPI).list_server_disks_iter(
             zone=self._criteria.get("zone"),
             server_id=int(_required(self._scope, "server_id")),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -2974,7 +2974,7 @@ class DiskCollection(_Collection[ServerDisk]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -3002,7 +3002,7 @@ class DediboxServerEventCollection(_Collection[DediboxServerEvent]):
         async for data in self._session.api(_DediboxAPI).list_server_events_iter(
             zone=self._criteria.get("zone"),
             server_id=int(_required(self._scope, "server_id")),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -3017,7 +3017,7 @@ class DediboxServerEventCollection(_Collection[DediboxServerEvent]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -3046,7 +3046,7 @@ class SubscribableOptionCollection(_Collection[_DediboxOffer]):
         ).list_subscribable_server_options_iter(
             zone=self._criteria.get("zone"),
             server_id=int(_required(self._scope, "server_id")),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -3063,7 +3063,7 @@ class SubscribableOptionCollection(_Collection[_DediboxOffer]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -3151,7 +3151,7 @@ class DediboxServiceCollection(_Collection[DediboxService]):
     async def _items(self) -> AsyncIterator[DediboxService]:
         async for data in self._session.api(_DediboxAPI).list_services_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield DediboxService._from(self._session, self._scope, data)
 
@@ -3165,7 +3165,7 @@ class DediboxServiceCollection(_Collection[DediboxService]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -3319,7 +3319,7 @@ class ImageCollection(_Collection[Image]):
     async def _items(self) -> AsyncIterator[Image]:
         async for data in self._session.api(_InstanceAPI).list_images_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Image._from(self._session, self._scope, data)
 
@@ -3333,7 +3333,7 @@ class ImageCollection(_Collection[Image]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -3491,7 +3491,7 @@ class PublicIpCollection(_Collection[PublicIp]):
     async def _items(self) -> AsyncIterator[PublicIp]:
         async for data in self._session.api(_InstanceAPI).list_ips_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield PublicIp._from(self._session, self._scope, data)
 
@@ -3505,7 +3505,7 @@ class PublicIpCollection(_Collection[PublicIp]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -3728,7 +3728,7 @@ class PlacementGroupCollection(_Collection[PlacementGroup]):
     async def _items(self) -> AsyncIterator[PlacementGroup]:
         async for data in self._session.api(_InstanceAPI).list_placement_groups_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield PlacementGroup._from(self._session, self._scope, data)
 
@@ -3742,7 +3742,7 @@ class PlacementGroupCollection(_Collection[PlacementGroup]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -3958,7 +3958,7 @@ class SecurityGroupCollection(_Collection[SecurityGroup]):
     async def _items(self) -> AsyncIterator[SecurityGroup]:
         async for data in self._session.api(_InstanceAPI).list_security_groups_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield SecurityGroup._from(self._session, self._scope, data)
 
@@ -3972,7 +3972,7 @@ class SecurityGroupCollection(_Collection[SecurityGroup]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -4166,7 +4166,7 @@ class RuleCollection(_Collection[Rule]):
         ).list_security_group_rules_iter(
             zone=self._criteria.get("zone"),
             security_group_id=_required(self._scope, "security_group_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Rule._from(self._session, self._scope, data)
 
@@ -4181,7 +4181,7 @@ class RuleCollection(_Collection[Rule]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -4607,7 +4607,7 @@ class ServerCollection(_Collection[Server]):
     async def _items(self) -> AsyncIterator[Server]:
         async for data in self._session.api(_InstanceAPI).list_servers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Server._from(self._session, self._scope, data)
 
@@ -4621,7 +4621,7 @@ class ServerCollection(_Collection[Server]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -4772,7 +4772,7 @@ class NicCollection(_Collection[Nic]):
         async for data in self._session.api(_InstanceAPI).list_private_ni_cs_iter(
             zone=self._criteria.get("zone"),
             server_id=_required(self._scope, "server_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Nic._from(self._session, self._scope, data)
 
@@ -4787,7 +4787,7 @@ class NicCollection(_Collection[Nic]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -4907,7 +4907,7 @@ class UserDataCollection(_Collection[str]):
         response = await self._session.api(_InstanceAPI).list_server_user_data(
             zone=self._criteria.get("zone"),
             server_id=_required(self._scope, "server_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.user_data or []:
             yield data
@@ -4928,7 +4928,7 @@ class ActionCollection(_Collection[ServerAction]):
         response = await self._session.api(_InstanceAPI).list_server_actions(
             zone=self._criteria.get("zone"),
             server_id=_required(self._scope, "server_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.actions or []:
             yield data
@@ -5094,7 +5094,7 @@ class LocalSnapshotCollection(_Collection[LocalSnapshot]):
     async def _items(self) -> AsyncIterator[LocalSnapshot]:
         async for data in self._session.api(_InstanceAPI).list_snapshots_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield LocalSnapshot._from(self._session, self._scope, data)
 
@@ -5108,7 +5108,7 @@ class LocalSnapshotCollection(_Collection[LocalSnapshot]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -5290,7 +5290,7 @@ class LocalVolumeCollection(_Collection[LocalVolume]):
     async def _items(self) -> AsyncIterator[LocalVolume]:
         async for data in self._session.api(_InstanceAPI).list_volumes_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield LocalVolume._from(self._session, self._scope, data)
 
@@ -5304,7 +5304,7 @@ class LocalVolumeCollection(_Collection[LocalVolume]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -5392,7 +5392,7 @@ class MarketplaceCategoryCollection(_Collection[MarketplaceCategory]):
 
     async def _items(self) -> AsyncIterator[MarketplaceCategory]:
         async for data in self._session.api(_MarketplaceAPI).list_categories_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield MarketplaceCategory._from(self._session, self._scope, data)
 
@@ -5405,7 +5405,7 @@ class MarketplaceCategoryCollection(_Collection[MarketplaceCategory]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -5468,7 +5468,7 @@ class MarketplaceImageCollection(_Collection[MarketplaceImage]):
 
     async def _items(self) -> AsyncIterator[MarketplaceImage]:
         async for data in self._session.api(_MarketplaceAPI).list_images_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield MarketplaceImage._from(self._session, self._scope, data)
 
@@ -5481,7 +5481,7 @@ class MarketplaceImageCollection(_Collection[MarketplaceImage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -5552,7 +5552,7 @@ class MarketplaceLocalImageCollection(_Collection[MarketplaceLocalImage]):
 
     async def _items(self) -> AsyncIterator[MarketplaceLocalImage]:
         async for data in self._session.api(_MarketplaceAPI).list_local_images_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield MarketplaceLocalImage._from(self._session, self._scope, data)
 
@@ -5565,7 +5565,7 @@ class MarketplaceLocalImageCollection(_Collection[MarketplaceLocalImage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -5620,7 +5620,7 @@ class MarketplaceVersionCollection(_Collection[MarketplaceVersion]):
 
     async def _items(self) -> AsyncIterator[MarketplaceVersion]:
         async for data in self._session.api(_MarketplaceAPI).list_versions_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield MarketplaceVersion._from(self._session, self._scope, data)
 
@@ -5633,7 +5633,7 @@ class MarketplaceVersionCollection(_Collection[MarketplaceVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -5658,7 +5658,7 @@ class ApplesiliconMacServerTypeListingCollection(_Collection[_ApplesiliconServer
     async def _items(self) -> AsyncIterator[_ApplesiliconServerType]:
         response = await self._session.api(_ApplesiliconAPI).list_server_types(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.server_types or []:
             yield data
@@ -5696,7 +5696,7 @@ class MacPrivateNetworkCollection(_Collection[_ApplesiliconServerPrivateNetwork]
             _ApplesiliconPrivateNetworkAPI
         ).list_server_private_networks_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -5714,7 +5714,7 @@ class MacPrivateNetworkCollection(_Collection[_ApplesiliconServerPrivateNetwork]
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -5744,7 +5744,7 @@ class AutoscalingAlertCollection(_Collection[Alert]):
     async def _items(self) -> AsyncIterator[Alert]:
         response = await self._session.api(_AutoscalingAPI).list_alerts(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.alerts or []:
             yield data
@@ -5774,7 +5774,7 @@ class AutoscalingLogCollection(_Collection[Log]):
     async def _items(self) -> AsyncIterator[Log]:
         response = await self._session.api(_AutoscalingAPI).list_logs(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.logs or []:
             yield data
@@ -5796,7 +5796,7 @@ class AutoscalingServerCollection(_Collection[AutoscalingServer]):
     async def _items(self) -> AsyncIterator[AutoscalingServer]:
         response = await self._session.api(_AutoscalingAPI).list_servers(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.servers or []:
             yield data
@@ -5832,7 +5832,7 @@ class ElasticMetalPrivateNetworkCollection(_Collection[ServerPrivateNetwork]):
             _BaremetalPrivateNetworkAPI
         ).list_server_private_networks_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -5848,7 +5848,7 @@ class ElasticMetalPrivateNetworkCollection(_Collection[ServerPrivateNetwork]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -5874,7 +5874,7 @@ class ServerTypeCollection(_Collection[Any]):
     async def _items(self) -> AsyncIterator[Any]:
         response = await self._session.api(_InstanceAPI).list_servers_types(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in [response]:
             yield data
@@ -5895,7 +5895,7 @@ class LocalVolumeTypeCollection(_Collection[Any]):
     async def _items(self) -> AsyncIterator[Any]:
         response = await self._session.api(_InstanceAPI).list_volumes_types(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in [response]:
             yield data
@@ -5917,7 +5917,7 @@ class DefaultSecurityGroupRuleCollection(_Collection[_InstanceSecurityGroupRule]
             _InstanceAPI
         ).list_default_security_group_rules(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.rules or []:
             yield data
@@ -5952,7 +5952,7 @@ class MarketplaceFullImageCollection(_Collection[FullImage]):
         async for data in self._session.api(
             _MarketplaceConsoleAPI
         ).list_full_images_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield data
 
@@ -5965,7 +5965,7 @@ class MarketplaceFullImageCollection(_Collection[FullImage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )

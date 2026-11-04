@@ -263,7 +263,7 @@ class DeviceCollection(_Collection[Device]):
     async def _items(self) -> AsyncIterator[Device]:
         async for data in self._session.api(_IotAPI).list_devices_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Device._from(self._session, self._scope, data)
 
@@ -277,7 +277,7 @@ class DeviceCollection(_Collection[Device]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -503,7 +503,7 @@ class HubCollection(_Collection[Hub]):
     async def _items(self) -> AsyncIterator[Hub]:
         async for data in self._session.api(_IotAPI).list_hubs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Hub._from(self._session, self._scope, data)
 
@@ -517,7 +517,7 @@ class HubCollection(_Collection[Hub]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -631,7 +631,7 @@ class NetworkCollection(_Collection[Network]):
     async def _items(self) -> AsyncIterator[Network]:
         async for data in self._session.api(_IotAPI).list_networks_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Network._from(self._session, self._scope, data)
 
@@ -645,7 +645,7 @@ class NetworkCollection(_Collection[Network]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -788,7 +788,7 @@ class RouteCollection(_Collection[RouteSummary]):
     async def _items(self) -> AsyncIterator[RouteSummary]:
         async for data in self._session.api(_IotAPI).list_routes_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield RouteSummary._from(self._session, self._scope, data)
 
@@ -802,7 +802,7 @@ class RouteCollection(_Collection[RouteSummary]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )

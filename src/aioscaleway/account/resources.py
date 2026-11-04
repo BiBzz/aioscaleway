@@ -250,7 +250,7 @@ class ContractSignatureCollection(_Collection[ContractSignature]):
         async for data in self._session.api(
             _AccountContractAPI
         ).list_contract_signatures_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield ContractSignature._from(self._session, self._scope, data)
 
@@ -265,7 +265,7 @@ class ContractSignatureCollection(_Collection[ContractSignature]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -330,7 +330,7 @@ class CountryCollection(_Collection[Country]):
 
     async def _items(self) -> AsyncIterator[Country]:
         response = await self._session.api(_AccountIsoCodeAPI).list_countries(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         )
         for data in response.countries or []:
             yield Country._from(self._session, self._scope, data)
@@ -344,7 +344,7 @@ class SubdivisionCollection(_Collection[ListCountrySubdivisionsResponseSubdivisi
             _AccountIsoCodeAPI
         ).list_country_subdivisions(
             country_code=_required(self._scope, "country_code"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.subdivisions or []:
             yield data
@@ -474,7 +474,7 @@ class ProjectCollection(_Collection[Project]):
 
     async def _items(self) -> AsyncIterator[Project]:
         async for data in self._session.api(_AccountProjectAPI).list_projects_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield Project._from(self._session, self._scope, data)
 
@@ -487,7 +487,7 @@ class ProjectCollection(_Collection[Project]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -924,7 +924,7 @@ class OrganizationCollection(_Collection[OrganizationSummary]):
             _AccountUserAPI
         ).list_user_organizations_iter(
             user_id=_required(self._scope, "user_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield OrganizationSummary._from(self._session, self._scope, data)
 
@@ -938,7 +938,7 @@ class OrganizationCollection(_Collection[OrganizationSummary]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -966,7 +966,7 @@ class SupportPlanCollection(_Collection[AccountSupportPlan]):
             _AccountOrganizationAPI
         ).list_support_plans_iter(
             organization_id=_required(self._scope, "user_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -982,7 +982,7 @@ class SupportPlanCollection(_Collection[AccountSupportPlan]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1013,7 +1013,7 @@ class MailingListSubscriptionCollection(_Collection[AccountMailingListSubscripti
             _AccountUserAPI
         ).list_mailing_list_subscriptions_iter(
             user_id=_required(self._scope, "user_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1029,7 +1029,7 @@ class MailingListSubscriptionCollection(_Collection[AccountMailingListSubscripti
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1060,7 +1060,7 @@ class WebAuthnAuthenticatorCollection(_Collection[AccountWebAuthnAuthenticator])
             _AccountUserAPI
         ).list_user_web_authn_authenticators_iter(
             user_id=_required(self._scope, "user_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1076,7 +1076,7 @@ class WebAuthnAuthenticatorCollection(_Collection[AccountWebAuthnAuthenticator])
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1144,7 +1144,7 @@ class MfaOtpCollection(_Collection[MfaOtp]):
 
     async def _items(self) -> AsyncIterator[MfaOtp]:
         async for data in self._session.api(_AccountUserAPI).list_mfaot_ps_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield MfaOtp._from(self._session, self._scope, data)
 
@@ -1157,7 +1157,7 @@ class MfaOtpCollection(_Collection[MfaOtp]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1278,7 +1278,7 @@ class AnnotationBindingCollection(_Collection[AnnotationBinding]):
 
     async def _items(self) -> AsyncIterator[AnnotationBinding]:
         async for data in self._session.api(_AnnotationsAPI).list_bindings_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield AnnotationBinding._from(self._session, self._scope, data)
 
@@ -1291,7 +1291,7 @@ class AnnotationBindingCollection(_Collection[AnnotationBinding]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1394,7 +1394,7 @@ class AnnotationKeyCollection(_Collection[AnnotationKey]):
 
     async def _items(self) -> AsyncIterator[AnnotationKey]:
         async for data in self._session.api(_AnnotationsAPI).list_keys_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield AnnotationKey._from(self._session, self._scope, data)
 
@@ -1407,7 +1407,7 @@ class AnnotationKeyCollection(_Collection[AnnotationKey]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1512,7 +1512,7 @@ class AnnotationValueCollection(_Collection[AnnotationValue]):
 
     async def _items(self) -> AsyncIterator[AnnotationValue]:
         async for data in self._session.api(_AnnotationsAPI).list_values_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield AnnotationValue._from(self._session, self._scope, data)
 
@@ -1525,7 +1525,7 @@ class AnnotationValueCollection(_Collection[AnnotationValue]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1684,7 +1684,7 @@ class PartnerOrganizationCollection(_Collection[PartnerOrganization]):
 
     async def _items(self) -> AsyncIterator[PartnerOrganization]:
         async for data in self._session.api(_PartnerAPI).list_organizations_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield PartnerOrganization._from(self._session, self._scope, data)
 
@@ -1697,7 +1697,7 @@ class PartnerOrganizationCollection(_Collection[PartnerOrganization]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1870,7 +1870,7 @@ class ResellerOrganizationCollection(_Collection[ResellerOrganization]):
 
     async def _items(self) -> AsyncIterator[ResellerOrganization]:
         async for data in self._session.api(_ResellerAPI).list_organizations_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield ResellerOrganization._from(self._session, self._scope, data)
 
@@ -1883,7 +1883,7 @@ class ResellerOrganizationCollection(_Collection[ResellerOrganization]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1937,7 +1937,7 @@ class AnnotationCollection(_Collection[ListAllKeysAndValuesResponseKey]):
 
     async def _items(self) -> AsyncIterator[ListAllKeysAndValuesResponseKey]:
         response = await self._session.api(_AnnotationsAPI).list_all_keys_and_values(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         )
         for data in response.keys or []:
             yield data
@@ -1966,7 +1966,7 @@ class ResellerConsumptionCollection(_Collection[Consumption]):
 
     async def _items(self) -> AsyncIterator[Consumption]:
         async for data in self._session.api(_ResellerAPI).list_consumptions_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield data
 
@@ -1979,7 +1979,7 @@ class ResellerConsumptionCollection(_Collection[Consumption]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )

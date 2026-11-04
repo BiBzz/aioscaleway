@@ -146,7 +146,7 @@ class SparkClusterCollection(_Collection[SparkCluster]):
     async def _items(self) -> AsyncIterator[SparkCluster]:
         async for data in self._session.api(_DatalabAPI).list_datalabs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield SparkCluster._from(self._session, self._scope, data)
 
@@ -160,7 +160,7 @@ class SparkClusterCollection(_Collection[SparkCluster]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -229,7 +229,7 @@ class SparkVersionCollection(_Collection[Cluster]):
     async def _items(self) -> AsyncIterator[Cluster]:
         async for data in self._session.api(_DatalabAPI).list_cluster_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -243,7 +243,7 @@ class SparkVersionCollection(_Collection[Cluster]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -278,7 +278,7 @@ class SparkNodeTypeCollection(_Collection[NodeType]):
     async def _items(self) -> AsyncIterator[NodeType]:
         async for data in self._session.api(_DatalabAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -292,7 +292,7 @@ class SparkNodeTypeCollection(_Collection[NodeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -319,7 +319,7 @@ class SparkNotebookVersionCollection(_Collection[Notebook]):
     async def _items(self) -> AsyncIterator[Notebook]:
         async for data in self._session.api(_DatalabAPI).list_notebook_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -333,7 +333,7 @@ class SparkNotebookVersionCollection(_Collection[Notebook]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )

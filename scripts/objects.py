@@ -1068,11 +1068,15 @@ class Renderer:
         items, _, total, _ = listing.operation.pagination
         page = self.rename(listing.module, listing.operation.response or "Any")
         out = ["", f"    async def pages(self) -> AsyncIterator[{page}]:"]
-        out.append('        """Each page as the API returns it, totals and sums included."""')
+        out.append(
+            '        """Each page as the API returns it, totals and sums included."""'
+        )
         out.append("        number = 1")
         out.append("        seen = 0")
         out.append("        while True:")
-        out.append(f"            response = await self._session.api({api}).{method}({', '.join(arguments)}, page=number)")
+        out.append(
+            f"            response = await self._session.api({api}).{method}({', '.join(arguments)}, page=number)"
+        )
         out.append("            yield response")
         out.append(f"            seen += len(response.{items} or [])")
         stop = f"not response.{items}"

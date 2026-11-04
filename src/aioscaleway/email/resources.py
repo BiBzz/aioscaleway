@@ -185,7 +185,7 @@ class AliasCollection(_Collection[Alias]):
 
     async def _items(self) -> AsyncIterator[Alias]:
         async for data in self._session.api(_MailboxAPI).list_aliases_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield Alias._from(self._session, self._scope, data)
 
@@ -198,7 +198,7 @@ class AliasCollection(_Collection[Alias]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -323,7 +323,7 @@ class MailDomainCollection(_Collection[MailDomain]):
 
     async def _items(self) -> AsyncIterator[MailDomain]:
         async for data in self._session.api(_MailboxAPI).list_domains_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield MailDomain._from(self._session, self._scope, data)
 
@@ -336,7 +336,7 @@ class MailDomainCollection(_Collection[MailDomain]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -457,7 +457,7 @@ class ForwardingCollection(_Collection[Forwarding]):
 
     async def _items(self) -> AsyncIterator[Forwarding]:
         async for data in self._session.api(_MailboxAPI).list_forwardings_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield Forwarding._from(self._session, self._scope, data)
 
@@ -470,7 +470,7 @@ class ForwardingCollection(_Collection[Forwarding]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -638,7 +638,7 @@ class MailboxCollection(_Collection[Mailbox]):
 
     async def _items(self) -> AsyncIterator[Mailbox]:
         async for data in self._session.api(_MailboxAPI).list_mailboxes_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield Mailbox._from(self._session, self._scope, data)
 
@@ -651,7 +651,7 @@ class MailboxCollection(_Collection[Mailbox]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -730,7 +730,7 @@ class BlocklistCollection(_Collection[Blocklist]):
     async def _items(self) -> AsyncIterator[Blocklist]:
         async for data in self._session.api(_TemAPI).list_blocklists_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Blocklist._from(self._session, self._scope, data)
 
@@ -744,7 +744,7 @@ class BlocklistCollection(_Collection[Blocklist]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -917,7 +917,7 @@ class SendingDomainCollection(_Collection[SendingDomain]):
     async def _items(self) -> AsyncIterator[SendingDomain]:
         async for data in self._session.api(_TemAPI).list_domains_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield SendingDomain._from(self._session, self._scope, data)
 
@@ -931,7 +931,7 @@ class SendingDomainCollection(_Collection[SendingDomain]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1067,7 +1067,7 @@ class EmailCollection(_Collection[Email]):
     async def _items(self) -> AsyncIterator[Email]:
         async for data in self._session.api(_TemAPI).list_emails_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Email._from(self._session, self._scope, data)
 
@@ -1081,7 +1081,7 @@ class EmailCollection(_Collection[Email]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1283,7 +1283,7 @@ class WebhookCollection(_Collection[Webhook]):
     async def _items(self) -> AsyncIterator[Webhook]:
         async for data in self._session.api(_TemAPI).list_webhooks_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield Webhook._from(self._session, self._scope, data)
 
@@ -1297,7 +1297,7 @@ class WebhookCollection(_Collection[Webhook]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1372,7 +1372,7 @@ class EventCollection(_Collection[WebhookEvent]):
         async for data in self._session.api(_TemAPI).list_webhook_events_iter(
             region=self._criteria.get("region"),
             webhook_id=_required(self._scope, "webhook_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1387,7 +1387,7 @@ class EventCollection(_Collection[WebhookEvent]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1422,7 +1422,7 @@ class OfferSubscriptionCollection(_Collection[TemOfferSubscription]):
     async def _items(self) -> AsyncIterator[TemOfferSubscription]:
         async for data in self._session.api(_TemAPI).list_offer_subscriptions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1436,7 +1436,7 @@ class OfferSubscriptionCollection(_Collection[TemOfferSubscription]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )
@@ -1461,7 +1461,7 @@ class OfferCollection(_Collection[TemOffer]):
     async def _items(self) -> AsyncIterator[TemOffer]:
         response = await self._session.api(_TemAPI).list_offers(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         )
         for data in response.offers or []:
             yield data
@@ -1483,7 +1483,7 @@ class PoolCollection(_Collection[TemPool]):
     async def _items(self) -> AsyncIterator[TemPool]:
         async for data in self._session.api(_TemAPI).list_pools_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
         ):
             yield data
 
@@ -1497,7 +1497,7 @@ class PoolCollection(_Collection[TemPool]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )

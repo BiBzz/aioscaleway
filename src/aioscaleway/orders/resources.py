@@ -48,7 +48,7 @@ class PublicCatalogProductCollection(_Collection[ProductCatalogPublicCatalogProd
         async for data in self._session.api(
             _ProductCatalogPublicCatalogAPI
         ).list_public_catalog_products_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
         ):
             yield data
 
@@ -63,7 +63,7 @@ class PublicCatalogProductCollection(_Collection[ProductCatalogPublicCatalogProd
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"region", "zone"}
+                    if k not in {"zone", "region"}
                 },
                 page=number,
             )

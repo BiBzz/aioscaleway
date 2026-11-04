@@ -70,8 +70,11 @@ from aioscaleway._operations.jobs.v1alpha2.models import (
 from aioscaleway.serverless.types import (
     ContainerCreateTriggerRequestCronConfig,
     ContainerListDomainsRequestOrderBy,
+    ContainerListDomainsResponse,
     ContainerListNamespacesRequestOrderBy,
+    ContainerListNamespacesResponse,
     ContainerListTriggersRequestOrderBy,
+    ContainerListTriggersResponse,
     ContainerPrivacy,
     ContainerProbe,
     ContainerProtocol,
@@ -91,21 +94,31 @@ from aioscaleway.serverless.types import (
     FunctionFunctionRuntime,
     FunctionHttpOption,
     FunctionListDomainsRequestOrderBy,
+    FunctionListDomainsResponse,
     FunctionListNamespacesRequestOrderBy,
+    FunctionListNamespacesResponse,
     FunctionListTriggersRequestOrderBy,
+    FunctionListTriggersResponse,
     FunctionPrivacy,
     FunctionSandbox,
     JobRunReason,
     JobRunState,
     JobsCreateTriggerRequestCronConfig,
     JobsListTriggersRequestOrderBy,
+    JobsListTriggersResponse,
     JobsUpdateTriggerRequestCronConfig,
     ListContainersRequestOrderBy,
+    ListContainersResponse,
     ListCronsRequestOrderBy,
+    ListCronsResponse,
     ListFunctionsRequestOrderBy,
+    ListFunctionsResponse,
     ListJobDefinitionsRequestOrderBy,
+    ListJobDefinitionsResponse,
     ListJobRunsRequestOrderBy,
+    ListJobRunsResponse,
     ListTokensRequestOrderBy,
+    ListTokensResponse,
     RetryPolicy,
     Runtime,
     Secret,
@@ -271,6 +284,7 @@ class ContainerCollection(_Collection[Container]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListContainersRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -279,6 +293,7 @@ class ContainerCollection(_Collection[Container]):
     ) -> ContainerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             organization_id=organization_id,
             project_id=project_id,
@@ -290,9 +305,29 @@ class ContainerCollection(_Collection[Container]):
     async def _items(self) -> AsyncIterator[Container]:
         async for data in self._session.api(_ContainerAPI).list_containers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Container._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListContainersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ContainerAPI).list_containers(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.containers or [])
+            if not response.containers or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -443,6 +478,7 @@ class ContainerDomainCollection(_Collection[ContainerDomain]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ContainerListDomainsRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -451,6 +487,7 @@ class ContainerDomainCollection(_Collection[ContainerDomain]):
     ) -> ContainerDomainCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             organization_id=organization_id,
             project_id=project_id,
@@ -462,9 +499,29 @@ class ContainerDomainCollection(_Collection[ContainerDomain]):
     async def _items(self) -> AsyncIterator[ContainerDomain]:
         async for data in self._session.api(_ContainerAPI).list_domains_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ContainerDomain._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ContainerListDomainsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ContainerAPI).list_domains(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.domains or [])
+            if not response.domains or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -575,6 +632,7 @@ class ContainerNamespaceCollection(_Collection[ContainerNamespace]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ContainerListNamespacesRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -582,6 +640,7 @@ class ContainerNamespaceCollection(_Collection[ContainerNamespace]):
     ) -> ContainerNamespaceCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             organization_id=organization_id,
             project_id=project_id,
@@ -592,9 +651,29 @@ class ContainerNamespaceCollection(_Collection[ContainerNamespace]):
     async def _items(self) -> AsyncIterator[ContainerNamespace]:
         async for data in self._session.api(_ContainerAPI).list_namespaces_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ContainerNamespace._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ContainerListNamespacesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ContainerAPI).list_namespaces(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.namespaces or [])
+            if not response.namespaces or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -719,6 +798,7 @@ class ContainerTriggerCollection(_Collection[ContainerTrigger]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ContainerListTriggersRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -728,6 +808,7 @@ class ContainerTriggerCollection(_Collection[ContainerTrigger]):
     ) -> ContainerTriggerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             organization_id=organization_id,
             project_id=project_id,
@@ -740,9 +821,29 @@ class ContainerTriggerCollection(_Collection[ContainerTrigger]):
     async def _items(self) -> AsyncIterator[ContainerTrigger]:
         async for data in self._session.api(_ContainerAPI).list_triggers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ContainerTrigger._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ContainerListTriggersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ContainerAPI).list_triggers(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.triggers or [])
+            if not response.triggers or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -864,17 +965,43 @@ class FunctionCronCollection(_Collection[FunctionCron]):
         *,
         region: str | None = None,
         function_id: str | _Ref[Any],
+        page_size: int | None = None,
         order_by: ListCronsRequestOrderBy | None = None,
     ) -> FunctionCronCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, function_id=function_id, region=region)
+        return self._narrowed(
+            page_size=page_size,
+            order_by=order_by,
+            function_id=function_id,
+            region=region,
+        )
 
     async def _items(self) -> AsyncIterator[FunctionCron]:
         async for data in self._session.api(_FunctionAPI).list_crons_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionCron._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListCronsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FunctionAPI).list_crons(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.crons or [])
+            if not response.crons or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -966,17 +1093,43 @@ class FunctionDomainCollection(_Collection[FunctionDomain]):
         *,
         region: str | None = None,
         function_id: str | _Ref[Any],
+        page_size: int | None = None,
         order_by: FunctionListDomainsRequestOrderBy | None = None,
     ) -> FunctionDomainCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, function_id=function_id, region=region)
+        return self._narrowed(
+            page_size=page_size,
+            order_by=order_by,
+            function_id=function_id,
+            region=region,
+        )
 
     async def _items(self) -> AsyncIterator[FunctionDomain]:
         async for data in self._session.api(_FunctionAPI).list_domains_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionDomain._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[FunctionListDomainsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FunctionAPI).list_domains(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.domains or [])
+            if not response.domains or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1173,6 +1326,7 @@ class FunctionCollection(_Collection[Function]):
         *,
         region: str | None = None,
         namespace_id: str | _Ref[Any],
+        page_size: int | None = None,
         order_by: ListFunctionsRequestOrderBy | None = None,
         name: str | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -1180,6 +1334,7 @@ class FunctionCollection(_Collection[Function]):
     ) -> FunctionCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             namespace_id=namespace_id,
             name=name,
@@ -1191,9 +1346,29 @@ class FunctionCollection(_Collection[Function]):
     async def _items(self) -> AsyncIterator[Function]:
         async for data in self._session.api(_FunctionAPI).list_functions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Function._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListFunctionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FunctionAPI).list_functions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.functions or [])
+            if not response.functions or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1341,6 +1516,7 @@ class FunctionNamespaceCollection(_Collection[FunctionNamespace]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: FunctionListNamespacesRequestOrderBy | None = None,
         name: str | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -1348,6 +1524,7 @@ class FunctionNamespaceCollection(_Collection[FunctionNamespace]):
     ) -> FunctionNamespaceCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             name=name,
             organization_id=organization_id,
@@ -1358,9 +1535,29 @@ class FunctionNamespaceCollection(_Collection[FunctionNamespace]):
     async def _items(self) -> AsyncIterator[FunctionNamespace]:
         async for data in self._session.api(_FunctionAPI).list_namespaces_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionNamespace._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[FunctionListNamespacesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FunctionAPI).list_namespaces(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.namespaces or [])
+            if not response.namespaces or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1455,12 +1652,14 @@ class FunctionTokenCollection(_Collection[FunctionToken]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListTokensRequestOrderBy | None = None,
         function_id: str | _Ref[Any] | None = None,
         namespace_id: str | _Ref[Any] | None = None,
     ) -> FunctionTokenCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             function_id=function_id,
             namespace_id=namespace_id,
@@ -1470,9 +1669,29 @@ class FunctionTokenCollection(_Collection[FunctionToken]):
     async def _items(self) -> AsyncIterator[FunctionToken]:
         async for data in self._session.api(_FunctionAPI).list_tokens_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionToken._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListTokensResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FunctionAPI).list_tokens(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.tokens or [])
+            if not response.tokens or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1591,6 +1810,7 @@ class FunctionTriggerCollection(_Collection[FunctionTrigger]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: FunctionListTriggersRequestOrderBy | None = None,
         function_id: str | _Ref[Any] | None = None,
         namespace_id: str | _Ref[Any] | None = None,
@@ -1598,6 +1818,7 @@ class FunctionTriggerCollection(_Collection[FunctionTrigger]):
     ) -> FunctionTriggerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             function_id=function_id,
             namespace_id=namespace_id,
@@ -1608,9 +1829,29 @@ class FunctionTriggerCollection(_Collection[FunctionTrigger]):
     async def _items(self) -> AsyncIterator[FunctionTrigger]:
         async for data in self._session.api(_FunctionAPI).list_triggers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionTrigger._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[FunctionListTriggersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FunctionAPI).list_triggers(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.triggers or [])
+            if not response.triggers or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1770,12 +2011,14 @@ class JobCollection(_Collection[Job]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListJobDefinitionsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
     ) -> JobCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
@@ -1785,9 +2028,29 @@ class JobCollection(_Collection[Job]):
     async def _items(self) -> AsyncIterator[Job]:
         async for data in self._session.api(_JobsAPI).list_job_definitions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Job._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListJobDefinitionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_JobsAPI).list_job_definitions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.job_definitions or [])
+            if not response.job_definitions or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1892,6 +2155,7 @@ class JobRunCollection(_Collection[JobRun]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListJobRunsRequestOrderBy | None = None,
         job_definition_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -1902,6 +2166,7 @@ class JobRunCollection(_Collection[JobRun]):
     ) -> JobRunCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             job_definition_id=job_definition_id,
             project_id=project_id,
@@ -1915,9 +2180,29 @@ class JobRunCollection(_Collection[JobRun]):
     async def _items(self) -> AsyncIterator[JobRun]:
         async for data in self._session.api(_JobsAPI).list_job_runs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield JobRun._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListJobRunsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_JobsAPI).list_job_runs(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.job_runs or [])
+            if not response.job_runs or seen >= response.total_count:
+                return
+            number += 1
 
 
 class JobSecretRef(_Ref["JobSecret"]):
@@ -2003,7 +2288,7 @@ class JobSecretCollection(_Collection[JobSecret]):
     async def _items(self) -> AsyncIterator[JobSecret]:
         response = await self._session.api(_JobsAPI).list_secrets(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.secrets or []:
             yield JobSecret._from(self._session, self._scope, data)
@@ -2104,19 +2389,43 @@ class JobTriggerCollection(_Collection[JobTrigger]):
         *,
         region: str | None = None,
         job_definition_id: str | _Ref[Any],
+        page_size: int | None = None,
         order_by: JobsListTriggersRequestOrderBy | None = None,
     ) -> JobTriggerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            job_definition_id=job_definition_id, order_by=order_by, region=region
+            job_definition_id=job_definition_id,
+            page_size=page_size,
+            order_by=order_by,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[JobTrigger]:
         async for data in self._session.api(_JobsAPI).list_triggers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield JobTrigger._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[JobsListTriggersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_JobsAPI).list_triggers(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.triggers or [])
+            if not response.triggers or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2157,7 +2466,7 @@ class FunctionRuntimeCollection(_Collection[Runtime]):
     async def _items(self) -> AsyncIterator[Runtime]:
         response = await self._session.api(_FunctionAPI).list_function_runtimes(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.runtimes or []:
             yield data

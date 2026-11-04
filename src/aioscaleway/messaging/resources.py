@@ -69,20 +69,32 @@ from aioscaleway.messaging.types import (
     GetProtocolsResponse,
     KafkaEndpointSpec,
     KafkaFile,
+    KafkaListNodeTypesResponse,
     KafkaListUsersRequestOrderBy,
+    KafkaListUsersResponse,
+    KafkaListVersionsResponse,
     KafkaNodeType,
     KafkaVersion,
     ListClustersRequestOrderBy,
+    ListClustersResponse,
     ListDeploymentsRequestOrderBy,
+    ListDeploymentsResponse,
     ListNatsAccountsRequestOrderBy,
+    ListNatsAccountsResponse,
     ListNatsCredentialsRequestOrderBy,
+    ListNatsCredentialsResponse,
     ListNodeTypesRequestOrderBy,
     ListSnsCredentialsRequestOrderBy,
+    ListSnsCredentialsResponse,
     ListSqsCredentialsRequestOrderBy,
+    ListSqsCredentialsResponse,
     ListVersionsRequestOrderBy,
     MessageqEndpointSpec,
     MessageqFile,
+    MessageqListNodeTypesResponse,
     MessageqListUsersRequestOrderBy,
+    MessageqListUsersResponse,
+    MessageqListVersionsResponse,
     MessageqNodeType,
     MessageqVersion,
     MessageqVolume,
@@ -225,6 +237,7 @@ class KafkaCollection(_Collection[Kafka]):
         order_by: ListClustersRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
     ) -> KafkaCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -233,15 +246,36 @@ class KafkaCollection(_Collection[Kafka]):
             order_by=order_by,
             organization_id=organization_id,
             project_id=project_id,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[Kafka]:
         async for data in self._session.api(_KafkaAPI).list_clusters_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Kafka._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListClustersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_KafkaAPI).list_clusters(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.clusters or [])
+            if not response.clusters or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -338,19 +372,43 @@ class KafkaUserCollection(_Collection[KafkaUser]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: KafkaListUsersRequestOrderBy | None = None,
         name: str | None = None,
     ) -> KafkaUserCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, name=name, region=region)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, name=name, region=region
+        )
 
     async def _items(self) -> AsyncIterator[KafkaUser]:
         async for data in self._session.api(_KafkaAPI).list_users_iter(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield KafkaUser._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[KafkaListUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_KafkaAPI).list_users(
+                region=self._criteria.get("region"),
+                cluster_id=_required(self._scope, "cluster_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.users or [])
+            if not response.users or seen >= response.total_count:
+                return
+            number += 1
 
 
 class KafkaEndpointRef(_Ref["KafkaEndpoint"]):
@@ -546,6 +604,7 @@ class MessageQueueCollection(_Collection[MessageQueue]):
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         order_by: ListDeploymentsRequestOrderBy | None = None,
+        page_size: int | None = None,
         tags: list[str] | None = None,
         name: str | None = None,
     ) -> MessageQueueCollection:
@@ -554,6 +613,7 @@ class MessageQueueCollection(_Collection[MessageQueue]):
             organization_id=organization_id,
             project_id=project_id,
             order_by=order_by,
+            page_size=page_size,
             tags=tags,
             name=name,
             region=region,
@@ -562,9 +622,29 @@ class MessageQueueCollection(_Collection[MessageQueue]):
     async def _items(self) -> AsyncIterator[MessageQueue]:
         async for data in self._session.api(_MessageqAPI).list_deployments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MessageQueue._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDeploymentsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MessageqAPI).list_deployments(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.deployments or [])
+            if not response.deployments or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -671,19 +751,43 @@ class MessageQueueUserCollection(_Collection[MessageQueueUser]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: MessageqListUsersRequestOrderBy | None = None,
         name: str | None = None,
     ) -> MessageQueueUserCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, name=name, region=region)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, name=name, region=region
+        )
 
     async def _items(self) -> AsyncIterator[MessageQueueUser]:
         async for data in self._session.api(_MessageqAPI).list_users_iter(
             region=self._criteria.get("region"),
             deployment_id=_required(self._scope, "deployment_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MessageQueueUser._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[MessageqListUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MessageqAPI).list_users(
+                region=self._criteria.get("region"),
+                deployment_id=_required(self._scope, "deployment_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.users or [])
+            if not response.users or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -855,17 +959,40 @@ class NatsAccountCollection(_Collection[NatsAccount]):
         *,
         region: str | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         order_by: ListNatsAccountsRequestOrderBy | None = None,
     ) -> NatsAccountCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(project_id=project_id, order_by=order_by, region=region)
+        return self._narrowed(
+            project_id=project_id, page_size=page_size, order_by=order_by, region=region
+        )
 
     async def _items(self) -> AsyncIterator[NatsAccount]:
         async for data in self._session.api(_MnqNatsAPI).list_nats_accounts_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield NatsAccount._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListNatsAccountsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MnqNatsAPI).list_nats_accounts(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.nats_accounts or [])
+            if not response.nats_accounts or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -956,12 +1083,14 @@ class NatsCredentialCollection(_Collection[NatsCredential]):
         region: str | None = None,
         project_id: str | _Ref[Any] | None = None,
         nats_account_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         order_by: ListNatsCredentialsRequestOrderBy | None = None,
     ) -> NatsCredentialCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             project_id=project_id,
             nats_account_id=nats_account_id,
+            page_size=page_size,
             order_by=order_by,
             region=region,
         )
@@ -969,9 +1098,29 @@ class NatsCredentialCollection(_Collection[NatsCredential]):
     async def _items(self) -> AsyncIterator[NatsCredential]:
         async for data in self._session.api(_MnqNatsAPI).list_nats_credentials_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield NatsCredential._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListNatsCredentialsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MnqNatsAPI).list_nats_credentials(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.nats_credentials or [])
+            if not response.nats_credentials or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1086,17 +1235,40 @@ class SnsCredentialCollection(_Collection[SnsCredential]):
         *,
         region: str | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         order_by: ListSnsCredentialsRequestOrderBy | None = None,
     ) -> SnsCredentialCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(project_id=project_id, order_by=order_by, region=region)
+        return self._narrowed(
+            project_id=project_id, page_size=page_size, order_by=order_by, region=region
+        )
 
     async def _items(self) -> AsyncIterator[SnsCredential]:
         async for data in self._session.api(_MnqSnsAPI).list_sns_credentials_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield SnsCredential._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSnsCredentialsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MnqSnsAPI).list_sns_credentials(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.sns_credentials or [])
+            if not response.sns_credentials or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1214,17 +1386,40 @@ class SqsCredentialCollection(_Collection[SqsCredential]):
         *,
         region: str | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         order_by: ListSqsCredentialsRequestOrderBy | None = None,
     ) -> SqsCredentialCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(project_id=project_id, order_by=order_by, region=region)
+        return self._narrowed(
+            project_id=project_id, page_size=page_size, order_by=order_by, region=region
+        )
 
     async def _items(self) -> AsyncIterator[SqsCredential]:
         async for data in self._session.api(_MnqSqsAPI).list_sqs_credentials_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield SqsCredential._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSqsCredentialsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MnqSqsAPI).list_sqs_credentials(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.sqs_credentials or [])
+            if not response.sqs_credentials or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1263,18 +1458,41 @@ class KafkaNodeTypeCollection(_Collection[KafkaNodeType]):
         *,
         region: str | None = None,
         include_disabled_types: bool | None = None,
+        page_size: int | None = None,
     ) -> KafkaNodeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            include_disabled_types=include_disabled_types, region=region
+            include_disabled_types=include_disabled_types,
+            page_size=page_size,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[KafkaNodeType]:
         async for data in self._session.api(_KafkaAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[KafkaListNodeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_KafkaAPI).list_node_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.node_types or [])
+            if not response.node_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class KafkaVersionCollection(_Collection[KafkaVersion]):
@@ -1285,16 +1503,37 @@ class KafkaVersionCollection(_Collection[KafkaVersion]):
         *,
         region: str | None = None,
         version: str | None = None,
+        page_size: int | None = None,
     ) -> KafkaVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(version=version, region=region)
+        return self._narrowed(version=version, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[KafkaVersion]:
         async for data in self._session.api(_KafkaAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[KafkaListVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_KafkaAPI).list_versions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MessageQueueNodeTypeCollection(_Collection[MessageqNodeType]):
@@ -1305,16 +1544,37 @@ class MessageQueueNodeTypeCollection(_Collection[MessageqNodeType]):
         *,
         region: str | None = None,
         order_by: ListNodeTypesRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> MessageQueueNodeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(order_by=order_by, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[MessageqNodeType]:
         async for data in self._session.api(_MessageqAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[MessageqListNodeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MessageqAPI).list_node_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.node_types or [])
+            if not response.node_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MessageQueueVersionCollection(_Collection[MessageqVersion]):
@@ -1325,17 +1585,40 @@ class MessageQueueVersionCollection(_Collection[MessageqVersion]):
         *,
         region: str | None = None,
         order_by: ListVersionsRequestOrderBy | None = None,
+        page_size: int | None = None,
         version: str | None = None,
     ) -> MessageQueueVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, version=version, region=region)
+        return self._narrowed(
+            order_by=order_by, page_size=page_size, version=version, region=region
+        )
 
     async def _items(self) -> AsyncIterator[MessageqVersion]:
         async for data in self._session.api(_MessageqAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[MessageqListVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MessageqAPI).list_versions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MessagingNamespace(_Namespace):

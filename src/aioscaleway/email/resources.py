@@ -62,15 +62,25 @@ from aioscaleway.email.types import (
     ForwardingStatus,
     GetDomainRecordsResponse,
     ListAliasesRequestOrderBy,
+    ListAliasesResponse,
     ListBlocklistsRequestOrderBy,
+    ListBlocklistsResponse,
     ListDomainsRequestOrderBy,
     ListEmailsRequestOrderBy,
+    ListEmailsResponse,
     ListForwardingsRequestOrderBy,
+    ListForwardingsResponse,
     ListMailboxesRequestOrderBy,
+    ListMailboxesResponse,
+    ListOfferSubscriptionsResponse,
+    ListPoolsResponse,
     ListWebhookEventsRequestOrderBy,
+    ListWebhookEventsResponse,
     ListWebhooksRequestOrderBy,
+    ListWebhooksResponse,
     MailboxDomainStatus,
     MailboxForwarding,
+    MailboxListDomainsResponse,
     MailboxStatus,
     MailboxSubscriptionPeriod,
     OfferName,
@@ -78,6 +88,7 @@ from aioscaleway.email.types import (
     ProjectSettings,
     Statistics,
     TemDomainStatus,
+    TemListDomainsResponse,
     TemOffer,
     TemOfferSubscription,
     TemPool,
@@ -159,12 +170,14 @@ class AliasCollection(_Collection[Alias]):
         *,
         project_id: str | _Ref[Any],
         order_by: ListAliasesRequestOrderBy | None = None,
+        page_size: int | None = None,
         mailbox_id: str | _Ref[Any] | None = None,
         status: AliasStatus | None = None,
     ) -> AliasCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             mailbox_id=mailbox_id,
             status=status,
             project_id=project_id,
@@ -172,9 +185,28 @@ class AliasCollection(_Collection[Alias]):
 
     async def _items(self) -> AsyncIterator[Alias]:
         async for data in self._session.api(_MailboxAPI).list_aliases_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Alias._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListAliasesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MailboxAPI).list_aliases(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.aliases or [])
+            if not response.aliases or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -275,20 +307,44 @@ class MailDomainCollection(_Collection[MailDomain]):
         self,
         *,
         order_by: ListDomainsRequestOrderBy | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         statuses: list[MailboxDomainStatus] | None = None,
         search: str | None = None,
     ) -> MailDomainCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            order_by=order_by, project_id=project_id, statuses=statuses, search=search
+            order_by=order_by,
+            page_size=page_size,
+            project_id=project_id,
+            statuses=statuses,
+            search=search,
         )
 
     async def _items(self) -> AsyncIterator[MailDomain]:
         async for data in self._session.api(_MailboxAPI).list_domains_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield MailDomain._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[MailboxListDomainsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MailboxAPI).list_domains(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.domains or [])
+            if not response.domains or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -383,6 +439,7 @@ class ForwardingCollection(_Collection[Forwarding]):
         self,
         *,
         order_by: ListForwardingsRequestOrderBy | None = None,
+        page_size: int | None = None,
         mailbox_id: str | _Ref[Any] | None = None,
         status: ForwardingStatus | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -391,6 +448,7 @@ class ForwardingCollection(_Collection[Forwarding]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             mailbox_id=mailbox_id,
             status=status,
             project_id=project_id,
@@ -399,9 +457,28 @@ class ForwardingCollection(_Collection[Forwarding]):
 
     async def _items(self) -> AsyncIterator[Forwarding]:
         async for data in self._session.api(_MailboxAPI).list_forwardings_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Forwarding._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListForwardingsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MailboxAPI).list_forwardings(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.forwardings or [])
+            if not response.forwardings or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -543,6 +620,7 @@ class MailboxCollection(_Collection[Mailbox]):
         self,
         *,
         order_by: ListMailboxesRequestOrderBy | None = None,
+        page_size: int | None = None,
         domain_id: str | _Ref[Any] | None = None,
         statuses: list[MailboxStatus] | None = None,
         search: str | None = None,
@@ -551,6 +629,7 @@ class MailboxCollection(_Collection[Mailbox]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             domain_id=domain_id,
             statuses=statuses,
             search=search,
@@ -559,9 +638,28 @@ class MailboxCollection(_Collection[Mailbox]):
 
     async def _items(self) -> AsyncIterator[Mailbox]:
         async for data in self._session.api(_MailboxAPI).list_mailboxes_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Mailbox._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListMailboxesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MailboxAPI).list_mailboxes(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.mailboxes or [])
+            if not response.mailboxes or seen >= response.total_count:
+                return
+            number += 1
 
 
 class BlocklistRef(_Ref["Blocklist"]):
@@ -613,6 +711,7 @@ class BlocklistCollection(_Collection[Blocklist]):
         region: str | None = None,
         domain_id: str | _Ref[Any],
         order_by: ListBlocklistsRequestOrderBy | None = None,
+        page_size: int | None = None,
         email: str | None = None,
         type_: BlocklistType | None = None,
         custom: bool | None = None,
@@ -620,6 +719,7 @@ class BlocklistCollection(_Collection[Blocklist]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             domain_id=domain_id,
             email=email,
             type_=type_,
@@ -630,9 +730,29 @@ class BlocklistCollection(_Collection[Blocklist]):
     async def _items(self) -> AsyncIterator[Blocklist]:
         async for data in self._session.api(_TemAPI).list_blocklists_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Blocklist._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListBlocklistsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_TemAPI).list_blocklists(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.blocklists or [])
+            if not response.blocklists or seen >= response.total_count:
+                return
+            number += 1
 
     async def bulk_create(
         self,
@@ -778,6 +898,7 @@ class SendingDomainCollection(_Collection[SendingDomain]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         status: list[TemDomainStatus] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -785,6 +906,7 @@ class SendingDomainCollection(_Collection[SendingDomain]):
     ) -> SendingDomainCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             project_id=project_id,
             status=status,
             organization_id=organization_id,
@@ -795,9 +917,29 @@ class SendingDomainCollection(_Collection[SendingDomain]):
     async def _items(self) -> AsyncIterator[SendingDomain]:
         async for data in self._session.api(_TemAPI).list_domains_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield SendingDomain._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[TemListDomainsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_TemAPI).list_domains(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.domains or [])
+            if not response.domains or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -888,6 +1030,7 @@ class EmailCollection(_Collection[Email]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         domain_id: str | _Ref[Any] | None = None,
         message_id: str | _Ref[Any] | None = None,
@@ -904,6 +1047,7 @@ class EmailCollection(_Collection[Email]):
     ) -> EmailCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             project_id=project_id,
             domain_id=domain_id,
             message_id=message_id,
@@ -923,9 +1067,29 @@ class EmailCollection(_Collection[Email]):
     async def _items(self) -> AsyncIterator[Email]:
         async for data in self._session.api(_TemAPI).list_emails_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Email._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListEmailsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_TemAPI).list_emails(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.emails or [])
+            if not response.emails or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1101,6 +1265,7 @@ class WebhookCollection(_Collection[Webhook]):
         *,
         region: str | None = None,
         order_by: ListWebhooksRequestOrderBy | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         domain_id: str | _Ref[Any] | None = None,
@@ -1108,6 +1273,7 @@ class WebhookCollection(_Collection[Webhook]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             project_id=project_id,
             organization_id=organization_id,
             domain_id=domain_id,
@@ -1117,9 +1283,29 @@ class WebhookCollection(_Collection[Webhook]):
     async def _items(self) -> AsyncIterator[Webhook]:
         async for data in self._session.api(_TemAPI).list_webhooks_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Webhook._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListWebhooksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_TemAPI).list_webhooks(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.webhooks or [])
+            if not response.webhooks or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1161,6 +1347,7 @@ class EventCollection(_Collection[WebhookEvent]):
         *,
         region: str | None = None,
         order_by: ListWebhookEventsRequestOrderBy | None = None,
+        page_size: int | None = None,
         email_id: str | _Ref[Any] | None = None,
         event_types: list[WebhookEventType] | None = None,
         statuses: list[WebhookEventStatus] | None = None,
@@ -1171,6 +1358,7 @@ class EventCollection(_Collection[WebhookEvent]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             email_id=email_id,
             event_types=event_types,
             statuses=statuses,
@@ -1184,9 +1372,30 @@ class EventCollection(_Collection[WebhookEvent]):
         async for data in self._session.api(_TemAPI).list_webhook_events_iter(
             region=self._criteria.get("region"),
             webhook_id=_required(self._scope, "webhook_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListWebhookEventsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_TemAPI).list_webhook_events(
+                region=self._criteria.get("region"),
+                webhook_id=_required(self._scope, "webhook_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.webhook_events or [])
+            if not response.webhook_events or seen >= response.total_count:
+                return
+            number += 1
 
 
 class OfferSubscriptionCollection(_Collection[TemOfferSubscription]):
@@ -1196,12 +1405,14 @@ class OfferSubscriptionCollection(_Collection[TemOfferSubscription]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         offer_name: OfferName | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
     ) -> OfferSubscriptionCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             offer_name=offer_name,
             organization_id=organization_id,
             project_id=project_id,
@@ -1211,9 +1422,29 @@ class OfferSubscriptionCollection(_Collection[TemOfferSubscription]):
     async def _items(self) -> AsyncIterator[TemOfferSubscription]:
         async for data in self._session.api(_TemAPI).list_offer_subscriptions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListOfferSubscriptionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_TemAPI).list_offer_subscriptions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.offer_subscriptions or [])
+            if not response.offer_subscriptions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class OfferCollection(_Collection[TemOffer]):
@@ -1230,7 +1461,7 @@ class OfferCollection(_Collection[TemOffer]):
     async def _items(self) -> AsyncIterator[TemOffer]:
         response = await self._session.api(_TemAPI).list_offers(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.offers or []:
             yield data
@@ -1244,16 +1475,37 @@ class PoolCollection(_Collection[TemPool]):
         *,
         region: str | None = None,
         project_id: str | _Ref[Any],
+        page_size: int | None = None,
     ) -> PoolCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(project_id=project_id, region=region)
+        return self._narrowed(page_size=page_size, project_id=project_id, region=region)
 
     async def _items(self) -> AsyncIterator[TemPool]:
         async for data in self._session.api(_TemAPI).list_pools_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListPoolsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_TemAPI).list_pools(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.pools or [])
+            if not response.pools or seen >= response.total_count:
+                return
+            number += 1
 
 
 class EmailNamespace(_Namespace):

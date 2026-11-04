@@ -25,10 +25,14 @@ from aioscaleway.analytics.types import (
     CreateDatalabRequestSparkMain,
     CreateDatalabRequestSparkWorker,
     ListClusterVersionsRequestOrderBy,
+    ListClusterVersionsResponse,
     ListDatalabsRequestOrderBy,
+    ListDatalabsResponse,
     ListNodeTypesRequestOrderBy,
     ListNodeTypesRequestResourceType,
+    ListNodeTypesResponse,
     ListNotebookVersionsRequestOrderBy,
+    ListNotebookVersionsResponse,
     NodeType,
     NodeTypeTarget,
     Notebook,
@@ -125,6 +129,7 @@ class SparkClusterCollection(_Collection[SparkCluster]):
         project_id: str | _Ref[Any] | None = None,
         name: str | None = None,
         tags: list[str] | None = None,
+        page_size: int | None = None,
         order_by: ListDatalabsRequestOrderBy | None = None,
     ) -> SparkClusterCollection:
         """The same collection, narrowed to the items matching these criteria."""
@@ -133,6 +138,7 @@ class SparkClusterCollection(_Collection[SparkCluster]):
             project_id=project_id,
             name=name,
             tags=tags,
+            page_size=page_size,
             order_by=order_by,
             region=region,
         )
@@ -140,9 +146,29 @@ class SparkClusterCollection(_Collection[SparkCluster]):
     async def _items(self) -> AsyncIterator[SparkCluster]:
         async for data in self._session.api(_DatalabAPI).list_datalabs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield SparkCluster._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDatalabsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatalabAPI).list_datalabs(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.datalabs or [])
+            if not response.datalabs or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -194,17 +220,38 @@ class SparkVersionCollection(_Collection[Cluster]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListClusterVersionsRequestOrderBy | None = None,
     ) -> SparkVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(page_size=page_size, order_by=order_by, region=region)
 
     async def _items(self) -> AsyncIterator[Cluster]:
         async for data in self._session.api(_DatalabAPI).list_cluster_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListClusterVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatalabAPI).list_cluster_versions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.clusters or [])
+            if not response.clusters or seen >= response.total_count:
+                return
+            number += 1
 
 
 class SparkNodeTypeCollection(_Collection[NodeType]):
@@ -214,12 +261,14 @@ class SparkNodeTypeCollection(_Collection[NodeType]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListNodeTypesRequestOrderBy | None = None,
         targets: list[NodeTypeTarget] | None = None,
         resource_type: ListNodeTypesRequestResourceType | None = None,
     ) -> SparkNodeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             targets=targets,
             resource_type=resource_type,
@@ -229,9 +278,29 @@ class SparkNodeTypeCollection(_Collection[NodeType]):
     async def _items(self) -> AsyncIterator[NodeType]:
         async for data in self._session.api(_DatalabAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListNodeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatalabAPI).list_node_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.node_types or [])
+            if not response.node_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class SparkNotebookVersionCollection(_Collection[Notebook]):
@@ -241,17 +310,38 @@ class SparkNotebookVersionCollection(_Collection[Notebook]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListNotebookVersionsRequestOrderBy | None = None,
     ) -> SparkNotebookVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(page_size=page_size, order_by=order_by, region=region)
 
     async def _items(self) -> AsyncIterator[Notebook]:
         async for data in self._session.api(_DatalabAPI).list_notebook_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListNotebookVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatalabAPI).list_notebook_versions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.notebooks or [])
+            if not response.notebooks or seen >= response.total_count:
+                return
+            number += 1
 
 
 class AnalyticsNamespace(_Namespace):

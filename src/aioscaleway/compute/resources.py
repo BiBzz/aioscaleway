@@ -148,8 +148,11 @@ from aioscaleway._operations.marketplace.v2.models import (
 from aioscaleway.compute.types import (
     Alert,
     ApplesiliconBatchCreateServersResponse,
+    ApplesiliconListOSResponse,
     ApplesiliconListServerPrivateNetworksRequestOrderBy,
+    ApplesiliconListServerPrivateNetworksResponse,
     ApplesiliconListServersRequestOrderBy,
+    ApplesiliconListServersResponse,
     ApplesiliconSetServerPrivateNetworksResponse,
     AppliedRunnerConfigurations,
     Arch,
@@ -160,9 +163,14 @@ from aioscaleway.compute.types import (
     BaremetalBatchCreateServersResponse,
     BaremetalBMCAccess,
     BaremetalIP,
+    BaremetalListOffersResponse,
+    BaremetalListOSResponse,
     BaremetalListServerEventsRequestOrderBy,
+    BaremetalListServerEventsResponse,
     BaremetalListServerPrivateNetworksRequestOrderBy,
+    BaremetalListServerPrivateNetworksResponse,
     BaremetalListServersRequestOrderBy,
+    BaremetalListServersResponse,
     BaremetalServerEvent,
     BaremetalSetServerPrivateNetworksResponse,
     BatchCreateServersRequestBatchInnerCreateServerRequest,
@@ -180,8 +188,12 @@ from aioscaleway.compute.types import (
     CreateSnapshotResponse,
     DediboxBMCAccess,
     DediboxIP,
+    DediboxListOffersResponse,
+    DediboxListOSResponse,
     DediboxListServerEventsRequestOrderBy,
+    DediboxListServerEventsResponse,
     DediboxListServersRequestOrderBy,
+    DediboxListServersResponse,
     DediboxServerEvent,
     DediboxServerInstall,
     ExportSnapshotResponse,
@@ -194,24 +206,45 @@ from aioscaleway.compute.types import (
     GetServerTypesAvailabilityResponse,
     ImageState,
     InstallPartition,
+    InstanceListImagesResponse,
+    InstanceListServersResponse,
     InstanceStringValue,
     InstanceUInt32Value,
     IpType,
+    ListCategoriesResponse,
     ListFailoverIPsRequestOrderBy,
+    ListFailoverIPsResponse,
     ListFullImagesRequestOrderBy,
+    ListFullImagesResponse,
     ListGroupsRequestOrderBy,
     ListImagesRequestOrderBy,
+    ListIpsResponse,
     ListLocalImagesRequestOrderBy,
+    ListLocalImagesResponse,
     ListOffersRequestOrderBy,
+    ListOptionsResponse,
     ListOSRequestOrderBy,
+    ListPlacementGroupsResponse,
+    ListPrivateNICsResponse,
+    ListRunnersResponse,
+    ListSecurityGroupRulesResponse,
+    ListSecurityGroupsResponse,
     ListServerDisksRequestOrderBy,
+    ListServerDisksResponse,
     ListServersRequestOrder,
     ListServicesRequestOrderBy,
+    ListServicesResponse,
     ListSettingsRequestOrderBy,
+    ListSettingsResponse,
+    ListSnapshotsResponse,
+    ListSubscribableServerOptionsResponse,
     ListVersionsRequestOrderBy,
+    ListVersionsResponse,
+    ListVolumesResponse,
     LoadBalancerConfigurationSpec,
     LocalImageType,
     Log,
+    MarketplaceListImagesResponse,
     NullableStringValue,
     OfferCatalog,
     OfferSubscriptionPeriod,
@@ -354,18 +387,41 @@ class MacOsCollection(_Collection[MacOs]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         server_type: str | None = None,
         name: str | None = None,
     ) -> MacOsCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(server_type=server_type, name=name, zone=zone)
+        return self._narrowed(
+            page_size=page_size, server_type=server_type, name=name, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[MacOs]:
         async for data in self._session.api(_ApplesiliconAPI).list_os_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MacOs._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ApplesiliconListOSResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ApplesiliconAPI).list_os(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.os or [])
+            if not response.os or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MacRunnerRef(_Ref["MacRunner"]):
@@ -441,21 +497,43 @@ class MacRunnerCollection(_Collection[MacRunner]):
         server_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
     ) -> MacRunnerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             server_id=server_id,
             project_id=project_id,
             organization_id=organization_id,
+            page_size=page_size,
             zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[MacRunner]:
         async for data in self._session.api(_ApplesiliconAPI).list_runners_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MacRunner._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListRunnersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ApplesiliconAPI).list_runners(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.runners or [])
+            if not response.runners or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -659,21 +737,43 @@ class MacServerCollection(_Collection[MacServer]):
         order_by: ApplesiliconListServersRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
     ) -> MacServerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
+            page_size=page_size,
             zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[MacServer]:
         async for data in self._session.api(_ApplesiliconAPI).list_servers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MacServer._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ApplesiliconListServersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ApplesiliconAPI).list_servers(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.servers or [])
+            if not response.servers or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -953,12 +1053,14 @@ class AutoscalingGroupCollection(_Collection[AutoscalingGroupSummary]):
         zone: str | None = None,
         project_id: str | _Ref[Any],
         order_by: ListGroupsRequestOrderBy | None = None,
+        page_size: int | None = None,
         template_id: str | _Ref[Any] | None = None,
         load_balancer_id: str | _Ref[Any] | None = None,
     ) -> AutoscalingGroupCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             project_id=project_id,
             template_id=template_id,
             load_balancer_id=load_balancer_id,
@@ -968,7 +1070,7 @@ class AutoscalingGroupCollection(_Collection[AutoscalingGroupSummary]):
     async def _items(self) -> AsyncIterator[AutoscalingGroupSummary]:
         response = await self._session.api(_AutoscalingAPI).list_groups(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.group_summaries or []:
             yield AutoscalingGroupSummary._from(self._session, self._scope, data)
@@ -1048,20 +1150,44 @@ class ElasticMetalOfferCollection(_Collection[ElasticMetalOffer]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         subscription_period: OfferSubscriptionPeriod | None = None,
         name: str | None = None,
     ) -> ElasticMetalOfferCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            subscription_period=subscription_period, name=name, zone=zone
+            page_size=page_size,
+            subscription_period=subscription_period,
+            name=name,
+            zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[ElasticMetalOffer]:
         async for data in self._session.api(_BaremetalAPI).list_offers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ElasticMetalOffer._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[BaremetalListOffersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BaremetalAPI).list_offers(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.offers or [])
+            if not response.offers or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ElasticMetalOptionRef(_Ref["ElasticMetalOption"]):
@@ -1104,18 +1230,41 @@ class ElasticMetalOptionCollection(_Collection[ElasticMetalOption]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         offer_id: str | _Ref[Any] | None = None,
         name: str | None = None,
     ) -> ElasticMetalOptionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(offer_id=offer_id, name=name, zone=zone)
+        return self._narrowed(
+            page_size=page_size, offer_id=offer_id, name=name, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[ElasticMetalOption]:
         async for data in self._session.api(_BaremetalAPI).list_options_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ElasticMetalOption._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListOptionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BaremetalAPI).list_options(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.options or [])
+            if not response.options or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ElasticMetalOsRef(_Ref["ElasticMetalOs"]):
@@ -1156,17 +1305,38 @@ class ElasticMetalOsCollection(_Collection[ElasticMetalOs]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         offer_id: str | _Ref[Any] | None = None,
     ) -> ElasticMetalOsCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(offer_id=offer_id, zone=zone)
+        return self._narrowed(page_size=page_size, offer_id=offer_id, zone=zone)
 
     async def _items(self) -> AsyncIterator[ElasticMetalOs]:
         async for data in self._session.api(_BaremetalAPI).list_os_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ElasticMetalOs._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[BaremetalListOSResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BaremetalAPI).list_os(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.os or [])
+            if not response.os or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ElasticMetalServerRef(_Ref["ElasticMetalServer"]):
@@ -1494,6 +1664,7 @@ class ElasticMetalServerCollection(_Collection[ElasticMetalServer]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: BaremetalListServersRequestOrderBy | None = None,
         tags: list[str] | None = None,
         status: list[str] | None = None,
@@ -1504,6 +1675,7 @@ class ElasticMetalServerCollection(_Collection[ElasticMetalServer]):
     ) -> ElasticMetalServerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             tags=tags,
             status=status,
@@ -1517,9 +1689,29 @@ class ElasticMetalServerCollection(_Collection[ElasticMetalServer]):
     async def _items(self) -> AsyncIterator[ElasticMetalServer]:
         async for data in self._session.api(_BaremetalAPI).list_servers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ElasticMetalServer._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[BaremetalListServersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BaremetalAPI).list_servers(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.servers or [])
+            if not response.servers or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1727,18 +1919,40 @@ class ElasticMetalServerEventCollection(_Collection[BaremetalServerEvent]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: BaremetalListServerEventsRequestOrderBy | None = None,
     ) -> ElasticMetalServerEventCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, zone=zone)
+        return self._narrowed(page_size=page_size, order_by=order_by, zone=zone)
 
     async def _items(self) -> AsyncIterator[BaremetalServerEvent]:
         async for data in self._session.api(_BaremetalAPI).list_server_events_iter(
             zone=self._criteria.get("zone"),
             server_id=_required(self._scope, "server_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[BaremetalListServerEventsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BaremetalAPI).list_server_events(
+                zone=self._criteria.get("zone"),
+                server_id=_required(self._scope, "server_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.events or [])
+            if not response.events or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ElasticMetalSettingRef(_Ref["ElasticMetalSetting"]):
@@ -1792,18 +2006,41 @@ class ElasticMetalSettingCollection(_Collection[ElasticMetalSetting]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: ListSettingsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
     ) -> ElasticMetalSettingCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, project_id=project_id, zone=zone)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, project_id=project_id, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[ElasticMetalSetting]:
         async for data in self._session.api(_BaremetalAPI).list_settings_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ElasticMetalSetting._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSettingsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BaremetalAPI).list_settings(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.settings or [])
+            if not response.settings or seen >= response.total_count:
+                return
+            number += 1
 
 
 class FailoverIpRef(_Ref["FailoverIp"]):
@@ -1884,6 +2121,7 @@ class FailoverIpCollection(_Collection[FailoverIp]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: ListFailoverIPsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         search: str | None = None,
@@ -1891,6 +2129,7 @@ class FailoverIpCollection(_Collection[FailoverIp]):
     ) -> FailoverIpCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
             search=search,
@@ -1901,9 +2140,29 @@ class FailoverIpCollection(_Collection[FailoverIp]):
     async def _items(self) -> AsyncIterator[FailoverIp]:
         async for data in self._session.api(_DediboxAPI).list_failover_i_ps_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FailoverIp._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListFailoverIPsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DediboxAPI).list_failover_i_ps(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.failover_ips or [])
+            if not response.failover_ips or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1967,6 +2226,7 @@ class DediboxOfferCollection(_Collection[DediboxOffer]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: ListOffersRequestOrderBy | None = None,
         commercial_range: str | None = None,
         catalog: OfferCatalog | None = None,
@@ -1979,6 +2239,7 @@ class DediboxOfferCollection(_Collection[DediboxOffer]):
     ) -> DediboxOfferCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             commercial_range=commercial_range,
             catalog=catalog,
@@ -1994,9 +2255,29 @@ class DediboxOfferCollection(_Collection[DediboxOffer]):
     async def _items(self) -> AsyncIterator[DediboxOffer]:
         async for data in self._session.api(_DediboxAPI).list_offers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DediboxOffer._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[DediboxListOffersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DediboxAPI).list_offers(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.offers or [])
+            if not response.offers or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DediboxOrderedServiceRef(_Ref["DediboxOrderedService"]):
@@ -2091,6 +2372,7 @@ class DediboxOsCollection(_Collection[DediboxOs]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: ListOSRequestOrderBy | None = None,
         type_: OSType | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -2099,6 +2381,7 @@ class DediboxOsCollection(_Collection[DediboxOs]):
     ) -> DediboxOsCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             type_=type_,
             project_id=project_id,
@@ -2110,9 +2393,29 @@ class DediboxOsCollection(_Collection[DediboxOs]):
     async def _items(self) -> AsyncIterator[DediboxOs]:
         async for data in self._session.api(_DediboxAPI).list_os_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DediboxOs._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[DediboxListOSResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DediboxAPI).list_os(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.os or [])
+            if not response.os or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DediboxReverseRef(_Ref[None]):
@@ -2529,21 +2832,46 @@ class DediboxServerCollection(_Collection[DediboxServerSummary]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: DediboxListServersRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         search: str | None = None,
     ) -> DediboxServerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            order_by=order_by, project_id=project_id, search=search, zone=zone
+            page_size=page_size,
+            order_by=order_by,
+            project_id=project_id,
+            search=search,
+            zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[DediboxServerSummary]:
         async for data in self._session.api(_DediboxAPI).list_servers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DediboxServerSummary._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[DediboxListServersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DediboxAPI).list_servers(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.servers or [])
+            if not response.servers or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2621,18 +2949,40 @@ class DiskCollection(_Collection[ServerDisk]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: ListServerDisksRequestOrderBy | None = None,
     ) -> DiskCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, zone=zone)
+        return self._narrowed(page_size=page_size, order_by=order_by, zone=zone)
 
     async def _items(self) -> AsyncIterator[ServerDisk]:
         async for data in self._session.api(_DediboxAPI).list_server_disks_iter(
             zone=self._criteria.get("zone"),
             server_id=int(_required(self._scope, "server_id")),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListServerDisksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DediboxAPI).list_server_disks(
+                zone=self._criteria.get("zone"),
+                server_id=int(_required(self._scope, "server_id")),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.disks or [])
+            if not response.disks or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DediboxServerEventCollection(_Collection[DediboxServerEvent]):
@@ -2642,18 +2992,40 @@ class DediboxServerEventCollection(_Collection[DediboxServerEvent]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: DediboxListServerEventsRequestOrderBy | None = None,
     ) -> DediboxServerEventCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, zone=zone)
+        return self._narrowed(page_size=page_size, order_by=order_by, zone=zone)
 
     async def _items(self) -> AsyncIterator[DediboxServerEvent]:
         async for data in self._session.api(_DediboxAPI).list_server_events_iter(
             zone=self._criteria.get("zone"),
             server_id=int(_required(self._scope, "server_id")),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[DediboxListServerEventsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DediboxAPI).list_server_events(
+                zone=self._criteria.get("zone"),
+                server_id=int(_required(self._scope, "server_id")),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.events or [])
+            if not response.events or seen >= response.total_count:
+                return
+            number += 1
 
 
 class SubscribableOptionCollection(_Collection[_DediboxOffer]):
@@ -2663,9 +3035,10 @@ class SubscribableOptionCollection(_Collection[_DediboxOffer]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
     ) -> SubscribableOptionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(zone=zone)
+        return self._narrowed(page_size=page_size, zone=zone)
 
     async def _items(self) -> AsyncIterator[_DediboxOffer]:
         async for data in self._session.api(
@@ -2673,9 +3046,32 @@ class SubscribableOptionCollection(_Collection[_DediboxOffer]):
         ).list_subscribable_server_options_iter(
             zone=self._criteria.get("zone"),
             server_id=int(_required(self._scope, "server_id")),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListSubscribableServerOptionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _DediboxAPI
+            ).list_subscribable_server_options(
+                zone=self._criteria.get("zone"),
+                server_id=int(_required(self._scope, "server_id")),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.server_options or [])
+            if not response.server_options or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DediboxServiceRef(_Ref["DediboxService"]):
@@ -2743,18 +3139,41 @@ class DediboxServiceCollection(_Collection[DediboxService]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         order_by: ListServicesRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
     ) -> DediboxServiceCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, project_id=project_id, zone=zone)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, project_id=project_id, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[DediboxService]:
         async for data in self._session.api(_DediboxAPI).list_services_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DediboxService._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListServicesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DediboxAPI).list_services(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.services or [])
+            if not response.services or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ImageRef(_Ref["Image"]):
@@ -2878,6 +3297,7 @@ class ImageCollection(_Collection[Image]):
         *,
         zone: str | None = None,
         organization: InstanceStringValue | None = None,
+        per_page: int | None = None,
         name: InstanceStringValue | None = None,
         public: BoolValue | None = None,
         arch: InstanceStringValue | None = None,
@@ -2887,6 +3307,7 @@ class ImageCollection(_Collection[Image]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             organization=organization,
+            per_page=per_page,
             name=name,
             public=public,
             arch=arch,
@@ -2898,9 +3319,29 @@ class ImageCollection(_Collection[Image]):
     async def _items(self) -> AsyncIterator[Image]:
         async for data in self._session.api(_InstanceAPI).list_images_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Image._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[InstanceListImagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_images(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.images or [])
+            if not response.images:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3029,6 +3470,7 @@ class PublicIpCollection(_Collection[PublicIp]):
         organization: str | None = None,
         tags: str | None = None,
         name: str | None = None,
+        per_page: int | None = None,
         type_: str | None = None,
         server: str | None = None,
         detached: bool | None = None,
@@ -3039,6 +3481,7 @@ class PublicIpCollection(_Collection[PublicIp]):
             organization=organization,
             tags=tags,
             name=name,
+            per_page=per_page,
             type_=type_,
             server=server,
             detached=detached,
@@ -3048,9 +3491,29 @@ class PublicIpCollection(_Collection[PublicIp]):
     async def _items(self) -> AsyncIterator[PublicIp]:
         async for data in self._session.api(_InstanceAPI).list_ips_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PublicIp._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListIpsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_ips(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.ips or [])
+            if not response.ips:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3246,6 +3709,7 @@ class PlacementGroupCollection(_Collection[PlacementGroup]):
         self,
         *,
         zone: str | None = None,
+        per_page: int | None = None,
         organization: str | None = None,
         project: str | None = None,
         tags: str | None = None,
@@ -3253,15 +3717,40 @@ class PlacementGroupCollection(_Collection[PlacementGroup]):
     ) -> PlacementGroupCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            organization=organization, project=project, tags=tags, name=name, zone=zone
+            per_page=per_page,
+            organization=organization,
+            project=project,
+            tags=tags,
+            name=name,
+            zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[PlacementGroup]:
         async for data in self._session.api(_InstanceAPI).list_placement_groups_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PlacementGroup._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPlacementGroupsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_placement_groups(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.placement_groups or [])
+            if not response.placement_groups:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3453,6 +3942,7 @@ class SecurityGroupCollection(_Collection[SecurityGroup]):
         project: str | None = None,
         tags: str | None = None,
         project_default: bool | None = None,
+        per_page: int | None = None,
     ) -> SecurityGroupCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -3461,15 +3951,36 @@ class SecurityGroupCollection(_Collection[SecurityGroup]):
             project=project,
             tags=tags,
             project_default=project_default,
+            per_page=per_page,
             zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[SecurityGroup]:
         async for data in self._session.api(_InstanceAPI).list_security_groups_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield SecurityGroup._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSecurityGroupsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_security_groups(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.security_groups or [])
+            if not response.security_groups:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3644,9 +4155,10 @@ class RuleCollection(_Collection[Rule]):
         self,
         *,
         zone: str | None = None,
+        per_page: int | None = None,
     ) -> RuleCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(zone=zone)
+        return self._narrowed(per_page=per_page, zone=zone)
 
     async def _items(self) -> AsyncIterator[Rule]:
         async for data in self._session.api(
@@ -3654,9 +4166,30 @@ class RuleCollection(_Collection[Rule]):
         ).list_security_group_rules_iter(
             zone=self._criteria.get("zone"),
             security_group_id=_required(self._scope, "security_group_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Rule._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSecurityGroupRulesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_security_group_rules(
+                zone=self._criteria.get("zone"),
+                security_group_id=_required(self._scope, "security_group_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.rules or [])
+            if not response.rules:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4035,6 +4568,7 @@ class ServerCollection(_Collection[Server]):
         self,
         *,
         zone: str | None = None,
+        per_page: int | None = None,
         organization: str | None = None,
         project: str | None = None,
         name: str | None = None,
@@ -4052,6 +4586,7 @@ class ServerCollection(_Collection[Server]):
     ) -> ServerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            per_page=per_page,
             organization=organization,
             project=project,
             name=name,
@@ -4072,9 +4607,29 @@ class ServerCollection(_Collection[Server]):
     async def _items(self) -> AsyncIterator[Server]:
         async for data in self._session.api(_InstanceAPI).list_servers_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Server._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[InstanceListServersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_servers(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.servers or [])
+            if not response.servers:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4208,17 +4763,39 @@ class NicCollection(_Collection[Nic]):
         *,
         zone: str | None = None,
         tags: str | None = None,
+        per_page: int | None = None,
     ) -> NicCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(tags=tags, zone=zone)
+        return self._narrowed(tags=tags, per_page=per_page, zone=zone)
 
     async def _items(self) -> AsyncIterator[Nic]:
         async for data in self._session.api(_InstanceAPI).list_private_ni_cs_iter(
             zone=self._criteria.get("zone"),
             server_id=_required(self._scope, "server_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Nic._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPrivateNICsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_private_ni_cs(
+                zone=self._criteria.get("zone"),
+                server_id=_required(self._scope, "server_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.private_nics or [])
+            if not response.private_nics or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4330,7 +4907,7 @@ class UserDataCollection(_Collection[str]):
         response = await self._session.api(_InstanceAPI).list_server_user_data(
             zone=self._criteria.get("zone"),
             server_id=_required(self._scope, "server_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.user_data or []:
             yield data
@@ -4351,7 +4928,7 @@ class ActionCollection(_Collection[ServerAction]):
         response = await self._session.api(_InstanceAPI).list_server_actions(
             zone=self._criteria.get("zone"),
             server_id=_required(self._scope, "server_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.actions or []:
             yield data
@@ -4498,6 +5075,7 @@ class LocalSnapshotCollection(_Collection[LocalSnapshot]):
         zone: str | None = None,
         organization: str | None = None,
         project: str | None = None,
+        per_page: int | None = None,
         name: str | None = None,
         tags: str | None = None,
         base_volume_id: str | _Ref[Any] | None = None,
@@ -4506,6 +5084,7 @@ class LocalSnapshotCollection(_Collection[LocalSnapshot]):
         return self._narrowed(
             organization=organization,
             project=project,
+            per_page=per_page,
             name=name,
             tags=tags,
             base_volume_id=base_volume_id,
@@ -4515,9 +5094,29 @@ class LocalSnapshotCollection(_Collection[LocalSnapshot]):
     async def _items(self) -> AsyncIterator[LocalSnapshot]:
         async for data in self._session.api(_InstanceAPI).list_snapshots_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LocalSnapshot._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSnapshotsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_snapshots(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.snapshots or [])
+            if not response.snapshots:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4671,6 +5270,7 @@ class LocalVolumeCollection(_Collection[LocalVolume]):
         *,
         zone: str | None = None,
         volume_type: VolumeVolumeType | None = None,
+        per_page: int | None = None,
         organization: str | None = None,
         project: str | None = None,
         tags: str | None = None,
@@ -4679,6 +5279,7 @@ class LocalVolumeCollection(_Collection[LocalVolume]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             volume_type=volume_type,
+            per_page=per_page,
             organization=organization,
             project=project,
             tags=tags,
@@ -4689,9 +5290,29 @@ class LocalVolumeCollection(_Collection[LocalVolume]):
     async def _items(self) -> AsyncIterator[LocalVolume]:
         async for data in self._session.api(_InstanceAPI).list_volumes_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LocalVolume._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListVolumesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InstanceAPI).list_volumes(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.volumes or [])
+            if not response.volumes:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4761,11 +5382,38 @@ class MarketplaceCategoryCollection(_Collection[MarketplaceCategory]):
         ref_key: _Key = {**self._scope, "category_id": _identifier(category_id)}
         return MarketplaceCategoryRef._of(self._session, ref_key)
 
+    def filter(
+        self,
+        *,
+        page_size: int | None = None,
+    ) -> MarketplaceCategoryCollection:
+        """The same collection, narrowed to the items matching these criteria."""
+        return self._narrowed(page_size=page_size)
+
     async def _items(self) -> AsyncIterator[MarketplaceCategory]:
         async for data in self._session.api(_MarketplaceAPI).list_categories_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield MarketplaceCategory._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListCategoriesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MarketplaceAPI).list_categories(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.categories or [])
+            if not response.categories or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MarketplaceImageRef(_Ref["MarketplaceImage"]):
@@ -4804,20 +5452,44 @@ class MarketplaceImageCollection(_Collection[MarketplaceImage]):
         self,
         *,
         include_eol: bool,
+        page_size: int | None = None,
         order_by: ListImagesRequestOrderBy | None = None,
         arch: str | None = None,
         category: str | None = None,
     ) -> MarketplaceImageCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            order_by=order_by, arch=arch, category=category, include_eol=include_eol
+            page_size=page_size,
+            order_by=order_by,
+            arch=arch,
+            category=category,
+            include_eol=include_eol,
         )
 
     async def _items(self) -> AsyncIterator[MarketplaceImage]:
         async for data in self._session.api(_MarketplaceAPI).list_images_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield MarketplaceImage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[MarketplaceListImagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MarketplaceAPI).list_images(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.images or [])
+            if not response.images or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MarketplaceLocalImageRef(_Ref["MarketplaceLocalImage"]):
@@ -4858,6 +5530,7 @@ class MarketplaceLocalImageCollection(_Collection[MarketplaceLocalImage]):
         self,
         *,
         zone: str,
+        page_size: int | None = None,
         order_by: ListLocalImagesRequestOrderBy | None = None,
         arch: str | None = None,
         type_: LocalImageType | None = None,
@@ -4867,6 +5540,7 @@ class MarketplaceLocalImageCollection(_Collection[MarketplaceLocalImage]):
     ) -> MarketplaceLocalImageCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             zone=zone,
             arch=arch,
@@ -4878,9 +5552,28 @@ class MarketplaceLocalImageCollection(_Collection[MarketplaceLocalImage]):
 
     async def _items(self) -> AsyncIterator[MarketplaceLocalImage]:
         async for data in self._session.api(_MarketplaceAPI).list_local_images_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield MarketplaceLocalImage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListLocalImagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MarketplaceAPI).list_local_images(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.local_images or [])
+            if not response.local_images or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MarketplaceVersionRef(_Ref["MarketplaceVersion"]):
@@ -4919,16 +5612,36 @@ class MarketplaceVersionCollection(_Collection[MarketplaceVersion]):
         self,
         *,
         image_id: str | _Ref[Any],
+        page_size: int | None = None,
         order_by: ListVersionsRequestOrderBy | None = None,
     ) -> MarketplaceVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(image_id=image_id, order_by=order_by)
+        return self._narrowed(image_id=image_id, page_size=page_size, order_by=order_by)
 
     async def _items(self) -> AsyncIterator[MarketplaceVersion]:
         async for data in self._session.api(_MarketplaceAPI).list_versions_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield MarketplaceVersion._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MarketplaceAPI).list_versions(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ApplesiliconMacServerTypeListingCollection(_Collection[_ApplesiliconServerType]):
@@ -4945,7 +5658,7 @@ class ApplesiliconMacServerTypeListingCollection(_Collection[_ApplesiliconServer
     async def _items(self) -> AsyncIterator[_ApplesiliconServerType]:
         response = await self._session.api(_ApplesiliconAPI).list_server_types(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.server_types or []:
             yield data
@@ -4959,6 +5672,7 @@ class MacPrivateNetworkCollection(_Collection[_ApplesiliconServerPrivateNetwork]
         *,
         zone: str | None = None,
         order_by: ApplesiliconListServerPrivateNetworksRequestOrderBy | None = None,
+        page_size: int | None = None,
         server_id: str | _Ref[Any] | None = None,
         private_network_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -4968,6 +5682,7 @@ class MacPrivateNetworkCollection(_Collection[_ApplesiliconServerPrivateNetwork]
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             server_id=server_id,
             private_network_id=private_network_id,
             organization_id=organization_id,
@@ -4981,9 +5696,33 @@ class MacPrivateNetworkCollection(_Collection[_ApplesiliconServerPrivateNetwork]
             _ApplesiliconPrivateNetworkAPI
         ).list_server_private_networks_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(
+        self,
+    ) -> AsyncIterator[ApplesiliconListServerPrivateNetworksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _ApplesiliconPrivateNetworkAPI
+            ).list_server_private_networks(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.server_private_networks or [])
+            if not response.server_private_networks or seen >= response.total_count:
+                return
+            number += 1
 
 
 class AutoscalingAlertCollection(_Collection[Alert]):
@@ -4993,16 +5732,19 @@ class AutoscalingAlertCollection(_Collection[Alert]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         group_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
     ) -> AutoscalingAlertCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(group_id=group_id, project_id=project_id, zone=zone)
+        return self._narrowed(
+            page_size=page_size, group_id=group_id, project_id=project_id, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[Alert]:
         response = await self._session.api(_AutoscalingAPI).list_alerts(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.alerts or []:
             yield data
@@ -5016,18 +5758,23 @@ class AutoscalingLogCollection(_Collection[Log]):
         *,
         zone: str | None = None,
         group_id: str | _Ref[Any],
+        page_size: int | None = None,
         start_time: Instant | None = None,
         end_time: Instant | None = None,
     ) -> AutoscalingLogCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            group_id=group_id, start_time=start_time, end_time=end_time, zone=zone
+            group_id=group_id,
+            page_size=page_size,
+            start_time=start_time,
+            end_time=end_time,
+            zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[Log]:
         response = await self._session.api(_AutoscalingAPI).list_logs(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.logs or []:
             yield data
@@ -5041,14 +5788,15 @@ class AutoscalingServerCollection(_Collection[AutoscalingServer]):
         *,
         zone: str | None = None,
         group_id: str | _Ref[Any],
+        page_size: int | None = None,
     ) -> AutoscalingServerCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(group_id=group_id, zone=zone)
+        return self._narrowed(group_id=group_id, page_size=page_size, zone=zone)
 
     async def _items(self) -> AsyncIterator[AutoscalingServer]:
         response = await self._session.api(_AutoscalingAPI).list_servers(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.servers or []:
             yield data
@@ -5062,6 +5810,7 @@ class ElasticMetalPrivateNetworkCollection(_Collection[ServerPrivateNetwork]):
         *,
         zone: str | None = None,
         order_by: BaremetalListServerPrivateNetworksRequestOrderBy | None = None,
+        page_size: int | None = None,
         server_id: str | _Ref[Any] | None = None,
         private_network_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -5070,6 +5819,7 @@ class ElasticMetalPrivateNetworkCollection(_Collection[ServerPrivateNetwork]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             server_id=server_id,
             private_network_id=private_network_id,
             organization_id=organization_id,
@@ -5082,9 +5832,31 @@ class ElasticMetalPrivateNetworkCollection(_Collection[ServerPrivateNetwork]):
             _BaremetalPrivateNetworkAPI
         ).list_server_private_networks_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[BaremetalListServerPrivateNetworksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _BaremetalPrivateNetworkAPI
+            ).list_server_private_networks(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.server_private_networks or [])
+            if not response.server_private_networks or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ServerTypeCollection(_Collection[Any]):
@@ -5094,14 +5866,15 @@ class ServerTypeCollection(_Collection[Any]):
         self,
         *,
         zone: str | None = None,
+        per_page: int | None = None,
     ) -> ServerTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(zone=zone)
+        return self._narrowed(per_page=per_page, zone=zone)
 
     async def _items(self) -> AsyncIterator[Any]:
         response = await self._session.api(_InstanceAPI).list_servers_types(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in [response]:
             yield data
@@ -5114,14 +5887,15 @@ class LocalVolumeTypeCollection(_Collection[Any]):
         self,
         *,
         zone: str | None = None,
+        per_page: int | None = None,
     ) -> LocalVolumeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(zone=zone)
+        return self._narrowed(per_page=per_page, zone=zone)
 
     async def _items(self) -> AsyncIterator[Any]:
         response = await self._session.api(_InstanceAPI).list_volumes_types(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in [response]:
             yield data
@@ -5143,7 +5917,7 @@ class DefaultSecurityGroupRuleCollection(_Collection[_InstanceSecurityGroupRule]
             _InstanceAPI
         ).list_default_security_group_rules(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.rules or []:
             yield data
@@ -5157,6 +5931,7 @@ class MarketplaceFullImageCollection(_Collection[FullImage]):
         *,
         include_eol: bool,
         zone: str,
+        page_size: int | None = None,
         order_by: ListFullImagesRequestOrderBy | None = None,
         arch: str | None = None,
         category: str | None = None,
@@ -5164,6 +5939,7 @@ class MarketplaceFullImageCollection(_Collection[FullImage]):
     ) -> MarketplaceFullImageCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             arch=arch,
             category=category,
@@ -5176,9 +5952,28 @@ class MarketplaceFullImageCollection(_Collection[FullImage]):
         async for data in self._session.api(
             _MarketplaceConsoleAPI
         ).list_full_images_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListFullImagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MarketplaceConsoleAPI).list_full_images(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.images or [])
+            if not response.images or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ComputeNamespace(_Namespace):

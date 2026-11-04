@@ -41,10 +41,14 @@ from aioscaleway.billing.types import (
     InvoiceType,
     ListChargesRequestOrderBy,
     ListConsumptionsRequestOrderBy,
+    ListConsumptionsResponse,
     ListConsumptionsResponseConsumption,
     ListDiscountsRequestOrderBy,
+    ListDiscountsResponse,
     ListInvoicesRequestOrderBy,
+    ListInvoicesResponse,
     ListTaxesRequestOrderBy,
+    ListTaxesResponse,
     ListTaxesResponseTax,
     ProductCategory,
     ReportType,
@@ -107,6 +111,7 @@ class InvoiceCollection(_Collection[Invoice]):
         billing_period_start_after: Instant | None = None,
         billing_period_start_before: Instant | None = None,
         invoice_type: InvoiceType | None = None,
+        page_size: int | None = None,
         order_by: ListInvoicesRequestOrderBy | None = None,
     ) -> InvoiceCollection:
         """The same collection, narrowed to the items matching these criteria."""
@@ -115,14 +120,34 @@ class InvoiceCollection(_Collection[Invoice]):
             billing_period_start_after=billing_period_start_after,
             billing_period_start_before=billing_period_start_before,
             invoice_type=invoice_type,
+            page_size=page_size,
             order_by=order_by,
         )
 
     async def _items(self) -> AsyncIterator[Invoice]:
         async for data in self._session.api(_BillingAPI).list_invoices_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Invoice._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListInvoicesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BillingAPI).list_invoices(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.invoices or [])
+            if not response.invoices or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ConsumptionCollection(_Collection[ListConsumptionsResponseConsumption]):
@@ -132,6 +157,7 @@ class ConsumptionCollection(_Collection[ListConsumptionsResponseConsumption]):
         self,
         *,
         order_by: ListConsumptionsRequestOrderBy | None = None,
+        page_size: int | None = None,
         category_name: str | None = None,
         billing_period: str | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -140,6 +166,7 @@ class ConsumptionCollection(_Collection[ListConsumptionsResponseConsumption]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             category_name=category_name,
             billing_period=billing_period,
             organization_id=organization_id,
@@ -148,9 +175,28 @@ class ConsumptionCollection(_Collection[ListConsumptionsResponseConsumption]):
 
     async def _items(self) -> AsyncIterator[ListConsumptionsResponseConsumption]:
         async for data in self._session.api(_BillingAPI).list_consumptions_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListConsumptionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BillingAPI).list_consumptions(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.consumptions or [])
+            if not response.consumptions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DiscountCollection(_Collection[BillingDiscount]):
@@ -160,16 +206,38 @@ class DiscountCollection(_Collection[BillingDiscount]):
         self,
         *,
         order_by: ListDiscountsRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
     ) -> DiscountCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, organization_id=organization_id)
+        return self._narrowed(
+            order_by=order_by, page_size=page_size, organization_id=organization_id
+        )
 
     async def _items(self) -> AsyncIterator[BillingDiscount]:
         async for data in self._session.api(_BillingAPI).list_discounts_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListDiscountsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BillingAPI).list_discounts(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.discounts or [])
+            if not response.discounts or seen >= response.total_count:
+                return
+            number += 1
 
 
 class TaxCollection(_Collection[ListTaxesResponseTax]):
@@ -180,20 +248,41 @@ class TaxCollection(_Collection[ListTaxesResponseTax]):
         *,
         organization_id: str | _Ref[Any],
         order_by: ListTaxesRequestOrderBy | None = None,
+        page_size: int | None = None,
         billing_period: str | None = None,
     ) -> TaxCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             billing_period=billing_period,
         )
 
     async def _items(self) -> AsyncIterator[ListTaxesResponseTax]:
         async for data in self._session.api(_BillingAPI).list_taxes_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListTaxesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BillingAPI).list_taxes(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.taxes or [])
+            if not response.taxes or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ChargeCollection(_Collection[BillingCharge]):
@@ -204,6 +293,7 @@ class ChargeCollection(_Collection[BillingCharge]):
         *,
         organization_id: str | _Ref[Any],
         order_by: ListChargesRequestOrderBy | None = None,
+        page_size: int | None = None,
         start_date_after: Instant | None = None,
         end_date_before: Instant | None = None,
         invoice_ids: list[str] | None = None,
@@ -216,6 +306,7 @@ class ChargeCollection(_Collection[BillingCharge]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             start_date_after=start_date_after,
             end_date_before=end_date_before,
             invoice_ids=invoice_ids,
@@ -229,7 +320,7 @@ class ChargeCollection(_Collection[BillingCharge]):
 
     async def _items(self) -> AsyncIterator[BillingCharge]:
         response = await self._session.api(_BillingFinOpsAPI).list_charges(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.charges or []:
             yield data

@@ -85,13 +85,23 @@ from aioscaleway.web_hosting.types import (
     HostingStatus,
     LanguageCode,
     ListBackupsRequestOrderBy,
+    ListBackupsResponse,
+    ListControlPanelsResponse,
     ListDatabasesRequestOrderBy,
+    ListDatabasesResponse,
     ListDatabaseUsersRequestOrderBy,
+    ListDatabaseUsersResponse,
+    ListFreeRootDomainsResponse,
     ListFtpAccountsRequestOrderBy,
+    ListFtpAccountsResponse,
     ListHostingsRequestOrderBy,
+    ListHostingsResponse,
     ListMailAccountsRequestOrderBy,
+    ListMailAccountsResponse,
     ListOffersRequestOrderBy,
+    ListOffersResponse,
     ListWebsitesRequestOrderBy,
+    ListWebsitesResponse,
     OfferOptionRequest,
     ResetHostingPasswordResponse,
     ResourceSummary,
@@ -449,6 +459,7 @@ class HostingCollection(_Collection[HostingSummary]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListHostingsRequestOrderBy | None = None,
         tags: list[str] | None = None,
         statuses: list[HostingStatus] | None = None,
@@ -460,6 +471,7 @@ class HostingCollection(_Collection[HostingSummary]):
     ) -> HostingCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             tags=tags,
             statuses=statuses,
@@ -474,9 +486,29 @@ class HostingCollection(_Collection[HostingSummary]):
     async def _items(self) -> AsyncIterator[HostingSummary]:
         async for data in self._session.api(_WebhostingHostingAPI).list_hostings_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield HostingSummary._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListHostingsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_WebhostingHostingAPI).list_hostings(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.hostings or [])
+            if not response.hostings or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -576,18 +608,40 @@ class BackupCollection(_Collection[Backup]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListBackupsRequestOrderBy | None = None,
     ) -> BackupCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(page_size=page_size, order_by=order_by, region=region)
 
     async def _items(self) -> AsyncIterator[Backup]:
         async for data in self._session.api(_WebhostingBackupAPI).list_backups_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Backup._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListBackupsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_WebhostingBackupAPI).list_backups(
+                region=self._criteria.get("region"),
+                hosting_id=_required(self._scope, "hosting_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.backups or [])
+            if not response.backups or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ProgressRef(_Ref["Progress"]):
@@ -653,7 +707,7 @@ class ProgressCollection(_Collection[ProgressSummary]):
         response = await self._session.api(_WebhostingBackupAPI).list_recent_progresses(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.progresses or []:
             yield ProgressSummary._from(self._session, self._scope, data)
@@ -708,10 +762,11 @@ class DatabaseUserCollection(_Collection[DatabaseUser]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListDatabaseUsersRequestOrderBy | None = None,
     ) -> DatabaseUserCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(page_size=page_size, order_by=order_by, region=region)
 
     async def _items(self) -> AsyncIterator[DatabaseUser]:
         async for data in self._session.api(
@@ -719,9 +774,32 @@ class DatabaseUserCollection(_Collection[DatabaseUser]):
         ).list_database_users_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DatabaseUser._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDatabaseUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _WebhostingDatabaseAPI
+            ).list_database_users(
+                region=self._criteria.get("region"),
+                hosting_id=_required(self._scope, "hosting_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.users or [])
+            if not response.users or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DatabasesUserRef(_Ref["DatabasesUser"]):
@@ -903,18 +981,40 @@ class DatabaseCollection(_Collection[Database]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListDatabasesRequestOrderBy | None = None,
     ) -> DatabaseCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(page_size=page_size, order_by=order_by, region=region)
 
     async def _items(self) -> AsyncIterator[Database]:
         async for data in self._session.api(_WebhostingDatabaseAPI).list_databases_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Database._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDatabasesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_WebhostingDatabaseAPI).list_databases(
+                region=self._criteria.get("region"),
+                hosting_id=_required(self._scope, "hosting_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.databases or [])
+            if not response.databases or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1003,11 +1103,14 @@ class FtpAccountCollection(_Collection[FtpAccount]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListFtpAccountsRequestOrderBy | None = None,
         domain: str | None = None,
     ) -> FtpAccountCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, domain=domain, region=region)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, domain=domain, region=region
+        )
 
     async def _items(self) -> AsyncIterator[FtpAccount]:
         async for data in self._session.api(
@@ -1015,9 +1118,32 @@ class FtpAccountCollection(_Collection[FtpAccount]):
         ).list_ftp_accounts_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FtpAccount._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListFtpAccountsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _WebhostingFtpAccountAPI
+            ).list_ftp_accounts(
+                region=self._criteria.get("region"),
+                hosting_id=_required(self._scope, "hosting_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.ftp_accounts or [])
+            if not response.ftp_accounts or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1103,18 +1229,40 @@ class WebsiteCollection(_Collection[Website]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListWebsitesRequestOrderBy | None = None,
     ) -> WebsiteCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(page_size=page_size, order_by=order_by, region=region)
 
     async def _items(self) -> AsyncIterator[Website]:
         async for data in self._session.api(_WebhostingWebsiteAPI).list_websites_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Website._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListWebsitesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_WebhostingWebsiteAPI).list_websites(
+                region=self._criteria.get("region"),
+                hosting_id=_required(self._scope, "hosting_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.websites or [])
+            if not response.websites or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1152,7 +1300,7 @@ class BackupItemCollection(_Collection[BackupItemGroup]):
         response = await self._session.api(_WebhostingBackupAPI).list_backup_items(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.groups or []:
             yield data
@@ -1165,11 +1313,14 @@ class MailAccountCollection(_Collection[WebhostingMailAccount]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListMailAccountsRequestOrderBy | None = None,
         domain: str | None = None,
     ) -> MailAccountCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, domain=domain, region=region)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, domain=domain, region=region
+        )
 
     async def _items(self) -> AsyncIterator[WebhostingMailAccount]:
         async for data in self._session.api(
@@ -1177,9 +1328,32 @@ class MailAccountCollection(_Collection[WebhostingMailAccount]):
         ).list_mail_accounts_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListMailAccountsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _WebhostingMailAccountAPI
+            ).list_mail_accounts(
+                region=self._criteria.get("region"),
+                hosting_id=_required(self._scope, "hosting_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.mail_accounts or [])
+            if not response.mail_accounts or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DediboxHostingRef(_Ref[None]):
@@ -1311,18 +1485,41 @@ class ControlPanelCollection(_Collection[WebhostingControlPanel]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
     ) -> ControlPanelCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(region=region)
+        return self._narrowed(page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[WebhostingControlPanel]:
         async for data in self._session.api(
             _WebhostingControlPanelAPI
         ).list_control_panels_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListControlPanelsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _WebhostingControlPanelAPI
+            ).list_control_panels(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.control_panels or [])
+            if not response.control_panels or seen >= response.total_count:
+                return
+            number += 1
 
 
 class FreeRootDomainCollection(_Collection[str]):
@@ -1332,18 +1529,41 @@ class FreeRootDomainCollection(_Collection[str]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
     ) -> FreeRootDomainCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(region=region)
+        return self._narrowed(page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[str]:
         async for data in self._session.api(
             _WebhostingFreeDomainAPI
         ).list_free_root_domains_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListFreeRootDomainsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _WebhostingFreeDomainAPI
+            ).list_free_root_domains(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.root_domains or [])
+            if not response.root_domains or seen >= response.total_count:
+                return
+            number += 1
 
 
 class OfferCollection(_Collection[WebhostingOffer]):
@@ -1353,12 +1573,14 @@ class OfferCollection(_Collection[WebhostingOffer]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListOffersRequestOrderBy | None = None,
         hosting_id: str | _Ref[Any] | None = None,
         control_panels: list[str] | None = None,
     ) -> OfferCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             hosting_id=hosting_id,
             control_panels=control_panels,
@@ -1368,9 +1590,29 @@ class OfferCollection(_Collection[WebhostingOffer]):
     async def _items(self) -> AsyncIterator[WebhostingOffer]:
         async for data in self._session.api(_WebhostingOfferAPI).list_offers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListOffersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_WebhostingOfferAPI).list_offers(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.offers or [])
+            if not response.offers or seen >= response.total_count:
+                return
+            number += 1
 
 
 class WebHostingNamespace(_Namespace):

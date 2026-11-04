@@ -199,7 +199,9 @@ from aioscaleway.network.types import (
     HealthCheckRedisConfig,
     HealthCheckTcpConfig,
     InterlinkListRoutingPoliciesRequestOrderBy,
+    InterlinkListRoutingPoliciesResponse,
     IpamListIPsRequestOrderBy,
+    IpamListIPsResponse,
     LbListPrivateNetworksRequestOrderBy,
     LbPrivateNetwork,
     LbStats,
@@ -207,41 +209,81 @@ from aioscaleway.network.types import (
     LinkKind,
     LinkStatus,
     ListAclRequestOrderBy,
+    ListAclResponse,
     ListBackendsRequestOrderBy,
+    ListBackendsResponse,
     ListBackendStagesRequestOrderBy,
+    ListBackendStagesResponse,
+    ListBackendStatsResponse,
     ListCacheStagesRequestOrderBy,
+    ListCacheStagesResponse,
     ListCertificatesRequestOrderBy,
+    ListCertificatesResponse,
     ListConnectionsRequestOrderBy,
+    ListConnectionsResponse,
     ListCustomerGatewaysRequestOrderBy,
+    ListCustomerGatewaysResponse,
     ListDedicatedConnectionsRequestOrderBy,
+    ListDedicatedConnectionsResponse,
     ListDNSStagesRequestOrderBy,
+    ListDNSStagesResponse,
     ListFlexibleIPsRequestOrderBy,
+    ListFlexibleIPsResponse,
     ListFrontendsRequestOrderBy,
+    ListFrontendsResponse,
     ListGatewayNetworksRequestOrderBy,
+    ListGatewayNetworksResponse,
     ListGatewaysRequestOrderBy,
+    ListGatewaysResponse,
+    ListHeadStagesResponse,
     ListHeadStagesResponseHeadStage,
     ListIngressRulesRequestOrderBy,
+    ListIngressRulesResponse,
     ListIpsRequestIpType,
+    ListIpsResponse,
+    ListLbPrivateNetworksResponse,
     ListLbsRequestOrderBy,
+    ListLbsResponse,
+    ListLbTypesResponse,
     ListLinksRequestOrderBy,
+    ListLinksResponse,
     ListPartnersRequestOrderBy,
+    ListPartnersResponse,
     ListPatRulesRequestOrderBy,
+    ListPatRulesResponse,
     ListPipelinesRequestOrderBy,
+    ListPipelinesResponse,
     ListPopsRequestOrderBy,
+    ListPopsResponse,
+    ListPrivateNetworksResponse,
     ListPrivateNetworksWithNicsRequestOrderBy,
+    ListPrivateNetworksWithNicsResponse,
     ListPurgeRequestsRequestOrderBy,
+    ListPurgeRequestsResponse,
     ListRoutesRequestOrderBy,
+    ListRoutesResponse,
     ListRouteStagesRequestOrderBy,
+    ListRouteStagesResponse,
     ListRoutesWithNexthopRequestOrderBy,
+    ListRoutesWithNexthopResponse,
     ListSubnetOverlapsRequestOrderBy,
+    ListSubnetOverlapsResponse,
     ListSubnetOverlapsResponseSubnetOverlap,
     ListSubnetsRequestOrderBy,
+    ListSubnetsResponse,
     ListSubscriberRequestOrderBy,
+    ListSubscriberResponse,
     ListTLSStagesRequestOrderBy,
+    ListTLSStagesResponse,
     ListVPCConnectorsRequestOrderBy,
+    ListVPCConnectorsResponse,
     ListVPCsRequestOrderBy,
+    ListVPCsResponse,
     ListVpnGatewaysRequestOrderBy,
+    ListVpnGatewaysResponse,
+    ListVpnGatewayTypesResponse,
     ListWafStagesRequestOrderBy,
+    ListWafStagesResponse,
     MACAddressType,
     Node,
     OnMarkedDownAction,
@@ -259,6 +301,7 @@ from aioscaleway.network.types import (
     RouteWithNexthopResourceType,
     S2SVpnGatewayType,
     S2SVpnListRoutingPoliciesRequestOrderBy,
+    S2SVpnListRoutingPoliciesResponse,
     ScalewayLbBackendConfig,
     ScalewayS3BackendConfig,
     ScalewayServerlessContainerBackendConfig,
@@ -284,6 +327,7 @@ from aioscaleway.network.types import (
     VPCConnectorStatus,
     VpcgwGatewayType,
     VpcgwListIPsRequestOrderBy,
+    VpcgwListIPsResponse,
     VpcListPrivateNetworksRequestOrderBy,
     VpcStringValue,
     VpcSubnet,
@@ -507,6 +551,7 @@ class EdgePipelineCollection(_Collection[EdgePipeline]):
         self,
         *,
         order_by: ListPipelinesRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -515,6 +560,7 @@ class EdgePipelineCollection(_Collection[EdgePipeline]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             organization_id=organization_id,
             project_id=project_id,
@@ -523,9 +569,28 @@ class EdgePipelineCollection(_Collection[EdgePipeline]):
 
     async def _items(self) -> AsyncIterator[EdgePipeline]:
         async for data in self._session.api(_EdgeServicesAPI).list_pipelines_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield EdgePipeline._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPipelinesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_pipelines(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.pipelines or [])
+            if not response.pipelines or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -640,6 +705,7 @@ class BackendStageCollection(_Collection[BackendStage]):
         self,
         *,
         order_by: ListBackendStagesRequestOrderBy | None = None,
+        page_size: int | None = None,
         bucket_name: str | None = None,
         bucket_region: str | None = None,
         lb_id: str | _Ref[Any] | None = None,
@@ -647,6 +713,7 @@ class BackendStageCollection(_Collection[BackendStage]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             bucket_name=bucket_name,
             bucket_region=bucket_region,
             lb_id=lb_id,
@@ -655,9 +722,29 @@ class BackendStageCollection(_Collection[BackendStage]):
     async def _items(self) -> AsyncIterator[BackendStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_backend_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield BackendStage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListBackendStagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_backend_stages(
+                pipeline_id=_required(self._scope, "pipeline_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.stages or [])
+            if not response.stages or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -780,16 +867,37 @@ class CacheStageCollection(_Collection[CacheStage]):
         self,
         *,
         order_by: ListCacheStagesRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> CacheStageCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by)
+        return self._narrowed(order_by=order_by, page_size=page_size)
 
     async def _items(self) -> AsyncIterator[CacheStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_cache_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield CacheStage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListCacheStagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_cache_stages(
+                pipeline_id=_required(self._scope, "pipeline_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.stages or [])
+            if not response.stages or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -914,17 +1022,38 @@ class DnsStageCollection(_Collection[DnsStage]):
         self,
         *,
         order_by: ListDNSStagesRequestOrderBy | None = None,
+        page_size: int | None = None,
         fqdn: str | None = None,
     ) -> DnsStageCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, fqdn=fqdn)
+        return self._narrowed(order_by=order_by, page_size=page_size, fqdn=fqdn)
 
     async def _items(self) -> AsyncIterator[DnsStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_dns_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DnsStage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDNSStagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_dns_stages(
+                pipeline_id=_required(self._scope, "pipeline_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.stages or [])
+            if not response.stages or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1085,16 +1214,37 @@ class RouteStageCollection(_Collection[RouteStage]):
         self,
         *,
         order_by: ListRouteStagesRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> RouteStageCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by)
+        return self._narrowed(order_by=order_by, page_size=page_size)
 
     async def _items(self) -> AsyncIterator[RouteStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_route_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield RouteStage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListRouteStagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_route_stages(
+                pipeline_id=_required(self._scope, "pipeline_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.stages or [])
+            if not response.stages or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1131,7 +1281,7 @@ class RuleCollection(_Collection[RouteRule]):
     async def _items(self) -> AsyncIterator[RouteRule]:
         response = await self._session.api(_EdgeServicesAPI).list_route_rules(
             route_stage_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.route_rules or []:
             yield data
@@ -1228,20 +1378,44 @@ class TlsStageCollection(_Collection[TlsStage]):
         self,
         *,
         order_by: ListTLSStagesRequestOrderBy | None = None,
+        page_size: int | None = None,
         secret_id: str | _Ref[Any] | None = None,
         secret_region: str | None = None,
     ) -> TlsStageCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            order_by=order_by, secret_id=secret_id, secret_region=secret_region
+            order_by=order_by,
+            page_size=page_size,
+            secret_id=secret_id,
+            secret_region=secret_region,
         )
 
     async def _items(self) -> AsyncIterator[TlsStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_tls_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield TlsStage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListTLSStagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_tls_stages(
+                pipeline_id=_required(self._scope, "pipeline_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.stages or [])
+            if not response.stages or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1368,16 +1542,37 @@ class WafStageCollection(_Collection[WafStage]):
         self,
         *,
         order_by: ListWafStagesRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> WafStageCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by)
+        return self._narrowed(order_by=order_by, page_size=page_size)
 
     async def _items(self) -> AsyncIterator[WafStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_waf_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield WafStage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListWafStagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_waf_stages(
+                pipeline_id=_required(self._scope, "pipeline_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.stages or [])
+            if not response.stages or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1413,12 +1608,40 @@ class WafStageCollection(_Collection[WafStage]):
 class HeadStageCollection(_Collection[ListHeadStagesResponseHeadStage]):
     """Every head stage: iterate, or `filter`."""
 
+    def filter(
+        self,
+        *,
+        page_size: int | None = None,
+    ) -> HeadStageCollection:
+        """The same collection, narrowed to the items matching these criteria."""
+        return self._narrowed(page_size=page_size)
+
     async def _items(self) -> AsyncIterator[ListHeadStagesResponseHeadStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_head_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListHeadStagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_head_stages(
+                pipeline_id=_required(self._scope, "pipeline_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.head_stages or [])
+            if not response.head_stages or seen >= response.total_count:
+                return
+            number += 1
 
 
 class EdgePurgeRequestRef(_Ref["EdgePurgeRequest"]):
@@ -1462,6 +1685,7 @@ class EdgePurgeRequestCollection(_Collection[EdgePurgeRequest]):
         self,
         *,
         order_by: ListPurgeRequestsRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         pipeline_id: str | _Ref[Any] | None = None,
@@ -1469,6 +1693,7 @@ class EdgePurgeRequestCollection(_Collection[EdgePurgeRequest]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             project_id=project_id,
             pipeline_id=pipeline_id,
@@ -1476,9 +1701,28 @@ class EdgePurgeRequestCollection(_Collection[EdgePurgeRequest]):
 
     async def _items(self) -> AsyncIterator[EdgePurgeRequest]:
         async for data in self._session.api(_EdgeServicesAPI).list_purge_requests_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield EdgePurgeRequest._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPurgeRequestsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_EdgeServicesAPI).list_purge_requests(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.purge_requests or [])
+            if not response.purge_requests or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1668,6 +1912,7 @@ class FlexibleIpCollection(_Collection[FlexibleIp]):
         *,
         zone: str | None = None,
         order_by: ListFlexibleIPsRequestOrderBy | None = None,
+        page_size: int | None = None,
         tags: list[str] | None = None,
         status: list[FlexibleIPStatus] | None = None,
         server_ids: list[str] | None = None,
@@ -1677,6 +1922,7 @@ class FlexibleIpCollection(_Collection[FlexibleIp]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             tags=tags,
             status=status,
             server_ids=server_ids,
@@ -1688,9 +1934,29 @@ class FlexibleIpCollection(_Collection[FlexibleIp]):
     async def _items(self) -> AsyncIterator[FlexibleIp]:
         async for data in self._session.api(_FlexibleipAPI).list_flexible_i_ps_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FlexibleIp._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListFlexibleIPsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FlexibleipAPI).list_flexible_i_ps(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.flexible_ips or [])
+            if not response.flexible_ips or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1770,6 +2036,7 @@ class DedicatedConnectionCollection(_Collection[DedicatedConnection]):
         *,
         region: str | None = None,
         order_by: ListDedicatedConnectionsRequestOrderBy | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         name: str | None = None,
@@ -1781,6 +2048,7 @@ class DedicatedConnectionCollection(_Collection[DedicatedConnection]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             project_id=project_id,
             organization_id=organization_id,
             name=name,
@@ -1796,9 +2064,31 @@ class DedicatedConnectionCollection(_Collection[DedicatedConnection]):
             _InterlinkAPI
         ).list_dedicated_connections_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DedicatedConnection._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDedicatedConnectionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _InterlinkAPI
+            ).list_dedicated_connections(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.connections or [])
+            if not response.connections or seen >= response.total_count:
+                return
+            number += 1
 
 
 class InterconnectRef(_Ref["Interconnect"]):
@@ -2043,6 +2333,7 @@ class InterconnectCollection(_Collection[Interconnect]):
         *,
         region: str | None = None,
         order_by: ListLinksRequestOrderBy | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         name: str | None = None,
@@ -2062,6 +2353,7 @@ class InterconnectCollection(_Collection[Interconnect]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             project_id=project_id,
             organization_id=organization_id,
             name=name,
@@ -2083,9 +2375,29 @@ class InterconnectCollection(_Collection[Interconnect]):
     async def _items(self) -> AsyncIterator[Interconnect]:
         async for data in self._session.api(_InterlinkAPI).list_links_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Interconnect._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListLinksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InterlinkAPI).list_links(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.links or [])
+            if not response.links or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2181,12 +2493,14 @@ class InterconnectPartnerCollection(_Collection[InterconnectPartner]):
         *,
         region: str | None = None,
         order_by: ListPartnersRequestOrderBy | None = None,
+        page_size: int | None = None,
         pop_ids: list[str] | None = None,
         l3_connectivity: bool | None = None,
     ) -> InterconnectPartnerCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             pop_ids=pop_ids,
             l3_connectivity=l3_connectivity,
             region=region,
@@ -2195,9 +2509,29 @@ class InterconnectPartnerCollection(_Collection[InterconnectPartner]):
     async def _items(self) -> AsyncIterator[InterconnectPartner]:
         async for data in self._session.api(_InterlinkAPI).list_partners_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield InterconnectPartner._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPartnersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InterlinkAPI).list_partners(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.partners or [])
+            if not response.partners or seen >= response.total_count:
+                return
+            number += 1
 
 
 class InterconnectPopRef(_Ref["InterconnectPop"]):
@@ -2241,6 +2575,7 @@ class InterconnectPopCollection(_Collection[InterconnectPop]):
         *,
         region: str | None = None,
         order_by: ListPopsRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         hosting_provider_name: str | None = None,
         partner_id: str | _Ref[Any] | None = None,
@@ -2251,6 +2586,7 @@ class InterconnectPopCollection(_Collection[InterconnectPop]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             hosting_provider_name=hosting_provider_name,
             partner_id=partner_id,
@@ -2263,9 +2599,29 @@ class InterconnectPopCollection(_Collection[InterconnectPop]):
     async def _items(self) -> AsyncIterator[InterconnectPop]:
         async for data in self._session.api(_InterlinkAPI).list_pops_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield InterconnectPop._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPopsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InterlinkAPI).list_pops(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.pops or [])
+            if not response.pops or seen >= response.total_count:
+                return
+            number += 1
 
 
 class InterconnectRoutingPolicyRef(_Ref["InterconnectRoutingPolicy"]):
@@ -2359,6 +2715,7 @@ class InterconnectRoutingPolicyCollection(_Collection[InterconnectRoutingPolicy]
         *,
         region: str | None = None,
         order_by: InterlinkListRoutingPoliciesRequestOrderBy | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         name: str | None = None,
@@ -2368,6 +2725,7 @@ class InterconnectRoutingPolicyCollection(_Collection[InterconnectRoutingPolicy]
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             project_id=project_id,
             organization_id=organization_id,
             name=name,
@@ -2379,9 +2737,29 @@ class InterconnectRoutingPolicyCollection(_Collection[InterconnectRoutingPolicy]
     async def _items(self) -> AsyncIterator[InterconnectRoutingPolicy]:
         async for data in self._session.api(_InterlinkAPI).list_routing_policies_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield InterconnectRoutingPolicy._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[InterlinkListRoutingPoliciesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InterlinkAPI).list_routing_policies(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.routing_policies or [])
+            if not response.routing_policies or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2567,6 +2945,7 @@ class IpCollection(_Collection[Ip]):
         *,
         region: str | None = None,
         order_by: IpamListIPsRequestOrderBy | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         vpc_id: str | _Ref[Any] | None = None,
         attached: bool | None = None,
@@ -2589,6 +2968,7 @@ class IpCollection(_Collection[Ip]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             project_id=project_id,
             vpc_id=vpc_id,
             attached=attached,
@@ -2613,9 +2993,29 @@ class IpCollection(_Collection[Ip]):
     async def _items(self) -> AsyncIterator[Ip]:
         async for data in self._session.api(_IpamAPI).list_i_ps_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Ip._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[IpamListIPsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IpamAPI).list_i_ps(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.ips or [])
+            if not response.ips or seen >= response.total_count:
+                return
+            number += 1
 
     async def book(
         self,
@@ -2724,6 +3124,7 @@ class LoadBalancerIpCollection(_Collection[LoadBalancerIp]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         ip_address: str | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -2732,6 +3133,7 @@ class LoadBalancerIpCollection(_Collection[LoadBalancerIp]):
     ) -> LoadBalancerIpCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             ip_address=ip_address,
             organization_id=organization_id,
             project_id=project_id,
@@ -2743,9 +3145,29 @@ class LoadBalancerIpCollection(_Collection[LoadBalancerIp]):
     async def _items(self) -> AsyncIterator[LoadBalancerIp]:
         async for data in self._session.api(_LbZonedAPI).list_i_ps_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LoadBalancerIp._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListIpsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_i_ps(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.ips or [])
+            if not response.ips or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3040,6 +3462,7 @@ class LoadBalancerCollection(_Collection[LoadBalancer]):
         zone: str | None = None,
         name: str | None = None,
         order_by: ListLbsRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         tags: list[str] | None = None,
@@ -3049,6 +3472,7 @@ class LoadBalancerCollection(_Collection[LoadBalancer]):
         return self._narrowed(
             name=name,
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             project_id=project_id,
             tags=tags,
@@ -3059,9 +3483,29 @@ class LoadBalancerCollection(_Collection[LoadBalancer]):
     async def _items(self) -> AsyncIterator[LoadBalancer]:
         async for data in self._session.api(_LbZonedAPI).list_lbs_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LoadBalancer._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListLbsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_lbs(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.lbs or [])
+            if not response.lbs or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3327,17 +3771,41 @@ class BackendCollection(_Collection[Backend]):
         zone: str | None = None,
         name: str | None = None,
         order_by: ListBackendsRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> BackendCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(name=name, order_by=order_by, zone=zone)
+        return self._narrowed(
+            name=name, order_by=order_by, page_size=page_size, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[Backend]:
         async for data in self._session.api(_LbZonedAPI).list_backends_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Backend._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListBackendsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_backends(
+                zone=self._criteria.get("zone"),
+                lb_id=_required(self._scope, "lb_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.backends or [])
+            if not response.backends or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3481,18 +3949,42 @@ class CertificateCollection(_Collection[Certificate]):
         *,
         zone: str | None = None,
         order_by: ListCertificatesRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
     ) -> CertificateCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, name=name, zone=zone)
+        return self._narrowed(
+            order_by=order_by, page_size=page_size, name=name, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[Certificate]:
         async for data in self._session.api(_LbZonedAPI).list_certificates_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Certificate._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListCertificatesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_certificates(
+                zone=self._criteria.get("zone"),
+                lb_id=_required(self._scope, "lb_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.certificates or [])
+            if not response.certificates or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3619,17 +4111,41 @@ class FrontendCollection(_Collection[Frontend]):
         zone: str | None = None,
         name: str | None = None,
         order_by: ListFrontendsRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> FrontendCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(name=name, order_by=order_by, zone=zone)
+        return self._narrowed(
+            name=name, order_by=order_by, page_size=page_size, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[Frontend]:
         async for data in self._session.api(_LbZonedAPI).list_frontends_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Frontend._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListFrontendsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_frontends(
+                zone=self._criteria.get("zone"),
+                lb_id=_required(self._scope, "lb_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.frontends or [])
+            if not response.frontends or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3753,18 +4269,42 @@ class AclCollection(_Collection[Acl]):
         *,
         zone: str | None = None,
         order_by: ListAclRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
     ) -> AclCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, name=name, zone=zone)
+        return self._narrowed(
+            order_by=order_by, page_size=page_size, name=name, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[Acl]:
         async for data in self._session.api(_LbZonedAPI).list_acls_iter(
             zone=self._criteria.get("zone"),
             frontend_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Acl._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListAclResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_acls(
+                zone=self._criteria.get("zone"),
+                frontend_id=_required(self._scope, "lb_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.acls or [])
+            if not response.acls or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3824,18 +4364,40 @@ class BackendStatCollection(_Collection[BackendServerStats]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
         backend_id: str | _Ref[Any] | None = None,
     ) -> BackendStatCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(backend_id=backend_id, zone=zone)
+        return self._narrowed(page_size=page_size, backend_id=backend_id, zone=zone)
 
     async def _items(self) -> AsyncIterator[BackendServerStats]:
         async for data in self._session.api(_LbZonedAPI).list_backend_stats_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListBackendStatsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_backend_stats(
+                zone=self._criteria.get("zone"),
+                lb_id=_required(self._scope, "lb_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.backend_servers_stats or [])
+            if not response.backend_servers_stats or seen >= response.total_count:
+                return
+            number += 1
 
 
 class LoadBalancerPrivateNetworkCollection(_Collection[LbPrivateNetwork]):
@@ -3846,17 +4408,39 @@ class LoadBalancerPrivateNetworkCollection(_Collection[LbPrivateNetwork]):
         *,
         zone: str | None = None,
         order_by: LbListPrivateNetworksRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> LoadBalancerPrivateNetworkCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, zone=zone)
+        return self._narrowed(order_by=order_by, page_size=page_size, zone=zone)
 
     async def _items(self) -> AsyncIterator[LbPrivateNetwork]:
         async for data in self._session.api(_LbZonedAPI).list_lb_private_networks_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListLbPrivateNetworksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_lb_private_networks(
+                zone=self._criteria.get("zone"),
+                lb_id=_required(self._scope, "lb_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.private_network or [])
+            if not response.private_network or seen >= response.total_count:
+                return
+            number += 1
 
 
 class LoadBalancerRouteRef(_Ref["LoadBalancerRoute"]):
@@ -3935,17 +4519,40 @@ class LoadBalancerRouteCollection(_Collection[LoadBalancerRoute]):
         *,
         zone: str | None = None,
         order_by: ListRoutesRequestOrderBy | None = None,
+        page_size: int | None = None,
         frontend_id: str | _Ref[Any] | None = None,
     ) -> LoadBalancerRouteCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, frontend_id=frontend_id, zone=zone)
+        return self._narrowed(
+            order_by=order_by, page_size=page_size, frontend_id=frontend_id, zone=zone
+        )
 
     async def _items(self) -> AsyncIterator[LoadBalancerRoute]:
         async for data in self._session.api(_LbZonedAPI).list_routes_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LoadBalancerRoute._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListRoutesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_routes(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.routes or [])
+            if not response.routes or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4041,6 +4648,7 @@ class LoadBalancerSubscriberCollection(_Collection[LoadBalancerSubscriber]):
         *,
         zone: str | None = None,
         order_by: ListSubscriberRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -4048,6 +4656,7 @@ class LoadBalancerSubscriberCollection(_Collection[LoadBalancerSubscriber]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             organization_id=organization_id,
             project_id=project_id,
@@ -4057,9 +4666,29 @@ class LoadBalancerSubscriberCollection(_Collection[LoadBalancerSubscriber]):
     async def _items(self) -> AsyncIterator[LoadBalancerSubscriber]:
         async for data in self._session.api(_LbZonedAPI).list_subscriber_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LoadBalancerSubscriber._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSubscriberResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_subscriber(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.subscribers or [])
+            if not response.subscribers or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4317,6 +4946,7 @@ class VpnConnectionCollection(_Collection[VpnConnection]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListConnectionsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -4331,6 +4961,7 @@ class VpnConnectionCollection(_Collection[VpnConnection]):
     ) -> VpnConnectionCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
@@ -4348,9 +4979,29 @@ class VpnConnectionCollection(_Collection[VpnConnection]):
     async def _items(self) -> AsyncIterator[VpnConnection]:
         async for data in self._session.api(_S2SVpnAPI).list_connections_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpnConnection._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListConnectionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_S2SVpnAPI).list_connections(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.connections or [])
+            if not response.connections or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4482,6 +5133,7 @@ class VpnCustomerGatewayCollection(_Collection[VpnCustomerGateway]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListCustomerGatewaysRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -4490,6 +5142,7 @@ class VpnCustomerGatewayCollection(_Collection[VpnCustomerGateway]):
     ) -> VpnCustomerGatewayCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
@@ -4501,9 +5154,29 @@ class VpnCustomerGatewayCollection(_Collection[VpnCustomerGateway]):
     async def _items(self) -> AsyncIterator[VpnCustomerGateway]:
         async for data in self._session.api(_S2SVpnAPI).list_customer_gateways_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpnCustomerGateway._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListCustomerGatewaysResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_S2SVpnAPI).list_customer_gateways(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.gateways or [])
+            if not response.gateways or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4624,6 +5297,7 @@ class VpnRoutingPolicyCollection(_Collection[VpnRoutingPolicy]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: S2SVpnListRoutingPoliciesRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -4633,6 +5307,7 @@ class VpnRoutingPolicyCollection(_Collection[VpnRoutingPolicy]):
     ) -> VpnRoutingPolicyCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
@@ -4645,9 +5320,29 @@ class VpnRoutingPolicyCollection(_Collection[VpnRoutingPolicy]):
     async def _items(self) -> AsyncIterator[VpnRoutingPolicy]:
         async for data in self._session.api(_S2SVpnAPI).list_routing_policies_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpnRoutingPolicy._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[S2SVpnListRoutingPoliciesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_S2SVpnAPI).list_routing_policies(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.routing_policies or [])
+            if not response.routing_policies or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4769,6 +5464,7 @@ class VpnGatewayCollection(_Collection[VpnGateway]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListVpnGatewaysRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -4780,6 +5476,7 @@ class VpnGatewayCollection(_Collection[VpnGateway]):
     ) -> VpnGatewayCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
@@ -4794,9 +5491,29 @@ class VpnGatewayCollection(_Collection[VpnGateway]):
     async def _items(self) -> AsyncIterator[VpnGateway]:
         async for data in self._session.api(_S2SVpnAPI).list_vpn_gateways_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpnGateway._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListVpnGatewaysResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_S2SVpnAPI).list_vpn_gateways(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.gateways or [])
+            if not response.gateways or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -4922,6 +5639,7 @@ class IngressRuleCollection(_Collection[IngressRule]):
         *,
         region: str | None = None,
         order_by: ListIngressRulesRequestOrderBy | None = None,
+        page_size: int | None = None,
         vpc_id: str | _Ref[Any] | None = None,
         nexthop_resource_ip: str | None = None,
         nexthop_private_network_id: str | _Ref[Any] | None = None,
@@ -4933,6 +5651,7 @@ class IngressRuleCollection(_Collection[IngressRule]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             vpc_id=vpc_id,
             nexthop_resource_ip=nexthop_resource_ip,
             nexthop_private_network_id=nexthop_private_network_id,
@@ -4946,9 +5665,29 @@ class IngressRuleCollection(_Collection[IngressRule]):
     async def _items(self) -> AsyncIterator[IngressRule]:
         async for data in self._session.api(_VpcAPI).list_ingress_rules_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield IngressRule._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListIngressRulesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcAPI).list_ingress_rules(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.rules or [])
+            if not response.rules or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -5219,6 +5958,7 @@ class PrivateNetworkCollection(_Collection[PrivateNetwork]):
         *,
         region: str | None = None,
         order_by: VpcListPrivateNetworksRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         tags: list[str] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -5231,6 +5971,7 @@ class PrivateNetworkCollection(_Collection[PrivateNetwork]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             tags=tags,
             organization_id=organization_id,
@@ -5245,9 +5986,29 @@ class PrivateNetworkCollection(_Collection[PrivateNetwork]):
     async def _items(self) -> AsyncIterator[PrivateNetwork]:
         async for data in self._session.api(_VpcAPI).list_private_networks_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PrivateNetwork._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPrivateNetworksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcAPI).list_private_networks(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.private_networks or [])
+            if not response.private_networks or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -5487,6 +6248,7 @@ class VpcConnectorCollection(_Collection[VpcConnector]):
         *,
         region: str | None = None,
         order_by: ListVPCConnectorsRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         tags: list[str] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -5498,6 +6260,7 @@ class VpcConnectorCollection(_Collection[VpcConnector]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             tags=tags,
             organization_id=organization_id,
@@ -5511,9 +6274,29 @@ class VpcConnectorCollection(_Collection[VpcConnector]):
     async def _items(self) -> AsyncIterator[VpcConnector]:
         async for data in self._session.api(_VpcAPI).list_vpc_connectors_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpcConnector._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListVPCConnectorsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcAPI).list_vpc_connectors(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.vpc_connectors or [])
+            if not response.vpc_connectors or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -5552,17 +6335,39 @@ class SubnetOverlapCollection(_Collection[ListSubnetOverlapsResponseSubnetOverla
         *,
         region: str | None = None,
         order_by: ListSubnetOverlapsRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> SubnetOverlapCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(order_by=order_by, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[ListSubnetOverlapsResponseSubnetOverlap]:
         async for data in self._session.api(_VpcAPI).list_subnet_overlaps_iter(
             region=self._criteria.get("region"),
             vpc_connector_id=_required(self._scope, "vpc_connector_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListSubnetOverlapsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcAPI).list_subnet_overlaps(
+                region=self._criteria.get("region"),
+                vpc_connector_id=_required(self._scope, "vpc_connector_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.subnet_overlaps or [])
+            if not response.subnet_overlaps or seen >= response.total_count:
+                return
+            number += 1
 
 
 class VpcRef(_Ref["Vpc"]):
@@ -5691,6 +6496,7 @@ class VpcCollection(_Collection[Vpc]):
         *,
         region: str | None = None,
         order_by: ListVPCsRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         tags: list[str] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -5702,6 +6508,7 @@ class VpcCollection(_Collection[Vpc]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             tags=tags,
             organization_id=organization_id,
@@ -5715,9 +6522,29 @@ class VpcCollection(_Collection[Vpc]):
     async def _items(self) -> AsyncIterator[Vpc]:
         async for data in self._session.api(_VpcAPI).list_vp_cs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Vpc._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListVPCsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcAPI).list_vp_cs(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.vpcs or [])
+            if not response.vpcs or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -5797,6 +6624,7 @@ class PrivateNetworksWithNicCollection(_Collection[PrivateNetworksWithNic]):
         *,
         region: str | None = None,
         order_by: ListPrivateNetworksWithNicsRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: VpcStringValue | None = None,
         tags: list[str] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -5807,6 +6635,7 @@ class PrivateNetworksWithNicCollection(_Collection[PrivateNetworksWithNic]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             tags=tags,
             organization_id=organization_id,
@@ -5821,9 +6650,31 @@ class PrivateNetworksWithNicCollection(_Collection[PrivateNetworksWithNic]):
             _VpcPrivateNetworkWithNicsAPI
         ).list_private_networks_with_nics_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PrivateNetworksWithNic._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPrivateNetworksWithNicsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _VpcPrivateNetworkWithNicsAPI
+            ).list_private_networks_with_nics(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.private_networks or [])
+            if not response.private_networks or seen >= response.total_count:
+                return
+            number += 1
 
 
 class GatewayNetworkRef(_Ref["GatewayNetwork"]):
@@ -5915,6 +6766,7 @@ class GatewayNetworkCollection(_Collection[GatewayNetwork]):
         *,
         zone: str | None = None,
         order_by: ListGatewayNetworksRequestOrderBy | None = None,
+        page_size: int | None = None,
         status: list[GatewayNetworkStatus] | None = None,
         gateway_ids: list[str] | None = None,
         private_network_ids: list[str] | None = None,
@@ -5923,6 +6775,7 @@ class GatewayNetworkCollection(_Collection[GatewayNetwork]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             status=status,
             gateway_ids=gateway_ids,
             private_network_ids=private_network_ids,
@@ -5933,9 +6786,29 @@ class GatewayNetworkCollection(_Collection[GatewayNetwork]):
     async def _items(self) -> AsyncIterator[GatewayNetwork]:
         async for data in self._session.api(_VpcgwAPI).list_gateway_networks_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield GatewayNetwork._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListGatewayNetworksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcgwAPI).list_gateway_networks(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.gateway_networks or [])
+            if not response.gateway_networks or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -6106,6 +6979,7 @@ class GatewayCollection(_Collection[Gateway]):
         *,
         zone: str | None = None,
         order_by: ListGatewaysRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         name: str | None = None,
@@ -6118,6 +6992,7 @@ class GatewayCollection(_Collection[Gateway]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             project_id=project_id,
             name=name,
@@ -6132,9 +7007,29 @@ class GatewayCollection(_Collection[Gateway]):
     async def _items(self) -> AsyncIterator[Gateway]:
         async for data in self._session.api(_VpcgwAPI).list_gateways_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Gateway._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListGatewaysResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcgwAPI).list_gateways(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.gateways or [])
+            if not response.gateways or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -6314,6 +7209,7 @@ class GatewayIpCollection(_Collection[GatewayIp]):
         *,
         zone: str | None = None,
         order_by: VpcgwListIPsRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         tags: list[str] | None = None,
@@ -6323,6 +7219,7 @@ class GatewayIpCollection(_Collection[GatewayIp]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             project_id=project_id,
             tags=tags,
@@ -6334,9 +7231,29 @@ class GatewayIpCollection(_Collection[GatewayIp]):
     async def _items(self) -> AsyncIterator[GatewayIp]:
         async for data in self._session.api(_VpcgwAPI).list_i_ps_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield GatewayIp._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[VpcgwListIPsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcgwAPI).list_i_ps(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.ips or [])
+            if not response.ips or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -6442,6 +7359,7 @@ class PatRuleCollection(_Collection[PatRule]):
         *,
         zone: str | None = None,
         order_by: ListPatRulesRequestOrderBy | None = None,
+        page_size: int | None = None,
         gateway_ids: list[str] | None = None,
         private_ips: list[str] | None = None,
         protocol: PatRuleProtocol | None = None,
@@ -6449,6 +7367,7 @@ class PatRuleCollection(_Collection[PatRule]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             gateway_ids=gateway_ids,
             private_ips=private_ips,
             protocol=protocol,
@@ -6458,9 +7377,29 @@ class PatRuleCollection(_Collection[PatRule]):
     async def _items(self) -> AsyncIterator[PatRule]:
         async for data in self._session.api(_VpcgwAPI).list_pat_rules_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PatRule._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPatRulesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcgwAPI).list_pat_rules(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.pat_rules or [])
+            if not response.pat_rules or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -6518,7 +7457,7 @@ class EdgeNodeCollection(_Collection[Node]):
 
     async def _items(self) -> AsyncIterator[Node]:
         response = await self._session.api(_EdgeServicesAPI).list_nodes(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.nodes or []:
             yield data
@@ -6529,7 +7468,7 @@ class EdgePlanCollection(_Collection[PlanDetails]):
 
     async def _items(self) -> AsyncIterator[PlanDetails]:
         response = await self._session.api(_EdgeServicesAPI).list_plans(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.plans or []:
             yield data
@@ -6542,16 +7481,37 @@ class LoadBalancerTypeCollection(_Collection[LbType]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
     ) -> LoadBalancerTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(zone=zone)
+        return self._narrowed(page_size=page_size, zone=zone)
 
     async def _items(self) -> AsyncIterator[LbType]:
         async for data in self._session.api(_LbZonedAPI).list_lb_types_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListLbTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_LbZonedAPI).list_lb_types(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.lb_types or [])
+            if not response.lb_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class VpnGatewayTypeCollection(_Collection[S2SVpnGatewayType]):
@@ -6561,16 +7521,37 @@ class VpnGatewayTypeCollection(_Collection[S2SVpnGatewayType]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
     ) -> VpnGatewayTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(region=region)
+        return self._narrowed(page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[S2SVpnGatewayType]:
         async for data in self._session.api(_S2SVpnAPI).list_vpn_gateway_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListVpnGatewayTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_S2SVpnAPI).list_vpn_gateway_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.gateway_types or [])
+            if not response.gateway_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class SubnetCollection(_Collection[VpcSubnet]):
@@ -6581,6 +7562,7 @@ class SubnetCollection(_Collection[VpcSubnet]):
         *,
         region: str | None = None,
         order_by: ListSubnetsRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         subnet_ids: list[str] | None = None,
@@ -6589,6 +7571,7 @@ class SubnetCollection(_Collection[VpcSubnet]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             project_id=project_id,
             subnet_ids=subnet_ids,
@@ -6599,9 +7582,29 @@ class SubnetCollection(_Collection[VpcSubnet]):
     async def _items(self) -> AsyncIterator[VpcSubnet]:
         async for data in self._session.api(_VpcAPI).list_subnets_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListSubnetsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_VpcAPI).list_subnets(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.subnets or [])
+            if not response.subnets or seen >= response.total_count:
+                return
+            number += 1
 
 
 class RoutesWithNexthopCollection(_Collection[RouteWithNexthop]):
@@ -6612,6 +7615,7 @@ class RoutesWithNexthopCollection(_Collection[RouteWithNexthop]):
         *,
         region: str | None = None,
         order_by: ListRoutesWithNexthopRequestOrderBy | None = None,
+        page_size: int | None = None,
         vpc_id: str | _Ref[Any] | None = None,
         nexthop_resource_id: str | _Ref[Any] | None = None,
         nexthop_private_network_id: str | _Ref[Any] | None = None,
@@ -6624,6 +7628,7 @@ class RoutesWithNexthopCollection(_Collection[RouteWithNexthop]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             vpc_id=vpc_id,
             nexthop_resource_id=nexthop_resource_id,
             nexthop_private_network_id=nexthop_private_network_id,
@@ -6640,9 +7645,31 @@ class RoutesWithNexthopCollection(_Collection[RouteWithNexthop]):
             _VpcRoutesWithNexthopAPI
         ).list_routes_with_nexthop_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListRoutesWithNexthopResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _VpcRoutesWithNexthopAPI
+            ).list_routes_with_nexthop(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.routes or [])
+            if not response.routes or seen >= response.total_count:
+                return
+            number += 1
 
 
 class GatewayTypeCollection(_Collection[VpcgwGatewayType]):
@@ -6659,7 +7686,7 @@ class GatewayTypeCollection(_Collection[VpcgwGatewayType]):
     async def _items(self) -> AsyncIterator[VpcgwGatewayType]:
         response = await self._session.api(_VpcgwAPI).list_gateway_types(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.types or []:
             yield data

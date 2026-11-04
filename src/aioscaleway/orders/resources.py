@@ -12,6 +12,7 @@ from aioscaleway._operations.product_catalog.v2alpha1.api import (
 from aioscaleway.orders.types import (
     ListPublicCatalogProductsRequestProductType,
     ListPublicCatalogProductsRequestStatus,
+    ListPublicCatalogProductsResponse,
     ProductCatalogPublicCatalogProduct,
 )
 
@@ -22,6 +23,7 @@ class PublicCatalogProductCollection(_Collection[ProductCatalogPublicCatalogProd
     def filter(
         self,
         *,
+        page_size: int | None = None,
         product_types: list[ListPublicCatalogProductsRequestProductType] | None = None,
         status: list[ListPublicCatalogProductsRequestStatus] | None = None,
         api_ids: list[str] | None = None,
@@ -32,6 +34,7 @@ class PublicCatalogProductCollection(_Collection[ProductCatalogPublicCatalogProd
     ) -> PublicCatalogProductCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             product_types=product_types,
             status=status,
             api_ids=api_ids,
@@ -45,9 +48,30 @@ class PublicCatalogProductCollection(_Collection[ProductCatalogPublicCatalogProd
         async for data in self._session.api(
             _ProductCatalogPublicCatalogAPI
         ).list_public_catalog_products_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListPublicCatalogProductsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _ProductCatalogPublicCatalogAPI
+            ).list_public_catalog_products(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.products or [])
+            if not response.products or seen >= response.total_count:
+                return
+            number += 1
 
 
 class OrdersNamespace(_Namespace):

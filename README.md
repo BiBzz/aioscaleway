@@ -86,6 +86,10 @@ Use it as an async context manager, or call `await scw.aclose()`.
 | `await scw.compute.servers(server_id).reboot()` | the action's result | one |
 | `await scw.compute.servers.create(name=..., commercial_type=...)` | the created object | one |
 
+`pages()` yields each page response instead, for the totals and sums an item
+does not carry (`page.total_discount_untaxed_value` of the billing
+consumptions).
+
 A loaded object is also a reference: anything that takes a reference takes an
 object. It cannot load itself when printed or read, because those are
 synchronous; mypy flags a field read on a bare reference. `repr()` tells which

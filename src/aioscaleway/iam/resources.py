@@ -114,20 +114,36 @@ from aioscaleway.iam.types import (
     ListAlgorithmsRequestUsage,
     ListAlgorithmsResponseAlgorithm,
     ListAPIKeysRequestOrderBy,
+    ListAPIKeysResponse,
     ListApplicationsRequestOrderBy,
+    ListApplicationsResponse,
     ListGroupsRequestOrderBy,
+    ListGroupsResponse,
     ListJWTsRequestOrderBy,
+    ListJWTsResponse,
     ListKeyRotationsRequestOrderBy,
+    ListKeyRotationsResponse,
     ListKeysRequestOrderBy,
     ListKeysRequestUsage,
+    ListKeysResponse,
     ListLogsRequestOrderBy,
+    ListLogsResponse,
     ListPermissionSetsRequestOrderBy,
+    ListPermissionSetsResponse,
     ListPoliciesRequestOrderBy,
+    ListPoliciesResponse,
     ListQuotaRequestOrderBy,
+    ListQuotaResponse,
+    ListRulesResponse,
     ListScimTokensRequestOrderBy,
+    ListScimTokensResponse,
     ListSecretsRequestOrderBy,
+    ListSecretsResponse,
+    ListSecretVersionsResponse,
     ListSSHKeysRequestOrderBy,
+    ListSSHKeysResponse,
     ListUsersRequestOrderBy,
+    ListUsersResponse,
     LogAction,
     LogResourceType,
     OAuth2IdentityProvider,
@@ -227,6 +243,7 @@ class ApiKeyCollection(_Collection[ApiKey]):
         self,
         *,
         order_by: ListAPIKeysRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         editable: bool | None = None,
         expired: bool | None = None,
@@ -241,6 +258,7 @@ class ApiKeyCollection(_Collection[ApiKey]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             editable=editable,
             expired=expired,
@@ -255,9 +273,28 @@ class ApiKeyCollection(_Collection[ApiKey]):
 
     async def _items(self) -> AsyncIterator[ApiKey]:
         async for data in self._session.api(_IamAPI).list_api_keys_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield ApiKey._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListAPIKeysResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_api_keys(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.api_keys or [])
+            if not response.api_keys or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -374,6 +411,7 @@ class ApplicationCollection(_Collection[Application]):
         self,
         *,
         order_by: ListApplicationsRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         organization_id: str | _Ref[Any] | None = None,
         editable: bool | None = None,
@@ -383,6 +421,7 @@ class ApplicationCollection(_Collection[Application]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             organization_id=organization_id,
             editable=editable,
@@ -392,9 +431,28 @@ class ApplicationCollection(_Collection[Application]):
 
     async def _items(self) -> AsyncIterator[Application]:
         async for data in self._session.api(_IamAPI).list_applications_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Application._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListApplicationsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_applications(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.applications or [])
+            if not response.applications or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -607,6 +665,7 @@ class GroupCollection(_Collection[Group]):
         self,
         *,
         order_by: ListGroupsRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         name: str | None = None,
         application_ids: list[str] | None = None,
@@ -617,6 +676,7 @@ class GroupCollection(_Collection[Group]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             name=name,
             application_ids=application_ids,
@@ -627,9 +687,28 @@ class GroupCollection(_Collection[Group]):
 
     async def _items(self) -> AsyncIterator[Group]:
         async for data in self._session.api(_IamAPI).list_groups_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Group._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListGroupsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_groups(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.groups or [])
+            if not response.groups or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -718,18 +797,41 @@ class JwtCollection(_Collection[Jwt]):
         *,
         order_by: ListJWTsRequestOrderBy | None = None,
         audience_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         expired: bool | None = None,
     ) -> JwtCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            order_by=order_by, audience_id=audience_id, expired=expired
+            order_by=order_by,
+            audience_id=audience_id,
+            page_size=page_size,
+            expired=expired,
         )
 
     async def _items(self) -> AsyncIterator[Jwt]:
         async for data in self._session.api(_IamAPI).list_jw_ts_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Jwt._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListJWTsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_jw_ts(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.jwts or [])
+            if not response.jwts or seen >= response.total_count:
+                return
+            number += 1
 
 
 class LogRef(_Ref["Log"]):
@@ -769,6 +871,7 @@ class LogCollection(_Collection[Log]):
         *,
         order_by: ListLogsRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         created_after: Instant | None = None,
         created_before: Instant | None = None,
         action: LogAction | None = None,
@@ -779,6 +882,7 @@ class LogCollection(_Collection[Log]):
         return self._narrowed(
             order_by=order_by,
             organization_id=organization_id,
+            page_size=page_size,
             created_after=created_after,
             created_before=created_before,
             action=action,
@@ -788,9 +892,28 @@ class LogCollection(_Collection[Log]):
 
     async def _items(self) -> AsyncIterator[Log]:
         async for data in self._session.api(_IamAPI).list_logs_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Log._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListLogsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_logs(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.logs or [])
+            if not response.logs or seen >= response.total_count:
+                return
+            number += 1
 
 
 class OrganizationRef(_Ref["Organization"]):
@@ -1065,6 +1188,7 @@ class PolicyCollection(_Collection[Policy]):
         self,
         *,
         order_by: ListPoliciesRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         editable: bool | None = None,
         user_ids: list[str] | None = None,
@@ -1078,6 +1202,7 @@ class PolicyCollection(_Collection[Policy]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             editable=editable,
             user_ids=user_ids,
@@ -1091,9 +1216,28 @@ class PolicyCollection(_Collection[Policy]):
 
     async def _items(self) -> AsyncIterator[Policy]:
         async for data in self._session.api(_IamAPI).list_policies_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Policy._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPoliciesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_policies(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.policies or [])
+            if not response.policies or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1187,20 +1331,41 @@ class QuotaCollection(_Collection[Quota]):
         *,
         organization_id: str | _Ref[Any],
         order_by: ListQuotaRequestOrderBy | None = None,
+        page_size: int | None = None,
         quotum_names: list[str] | None = None,
     ) -> QuotaCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             quotum_names=quotum_names,
         )
 
     async def _items(self) -> AsyncIterator[Quota]:
         async for data in self._session.api(_IamAPI).list_quota_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Quota._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListQuotaResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_quota(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.quota or [])
+            if not response.quota or seen >= response.total_count:
+                return
+            number += 1
 
 
 class SamlCertificateRef(_Ref["SamlCertificate"]):
@@ -1313,7 +1478,7 @@ class CertificateCollection(_Collection[_IamSamlCertificate]):
     async def _items(self) -> AsyncIterator[_IamSamlCertificate]:
         response = await self._session.api(_IamAPI).list_saml_certificates(
             saml_id=_required(self._scope, "saml_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.certificates or []:
             yield data
@@ -1401,16 +1566,37 @@ class TokenCollection(_Collection[_IamScimToken]):
         self,
         *,
         order_by: ListScimTokensRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> TokenCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by)
+        return self._narrowed(order_by=order_by, page_size=page_size)
 
     async def _items(self) -> AsyncIterator[_IamScimToken]:
         async for data in self._session.api(_IamAPI).list_scim_tokens_iter(
             scim_id=_required(self._scope, "scim_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListScimTokensResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_scim_tokens(
+                scim_id=_required(self._scope, "scim_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.scim_tokens or [])
+            if not response.scim_tokens or seen >= response.total_count:
+                return
+            number += 1
 
 
 class SshKeyRef(_Ref["SshKey"]):
@@ -1488,6 +1674,7 @@ class SshKeyCollection(_Collection[SshKey]):
         self,
         *,
         order_by: ListSSHKeysRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         name: str | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -1496,6 +1683,7 @@ class SshKeyCollection(_Collection[SshKey]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             name=name,
             project_id=project_id,
@@ -1504,9 +1692,28 @@ class SshKeyCollection(_Collection[SshKey]):
 
     async def _items(self) -> AsyncIterator[SshKey]:
         async for data in self._session.api(_IamAPI).list_ssh_keys_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield SshKey._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSSHKeysResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_ssh_keys(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.ssh_keys or [])
+            if not response.ssh_keys or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1772,6 +1979,7 @@ class UserCollection(_Collection[User]):
         self,
         *,
         order_by: ListUsersRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         user_ids: list[str] | None = None,
         mfa: bool | None = None,
@@ -1781,6 +1989,7 @@ class UserCollection(_Collection[User]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             user_ids=user_ids,
             mfa=mfa,
@@ -1790,9 +1999,28 @@ class UserCollection(_Collection[User]):
 
     async def _items(self) -> AsyncIterator[User]:
         async for data in self._session.api(_IamAPI).list_users_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield User._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_users(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.users or [])
+            if not response.users or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2362,6 +2590,7 @@ class EncryptionKeyCollection(_Collection[EncryptionKey]):
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         order_by: ListKeysRequestOrderBy | None = None,
+        page_size: int | None = None,
         tags: list[str] | None = None,
         name: str | None = None,
         usage: ListKeysRequestUsage | None = None,
@@ -2372,6 +2601,7 @@ class EncryptionKeyCollection(_Collection[EncryptionKey]):
             organization_id=organization_id,
             project_id=project_id,
             order_by=order_by,
+            page_size=page_size,
             tags=tags,
             name=name,
             usage=usage,
@@ -2383,9 +2613,29 @@ class EncryptionKeyCollection(_Collection[EncryptionKey]):
     async def _items(self) -> AsyncIterator[EncryptionKey]:
         async for data in self._session.api(_KeyManagerAPI).list_keys_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield EncryptionKey._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListKeysResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_KeyManagerAPI).list_keys(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.keys or [])
+            if not response.keys or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2437,18 +2687,42 @@ class RotationCollection(_Collection[KeyRotation]):
         *,
         region: str | None = None,
         order_by: ListKeyRotationsRequestOrderBy | None = None,
+        page_size: int | None = None,
         status: list[KeyRotationStatus] | None = None,
     ) -> RotationCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, status=status, region=region)
+        return self._narrowed(
+            order_by=order_by, page_size=page_size, status=status, region=region
+        )
 
     async def _items(self) -> AsyncIterator[KeyRotation]:
         async for data in self._session.api(_KeyManagerAPI).list_key_rotations_iter(
             region=self._criteria.get("region"),
             key_id=_required(self._scope, "key_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListKeyRotationsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_KeyManagerAPI).list_key_rotations(
+                region=self._criteria.get("region"),
+                key_id=_required(self._scope, "key_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.rotations or [])
+            if not response.rotations or seen >= response.total_count:
+                return
+            number += 1
 
 
 class SecretVersionsByPathRef(_Ref[None]):
@@ -2661,6 +2935,7 @@ class SecretCollection(_Collection[Secret]):
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         order_by: ListSecretsRequestOrderBy | None = None,
+        page_size: int | None = None,
         tags: list[str] | None = None,
         name: str | None = None,
         path: str | None = None,
@@ -2672,6 +2947,7 @@ class SecretCollection(_Collection[Secret]):
             organization_id=organization_id,
             project_id=project_id,
             order_by=order_by,
+            page_size=page_size,
             tags=tags,
             name=name,
             path=path,
@@ -2684,9 +2960,29 @@ class SecretCollection(_Collection[Secret]):
     async def _items(self) -> AsyncIterator[Secret]:
         async for data in self._session.api(_SecretAPI).list_secrets_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Secret._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSecretsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_SecretAPI).list_secrets(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.secrets or [])
+            if not response.secrets or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2890,18 +3186,40 @@ class VersionCollection(_Collection[Version]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         status: list[SecretVersionStatus] | None = None,
     ) -> VersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(status=status, region=region)
+        return self._narrowed(page_size=page_size, status=status, region=region)
 
     async def _items(self) -> AsyncIterator[Version]:
         async for data in self._session.api(_SecretAPI).list_secret_versions_iter(
             region=self._criteria.get("region"),
             secret_id=_required(self._scope, "secret_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Version._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSecretVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_SecretAPI).list_secret_versions(
+                region=self._criteria.get("region"),
+                secret_id=_required(self._scope, "secret_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2947,7 +3265,7 @@ class GracePeriodCollection(_Collection[IamGracePeriod]):
 
     async def _items(self) -> AsyncIterator[IamGracePeriod]:
         response = await self._session.api(_IamAPI).list_grace_periods(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.grace_periods or []:
             yield data
@@ -2961,15 +3279,37 @@ class PermissionSetCollection(_Collection[IamPermissionSet]):
         *,
         organization_id: str | _Ref[Any],
         order_by: ListPermissionSetsRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> PermissionSetCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, organization_id=organization_id)
+        return self._narrowed(
+            order_by=order_by, page_size=page_size, organization_id=organization_id
+        )
 
     async def _items(self) -> AsyncIterator[IamPermissionSet]:
         async for data in self._session.api(_IamAPI).list_permission_sets_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListPermissionSetsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_permission_sets(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.permission_sets or [])
+            if not response.permission_sets or seen >= response.total_count:
+                return
+            number += 1
 
 
 class RuleCollection(_Collection[IamRule]):
@@ -2979,15 +3319,35 @@ class RuleCollection(_Collection[IamRule]):
         self,
         *,
         policy_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
     ) -> RuleCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(policy_id=policy_id)
+        return self._narrowed(policy_id=policy_id, page_size=page_size)
 
     async def _items(self) -> AsyncIterator[IamRule]:
         async for data in self._session.api(_IamAPI).list_rules_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListRulesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IamAPI).list_rules(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.rules or [])
+            if not response.rules or seen >= response.total_count:
+                return
+            number += 1
 
 
 class AlgorithmCollection(_Collection[ListAlgorithmsResponseAlgorithm]):
@@ -3005,7 +3365,7 @@ class AlgorithmCollection(_Collection[ListAlgorithmsResponseAlgorithm]):
     async def _items(self) -> AsyncIterator[ListAlgorithmsResponseAlgorithm]:
         response = await self._session.api(_KeyManagerAPI).list_algorithms(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.algorithms or []:
             yield data

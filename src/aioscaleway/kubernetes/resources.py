@@ -64,12 +64,20 @@ from aioscaleway.kubernetes.types import (
     GetClusterKubeConfigRequestEndpoint,
     ImageVisibility,
     K8SClusterType,
+    ListClusterACLRulesResponse,
     ListClustersRequestOrderBy,
+    ListClustersResponse,
+    ListClusterTypesResponse,
     ListImagesRequestOrderBy,
+    ListImagesResponse,
     ListNamespacesRequestOrderBy,
+    ListNamespacesResponse,
     ListNodesRequestOrderBy,
+    ListNodesResponse,
     ListPoolsRequestOrderBy,
+    ListPoolsResponse,
     ListTagsRequestOrderBy,
+    ListTagsResponse,
     NodeStatus,
     PoolStatus,
     PoolVolumeType,
@@ -289,6 +297,7 @@ class ClusterCollection(_Collection[Cluster]):
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         order_by: ListClustersRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         status: ClusterStatus | None = None,
         type_: str | None = None,
@@ -300,6 +309,7 @@ class ClusterCollection(_Collection[Cluster]):
             organization_id=organization_id,
             project_id=project_id,
             order_by=order_by,
+            page_size=page_size,
             name=name,
             status=status,
             type_=type_,
@@ -311,9 +321,29 @@ class ClusterCollection(_Collection[Cluster]):
     async def _items(self) -> AsyncIterator[Cluster]:
         async for data in self._session.api(_K8SAPI).list_clusters_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Cluster._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListClustersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_K8SAPI).list_clusters(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.clusters or [])
+            if not response.clusters or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -413,17 +443,39 @@ class AclCollection(_Collection[Acl]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
     ) -> AclCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(region=region)
+        return self._narrowed(page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[Acl]:
         async for data in self._session.api(_K8SAPI).list_cluster_acl_rules_iter(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Acl._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListClusterACLRulesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_K8SAPI).list_cluster_acl_rules(
+                region=self._criteria.get("region"),
+                cluster_id=_required(self._scope, "cluster_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.rules or [])
+            if not response.rules or seen >= response.total_count:
+                return
+            number += 1
 
     async def add_cluster_rules(
         self,
@@ -563,21 +615,48 @@ class NodeCollection(_Collection[Node]):
         region: str | None = None,
         pool_id: str | _Ref[Any] | None = None,
         order_by: ListNodesRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         status: NodeStatus | None = None,
     ) -> NodeCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            pool_id=pool_id, order_by=order_by, name=name, status=status, region=region
+            pool_id=pool_id,
+            order_by=order_by,
+            page_size=page_size,
+            name=name,
+            status=status,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[Node]:
         async for data in self._session.api(_K8SAPI).list_nodes_iter(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Node._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListNodesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_K8SAPI).list_nodes(
+                region=self._criteria.get("region"),
+                cluster_id=_required(self._scope, "cluster_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.nodes or [])
+            if not response.nodes or seen >= response.total_count:
+                return
+            number += 1
 
 
 class PoolRef(_Ref["Pool"]):
@@ -767,21 +846,47 @@ class PoolCollection(_Collection[Pool]):
         *,
         region: str | None = None,
         order_by: ListPoolsRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         status: PoolStatus | None = None,
     ) -> PoolCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            order_by=order_by, name=name, status=status, region=region
+            order_by=order_by,
+            page_size=page_size,
+            name=name,
+            status=status,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[Pool]:
         async for data in self._session.api(_K8SAPI).list_pools_iter(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Pool._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPoolsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_K8SAPI).list_pools(
+                region=self._criteria.get("region"),
+                cluster_id=_required(self._scope, "cluster_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.pools or [])
+            if not response.pools or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -914,7 +1019,7 @@ class UserDataCollection(_Collection[UserDataSummary]):
         response = await self._session.api(_K8SAPI).list_user_data(
             region=self._criteria.get("region"),
             pool_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.user_data or []:
             yield UserDataSummary._from(self._session, self._scope, data)
@@ -935,7 +1040,7 @@ class AvailableTypeCollection(_Collection[K8SClusterType]):
         response = await self._session.api(_K8SAPI).list_cluster_available_types(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.cluster_types or []:
             yield data
@@ -956,7 +1061,7 @@ class AvailableVersionCollection(_Collection[_K8SVersion]):
         response = await self._session.api(_K8SAPI).list_cluster_available_versions(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.versions or []:
             yield data
@@ -1010,7 +1115,7 @@ class VersionCollection(_Collection[Version]):
     async def _items(self) -> AsyncIterator[Version]:
         response = await self._session.api(_K8SAPI).list_versions(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.versions or []:
             yield Version._from(self._session, self._scope, data)
@@ -1100,6 +1205,7 @@ class RegistryImageCollection(_Collection[RegistryImage]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListImagesRequestOrderBy | None = None,
         namespace_id: str | _Ref[Any] | None = None,
         name: str | None = None,
@@ -1108,6 +1214,7 @@ class RegistryImageCollection(_Collection[RegistryImage]):
     ) -> RegistryImageCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             namespace_id=namespace_id,
             name=name,
@@ -1119,9 +1226,29 @@ class RegistryImageCollection(_Collection[RegistryImage]):
     async def _items(self) -> AsyncIterator[RegistryImage]:
         async for data in self._session.api(_RegistryAPI).list_images_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield RegistryImage._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListImagesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RegistryAPI).list_images(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.images or [])
+            if not response.images or seen >= response.total_count:
+                return
+            number += 1
 
 
 class TagRef(_Ref["Tag"]):
@@ -1183,19 +1310,43 @@ class TagCollection(_Collection[Tag]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListTagsRequestOrderBy | None = None,
         name: str | None = None,
     ) -> TagCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, name=name, region=region)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, name=name, region=region
+        )
 
     async def _items(self) -> AsyncIterator[Tag]:
         async for data in self._session.api(_RegistryAPI).list_tags_iter(
             region=self._criteria.get("region"),
             image_id=_required(self._scope, "image_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Tag._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListTagsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RegistryAPI).list_tags(
+                region=self._criteria.get("region"),
+                image_id=_required(self._scope, "image_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.tags or [])
+            if not response.tags or seen >= response.total_count:
+                return
+            number += 1
 
 
 class RegistryRef(_Ref["Registry"]):
@@ -1280,6 +1431,7 @@ class RegistryCollection(_Collection[Registry]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListNamespacesRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
@@ -1287,6 +1439,7 @@ class RegistryCollection(_Collection[Registry]):
     ) -> RegistryCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             organization_id=organization_id,
             project_id=project_id,
@@ -1297,9 +1450,29 @@ class RegistryCollection(_Collection[Registry]):
     async def _items(self) -> AsyncIterator[Registry]:
         async for data in self._session.api(_RegistryAPI).list_namespaces_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Registry._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListNamespacesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RegistryAPI).list_namespaces(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.namespaces or [])
+            if not response.namespaces or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1339,16 +1512,37 @@ class ClusterTypeCollection(_Collection[K8SClusterType]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
     ) -> ClusterTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(region=region)
+        return self._narrowed(page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[K8SClusterType]:
         async for data in self._session.api(_K8SAPI).list_cluster_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListClusterTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_K8SAPI).list_cluster_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.cluster_types or [])
+            if not response.cluster_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class KubernetesNamespace(_Namespace):

@@ -79,13 +79,24 @@ from aioscaleway.domains.types import (
     LanguageCode,
     ListContactsRequestOrderBy,
     ListContactsRequestRole,
+    ListContactsResponse,
     ListDNSZoneRecordsRequestOrderBy,
+    ListDNSZoneRecordsResponse,
     ListDNSZonesRequestOrderBy,
+    ListDNSZonesResponse,
     ListDNSZoneVersionRecordsResponse,
+    ListDNSZoneVersionsResponse,
+    ListDomainHostsResponse,
     ListDomainsRequestOrderBy,
+    ListDomainsResponse,
+    ListInboundTransfersResponse,
     ListRenewableDomainsRequestOrderBy,
+    ListRenewableDomainsResponse,
+    ListSSLCertificatesResponse,
     ListTasksRequestOrderBy,
+    ListTasksResponse,
     ListTldsRequestOrderBy,
+    ListTldsResponse,
     NewContact,
     OrderResponse,
     RawFormat,
@@ -321,6 +332,7 @@ class DnsZoneCollection(_Collection[DnsZone]):
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         order_by: ListDNSZonesRequestOrderBy | None = None,
+        page_size: int | None = None,
         dns_zones: list[str] | None = None,
         created_after: Instant | None = None,
         created_before: Instant | None = None,
@@ -332,6 +344,7 @@ class DnsZoneCollection(_Collection[DnsZone]):
             organization_id=organization_id,
             project_id=project_id,
             order_by=order_by,
+            page_size=page_size,
             domain=domain,
             dns_zone=dns_zone,
             dns_zones=dns_zones,
@@ -343,9 +356,28 @@ class DnsZoneCollection(_Collection[DnsZone]):
 
     async def _items(self) -> AsyncIterator[DnsZone]:
         async for data in self._session.api(_DomainAPI).list_dns_zones_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield DnsZone._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDNSZonesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainAPI).list_dns_zones(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.dns_zones or [])
+            if not response.dns_zones or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -385,7 +417,7 @@ class NameserverCollection(_Collection[DomainNameserver]):
     async def _items(self) -> AsyncIterator[DomainNameserver]:
         response = await self._session.api(_DomainAPI).list_dns_zone_nameservers(
             dns_zone=_required(self._scope, "dns_zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.ns or []:
             yield data
@@ -400,31 +432,85 @@ class RecordCollection(_Collection[DomainRecord]):
         name: str,
         project_id: str | _Ref[Any] | None = None,
         order_by: ListDNSZoneRecordsRequestOrderBy | None = None,
+        page_size: int | None = None,
         type_: RecordType | None = None,
         id: str | _Ref[Any] | None = None,
     ) -> RecordCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            project_id=project_id, order_by=order_by, name=name, type_=type_, id=id
+            project_id=project_id,
+            order_by=order_by,
+            page_size=page_size,
+            name=name,
+            type_=type_,
+            id=id,
         )
 
     async def _items(self) -> AsyncIterator[DomainRecord]:
         async for data in self._session.api(_DomainAPI).list_dns_zone_records_iter(
             dns_zone=_required(self._scope, "dns_zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListDNSZoneRecordsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainAPI).list_dns_zone_records(
+                dns_zone=_required(self._scope, "dns_zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.records or [])
+            if not response.records or seen >= response.total_count:
+                return
+            number += 1
 
 
 class VersionCollection(_Collection[DNSZoneVersion]):
     """Every version: iterate, or `filter`."""
 
+    def filter(
+        self,
+        *,
+        page_size: int | None = None,
+    ) -> VersionCollection:
+        """The same collection, narrowed to the items matching these criteria."""
+        return self._narrowed(page_size=page_size)
+
     async def _items(self) -> AsyncIterator[DNSZoneVersion]:
         async for data in self._session.api(_DomainAPI).list_dns_zone_versions_iter(
             dns_zone=_required(self._scope, "dns_zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListDNSZoneVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainAPI).list_dns_zone_versions(
+                dns_zone=_required(self._scope, "dns_zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DnsZonesVersionRef(_Ref[None]):
@@ -543,16 +629,38 @@ class SslCertificateCollection(_Collection[SslCertificate]):
         self,
         *,
         dns_zone: str,
+        page_size: int | None = None,
         project_id: StringValue | None = None,
     ) -> SslCertificateCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(dns_zone=dns_zone, project_id=project_id)
+        return self._narrowed(
+            dns_zone=dns_zone, page_size=page_size, project_id=project_id
+        )
 
     async def _items(self) -> AsyncIterator[SslCertificate]:
         async for data in self._session.api(_DomainAPI).list_ssl_certificates_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield SslCertificate._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSSLCertificatesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainAPI).list_ssl_certificates(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.certificates or [])
+            if not response.certificates or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -681,6 +789,7 @@ class ContactCollection(_Collection[ContactSummary]):
     def filter(
         self,
         *,
+        page_size: int | None = None,
         domain: str | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -694,6 +803,7 @@ class ContactCollection(_Collection[ContactSummary]):
     ) -> ContactCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             domain=domain,
             project_id=project_id,
             organization_id=organization_id,
@@ -708,9 +818,28 @@ class ContactCollection(_Collection[ContactSummary]):
 
     async def _items(self) -> AsyncIterator[ContactSummary]:
         async for data in self._session.api(_DomainRegistrarAPI).list_contacts_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield ContactSummary._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListContactsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainRegistrarAPI).list_contacts(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.contacts or [])
+            if not response.contacts or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DomainRef(_Ref["Domain"]):
@@ -964,6 +1093,7 @@ class DomainCollection(_Collection[DomainSummary]):
     def filter(
         self,
         *,
+        page_size: int | None = None,
         order_by: ListDomainsRequestOrderBy | None = None,
         registrar: str | None = None,
         status: DomainStatus | None = None,
@@ -974,6 +1104,7 @@ class DomainCollection(_Collection[DomainSummary]):
     ) -> DomainCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             registrar=registrar,
             status=status,
@@ -985,9 +1116,28 @@ class DomainCollection(_Collection[DomainSummary]):
 
     async def _items(self) -> AsyncIterator[DomainSummary]:
         async for data in self._session.api(_DomainRegistrarAPI).list_domains_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield DomainSummary._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDomainsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainRegistrarAPI).list_domains(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.domains or [])
+            if not response.domains or seen >= response.total_count:
+                return
+            number += 1
 
 
 class HostRef(_Ref["Host"]):
@@ -1051,12 +1201,40 @@ class HostCollection(_Collection[Host]):
         ref_key: _Key = {**self._scope, "name": _identifier(name)}
         return HostRef._of(self._session, ref_key)
 
+    def filter(
+        self,
+        *,
+        page_size: int | None = None,
+    ) -> HostCollection:
+        """The same collection, narrowed to the items matching these criteria."""
+        return self._narrowed(page_size=page_size)
+
     async def _items(self) -> AsyncIterator[Host]:
         async for data in self._session.api(_DomainRegistrarAPI).list_domain_hosts_iter(
             domain=_required(self._scope, "domain"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Host._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDomainHostsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainRegistrarAPI).list_domain_hosts(
+                domain=_required(self._scope, "domain"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.hosts or [])
+            if not response.hosts or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1134,19 +1312,44 @@ class InboundTransferCollection(_Collection[DomainInboundTransfer]):
         project_id: str | _Ref[Any],
         organization_id: str | _Ref[Any],
         domain: str,
+        page_size: int | None = None,
     ) -> InboundTransferCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            project_id=project_id, organization_id=organization_id, domain=domain
+            page_size=page_size,
+            project_id=project_id,
+            organization_id=organization_id,
+            domain=domain,
         )
 
     async def _items(self) -> AsyncIterator[DomainInboundTransfer]:
         async for data in self._session.api(
             _DomainRegistrarAPI
         ).list_inbound_transfers_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListInboundTransfersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _DomainRegistrarAPI
+            ).list_inbound_transfers(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.inbound_transfers or [])
+            if not response.inbound_transfers or seen >= response.total_count:
+                return
+            number += 1
 
 
 class RenewableDomainCollection(_Collection[DomainRenewableDomain]):
@@ -1155,22 +1358,47 @@ class RenewableDomainCollection(_Collection[DomainRenewableDomain]):
     def filter(
         self,
         *,
+        page_size: int | None = None,
         order_by: ListRenewableDomainsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
     ) -> RenewableDomainCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            order_by=order_by, project_id=project_id, organization_id=organization_id
+            page_size=page_size,
+            order_by=order_by,
+            project_id=project_id,
+            organization_id=organization_id,
         )
 
     async def _items(self) -> AsyncIterator[DomainRenewableDomain]:
         async for data in self._session.api(
             _DomainRegistrarAPI
         ).list_renewable_domains_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListRenewableDomainsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _DomainRegistrarAPI
+            ).list_renewable_domains(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.domains or [])
+            if not response.domains or seen >= response.total_count:
+                return
+            number += 1
 
 
 class TaskCollection(_Collection[DomainTask]):
@@ -1179,6 +1407,7 @@ class TaskCollection(_Collection[DomainTask]):
     def filter(
         self,
         *,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         domain: str | None = None,
@@ -1188,6 +1417,7 @@ class TaskCollection(_Collection[DomainTask]):
     ) -> TaskCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             project_id=project_id,
             organization_id=organization_id,
             domain=domain,
@@ -1198,9 +1428,28 @@ class TaskCollection(_Collection[DomainTask]):
 
     async def _items(self) -> AsyncIterator[DomainTask]:
         async for data in self._session.api(_DomainRegistrarAPI).list_tasks_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListTasksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainRegistrarAPI).list_tasks(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.tasks or [])
+            if not response.tasks or seen >= response.total_count:
+                return
+            number += 1
 
 
 class TldCollection(_Collection[DomainTld]):
@@ -1210,16 +1459,36 @@ class TldCollection(_Collection[DomainTld]):
         self,
         *,
         tlds: list[str] | None = None,
+        page_size: int | None = None,
         order_by: ListTldsRequestOrderBy | None = None,
     ) -> TldCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(tlds=tlds, order_by=order_by)
+        return self._narrowed(tlds=tlds, page_size=page_size, order_by=order_by)
 
     async def _items(self) -> AsyncIterator[DomainTld]:
         async for data in self._session.api(_DomainRegistrarAPI).list_tlds_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListTldsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DomainRegistrarAPI).list_tlds(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.tlds or [])
+            if not response.tlds or seen >= response.total_count:
+                return
+            number += 1
 
 
 class SuggestionCollection(_Collection[str]):
@@ -1235,7 +1504,7 @@ class SuggestionCollection(_Collection[str]):
 
     async def _items(self) -> AsyncIterator[str]:
         response = await self._session.api(_DomainSuggestionAPI).list_suggestions(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.suggestions or []:
             yield data

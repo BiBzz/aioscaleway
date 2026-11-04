@@ -21,7 +21,7 @@ First version published on PyPI.
   `account`, `billing` and `orders`, covering the 59 API versions published
   on the Scaleway developers website.
 - Collections iterated with `async for`, every page read, narrowed with
-  `filter()`; references that act without loading and load when awaited;
+  `filter()`, with `pages()` for the totals a page carries; references that act without loading and load when awaited;
   loaded objects that are references too.
 - One method per action, including one per value of the Instance server
   actions (`reboot()`, `power_off()`...).

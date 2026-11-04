@@ -28,7 +28,7 @@ MAPPING = ROOT / "mapping.yaml"
 COVERAGE = ROOT / "docs" / "coverage.md"
 TREE = ROOT / "docs" / "objects.md"
 LOCALITIES = ("zone", "region")
-PAGING_PARAMS = {"page", "page_size", "per_page", "page_token"}
+PAGING_PARAMS = {"page", "page_token"}
 STANDARD_MEMBERS = {"update", "replace", "delete", "refresh"}
 MODEL_ATTRIBUTES = {name for name in dir(BaseModel) if not name.startswith("__")}
 RESERVED_MEMBERS = {"list", "dict", "set", "type", "str", "int", "float", "bool", "all"}
@@ -1047,6 +1047,7 @@ class Renderer:
                 f"        async for data in self._session.api({api}).{method}_iter({', '.join(arguments)}):"
             )
             out.append(f"            yield {convert}")
+            out += self.pages_method(listing, api, method, arguments)
         else:
             field_name = items_field(models, listing.operation)
             out.append(
@@ -1057,6 +1058,29 @@ class Renderer:
             else:
                 out.append(f"        for data in response.{field_name} or []:")
             out.append(f"            yield {convert}")
+        return out
+
+    def pages_method(
+        self, listing: Call, api: str, method: str, arguments: list[str]
+    ) -> list[str]:
+        """Every page response, for the totals and sums an item does not carry."""
+        assert listing.operation.pagination is not None
+        items, _, total, _ = listing.operation.pagination
+        page = self.rename(listing.module, listing.operation.response or "Any")
+        out = ["", f"    async def pages(self) -> AsyncIterator[{page}]:"]
+        out.append('        """Each page as the API returns it, totals and sums included."""')
+        out.append("        number = 1")
+        out.append("        seen = 0")
+        out.append("        while True:")
+        out.append(f"            response = await self._session.api({api}).{method}({', '.join(arguments)}, page=number)")
+        out.append("            yield response")
+        out.append(f"            seen += len(response.{items} or [])")
+        stop = f"not response.{items}"
+        if total:
+            stop += f" or seen >= response.{total}"
+        out.append(f"            if {stop}:")
+        out.append("                return")
+        out.append("            number += 1")
         return out
 
     def method(

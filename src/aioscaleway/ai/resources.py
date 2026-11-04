@@ -80,20 +80,33 @@ from aioscaleway.ai.types import (
     GenerativeApisBatch,
     GenerativeApisListModelsResponse,
     InferenceListModelsRequestOrderBy,
+    InferenceListModelsResponse,
     JobCircuit,
     JobResult,
     ListApplicationsRequestOrderBy,
+    ListApplicationsResponse,
     ListBatchResponse,
     ListBookingsRequestOrderBy,
+    ListBookingsResponse,
     ListConsumptionLimitsRequestOrderBy,
+    ListConsumptionLimitsResponse,
     ListDeploymentsRequestOrderBy,
+    ListDeploymentsResponse,
     ListJobResultsRequestOrderBy,
+    ListJobResultsResponse,
     ListJobsRequestOrderBy,
+    ListJobsResponse,
+    ListNodeTypesResponse,
     ListPlatformsRequestOrderBy,
+    ListPlatformsResponse,
     ListProcessesRequestOrderBy,
+    ListProcessesResponse,
     ListProcessResultsRequestOrderBy,
+    ListProcessResultsResponse,
     ListSessionACLsRequestOrderBy,
+    ListSessionACLsResponse,
     ListSessionsRequestOrderBy,
+    ListSessionsResponse,
     MaxOutputTokens,
     ModelSource,
     NodeType,
@@ -103,6 +116,7 @@ from aioscaleway.ai.types import (
     ProcessResult,
     ProjectId,
     QaasListModelsRequestOrderBy,
+    QaasListModelsResponse,
     ResponseAPIInputList,
     ResponseAPITool,
     ResponseFormatChatCompletion,
@@ -318,6 +332,7 @@ class DeploymentCollection(_Collection[Deployment]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListDeploymentsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -326,6 +341,7 @@ class DeploymentCollection(_Collection[Deployment]):
     ) -> DeploymentCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
@@ -337,9 +353,29 @@ class DeploymentCollection(_Collection[Deployment]):
     async def _items(self) -> AsyncIterator[Deployment]:
         async for data in self._session.api(_InferenceAPI).list_deployments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Deployment._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDeploymentsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InferenceAPI).list_deployments(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.deployments or [])
+            if not response.deployments or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -527,6 +563,7 @@ class ModelCollection(_Collection[Model]):
         *,
         region: str | None = None,
         order_by: InferenceListModelsRequestOrderBy | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         name: str | None = None,
@@ -535,6 +572,7 @@ class ModelCollection(_Collection[Model]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             project_id=project_id,
             organization_id=organization_id,
             name=name,
@@ -545,9 +583,29 @@ class ModelCollection(_Collection[Model]):
     async def _items(self) -> AsyncIterator[Model]:
         async for data in self._session.api(_InferenceAPI).list_models_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Model._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[InferenceListModelsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InferenceAPI).list_models(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.models or [])
+            if not response.models or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -611,18 +669,41 @@ class QuantumApplicationCollection(_Collection[QuantumApplication]):
         *,
         name: str | None = None,
         application_type: ApplicationType | None = None,
+        page_size: int | None = None,
         order_by: ListApplicationsRequestOrderBy | None = None,
     ) -> QuantumApplicationCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            name=name, application_type=application_type, order_by=order_by
+            name=name,
+            application_type=application_type,
+            page_size=page_size,
+            order_by=order_by,
         )
 
     async def _items(self) -> AsyncIterator[QuantumApplication]:
         async for data in self._session.api(_QaasAPI).list_applications_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield QuantumApplication._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListApplicationsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_applications(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.applications or [])
+            if not response.applications or seen >= response.total_count:
+                return
+            number += 1
 
 
 class QuantumBookingRef(_Ref["QuantumBooking"]):
@@ -682,18 +763,41 @@ class QuantumBookingCollection(_Collection[QuantumBooking]):
         *,
         project_id: str | _Ref[Any] | None = None,
         platform_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         order_by: ListBookingsRequestOrderBy | None = None,
     ) -> QuantumBookingCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            project_id=project_id, platform_id=platform_id, order_by=order_by
+            project_id=project_id,
+            platform_id=platform_id,
+            page_size=page_size,
+            order_by=order_by,
         )
 
     async def _items(self) -> AsyncIterator[QuantumBooking]:
         async for data in self._session.api(_QaasAPI).list_bookings_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield QuantumBooking._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListBookingsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_bookings(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.bookings or [])
+            if not response.bookings or seen >= response.total_count:
+                return
+            number += 1
 
 
 class QuantumJobRef(_Ref["QuantumJob"]):
@@ -803,20 +907,44 @@ class QuantumJobCollection(_Collection[QuantumJob]):
         self,
         *,
         tags: list[str] | None = None,
+        page_size: int | None = None,
         order_by: ListJobsRequestOrderBy | None = None,
         session_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
     ) -> QuantumJobCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            tags=tags, order_by=order_by, session_id=session_id, project_id=project_id
+            tags=tags,
+            page_size=page_size,
+            order_by=order_by,
+            session_id=session_id,
+            project_id=project_id,
         )
 
     async def _items(self) -> AsyncIterator[QuantumJob]:
         async for data in self._session.api(_QaasAPI).list_jobs_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield QuantumJob._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListJobsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_jobs(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.jobs or [])
+            if not response.jobs or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -857,17 +985,38 @@ class QuantumJobResultCollection(_Collection[JobResult]):
     def filter(
         self,
         *,
+        page_size: int | None = None,
         order_by: ListJobResultsRequestOrderBy | None = None,
     ) -> QuantumJobResultCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by)
+        return self._narrowed(page_size=page_size, order_by=order_by)
 
     async def _items(self) -> AsyncIterator[JobResult]:
         async for data in self._session.api(_QaasAPI).list_job_results_iter(
             job_id=_required(self._scope, "job_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListJobResultsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_job_results(
+                job_id=_required(self._scope, "job_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.job_results or [])
+            if not response.job_results or seen >= response.total_count:
+                return
+            number += 1
 
 
 class QuantumModelRef(_Ref["QuantumModel"]):
@@ -906,16 +1055,38 @@ class QuantumModelCollection(_Collection[QuantumModel]):
         self,
         *,
         project_id: str | _Ref[Any],
+        page_size: int | None = None,
         order_by: QaasListModelsRequestOrderBy | None = None,
     ) -> QuantumModelCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(project_id=project_id, order_by=order_by)
+        return self._narrowed(
+            project_id=project_id, page_size=page_size, order_by=order_by
+        )
 
     async def _items(self) -> AsyncIterator[QuantumModel]:
         async for data in self._session.api(_QaasAPI).list_models_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield QuantumModel._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[QaasListModelsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_models(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.models or [])
+            if not response.models or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -980,6 +1151,7 @@ class QuantumPlatformCollection(_Collection[QuantumPlatform]):
         name: str | None = None,
         platform_type: PlatformType | None = None,
         platform_technology: PlatformTechnology | None = None,
+        page_size: int | None = None,
         order_by: ListPlatformsRequestOrderBy | None = None,
     ) -> QuantumPlatformCollection:
         """The same collection, narrowed to the items matching these criteria."""
@@ -989,14 +1161,34 @@ class QuantumPlatformCollection(_Collection[QuantumPlatform]):
             name=name,
             platform_type=platform_type,
             platform_technology=platform_technology,
+            page_size=page_size,
             order_by=order_by,
         )
 
     async def _items(self) -> AsyncIterator[QuantumPlatform]:
         async for data in self._session.api(_QaasAPI).list_platforms_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield QuantumPlatform._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListPlatformsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_platforms(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.platforms or [])
+            if not response.platforms or seen >= response.total_count:
+                return
+            number += 1
 
 
 class QuantumProcessRef(_Ref["QuantumProcess"]):
@@ -1094,21 +1286,42 @@ class QuantumProcessCollection(_Collection[QuantumProcess]):
         project_id: str | _Ref[Any],
         application_id: str | _Ref[Any] | None = None,
         tags: list[str] | None = None,
+        page_size: int | None = None,
         order_by: ListProcessesRequestOrderBy | None = None,
     ) -> QuantumProcessCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             application_id=application_id,
             tags=tags,
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
         )
 
     async def _items(self) -> AsyncIterator[QuantumProcess]:
         async for data in self._session.api(_QaasAPI).list_processes_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield QuantumProcess._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListProcessesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_processes(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.processes or [])
+            if not response.processes or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1147,17 +1360,38 @@ class QuantumProcessResultCollection(_Collection[ProcessResult]):
     def filter(
         self,
         *,
+        page_size: int | None = None,
         order_by: ListProcessResultsRequestOrderBy | None = None,
     ) -> QuantumProcessResultCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by)
+        return self._narrowed(page_size=page_size, order_by=order_by)
 
     async def _items(self) -> AsyncIterator[ProcessResult]:
         async for data in self._session.api(_QaasAPI).list_process_results_iter(
             process_id=_required(self._scope, "process_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListProcessResultsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_process_results(
+                process_id=_required(self._scope, "process_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.process_results or [])
+            if not response.process_results or seen >= response.total_count:
+                return
+            number += 1
 
 
 class QuantumSessionRef(_Ref["QuantumSession"]):
@@ -1262,18 +1496,42 @@ class QuantumSessionCollection(_Collection[QuantumSession]):
         project_id: str | _Ref[Any],
         platform_id: str | _Ref[Any] | None = None,
         tags: list[str] | None = None,
+        page_size: int | None = None,
         order_by: ListSessionsRequestOrderBy | None = None,
     ) -> QuantumSessionCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            platform_id=platform_id, tags=tags, order_by=order_by, project_id=project_id
+            platform_id=platform_id,
+            tags=tags,
+            page_size=page_size,
+            order_by=order_by,
+            project_id=project_id,
         )
 
     async def _items(self) -> AsyncIterator[QuantumSession]:
         async for data in self._session.api(_QaasAPI).list_sessions_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield QuantumSession._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListSessionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_sessions(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.sessions or [])
+            if not response.sessions or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1323,17 +1581,38 @@ class AcLCollection(_Collection[SessionAccess]):
     def filter(
         self,
         *,
+        page_size: int | None = None,
         order_by: ListSessionACLsRequestOrderBy | None = None,
     ) -> AcLCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by)
+        return self._narrowed(page_size=page_size, order_by=order_by)
 
     async def _items(self) -> AsyncIterator[SessionAccess]:
         async for data in self._session.api(_QaasAPI).list_session_ac_ls_iter(
             session_id=_required(self._scope, "session_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListSessionACLsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_QaasAPI).list_session_ac_ls(
+                session_id=_required(self._scope, "session_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.acls or [])
+            if not response.acls or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ConsumptionLimitCollection(_Collection[ConsumptionLimitsResponse]):
@@ -1344,6 +1623,7 @@ class ConsumptionLimitCollection(_Collection[ConsumptionLimitsResponse]):
         *,
         model_id: str | _Ref[Any] | None = None,
         order_by: ListConsumptionLimitsRequestOrderBy | None = None,
+        page_size: int | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
     ) -> ConsumptionLimitCollection:
@@ -1351,6 +1631,7 @@ class ConsumptionLimitCollection(_Collection[ConsumptionLimitsResponse]):
         return self._narrowed(
             model_id=model_id,
             order_by=order_by,
+            page_size=page_size,
             organization_id=organization_id,
             project_id=project_id,
         )
@@ -1359,9 +1640,30 @@ class ConsumptionLimitCollection(_Collection[ConsumptionLimitsResponse]):
         async for data in self._session.api(
             _GenerativeApisAPI
         ).list_consumption_limits_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListConsumptionLimitsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _GenerativeApisAPI
+            ).list_consumption_limits(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.consumption_limits or [])
+            if not response.consumption_limits or seen >= response.total_count:
+                return
+            number += 1
 
 
 class InferenceNodeTypeCollection(_Collection[NodeType]):
@@ -1372,18 +1674,41 @@ class InferenceNodeTypeCollection(_Collection[NodeType]):
         *,
         region: str | None = None,
         include_disabled_types: bool,
+        page_size: int | None = None,
     ) -> InferenceNodeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            include_disabled_types=include_disabled_types, region=region
+            page_size=page_size,
+            include_disabled_types=include_disabled_types,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[NodeType]:
         async for data in self._session.api(_InferenceAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListNodeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_InferenceAPI).list_node_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.node_types or [])
+            if not response.node_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class AiNamespace(_Namespace):

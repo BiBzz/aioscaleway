@@ -36,6 +36,7 @@ from aioscaleway.storage.types import (
     Attachment,
     AttachmentResourceType,
     BlockListSnapshotsRequestOrderBy,
+    BlockListSnapshotsResponse,
     BlockVolumeType,
     CreateFileSystemRequestFromEmpty,
     CreateFileSystemRequestFromSnapshot,
@@ -43,8 +44,14 @@ from aioscaleway.storage.types import (
     CreateVolumeRequestFromSnapshot,
     FileFileSystemType,
     FileListSnapshotsRequestOrderBy,
+    FileListSnapshotsResponse,
+    ListAttachmentsResponse,
     ListFileSystemsRequestOrderBy,
+    ListFileSystemsResponse,
+    ListFileSystemTypesResponse,
     ListVolumesRequestOrderBy,
+    ListVolumesResponse,
+    ListVolumeTypesResponse,
 )
 
 
@@ -151,6 +158,7 @@ class SnapshotCollection(_Collection[Snapshot]):
         order_by: BlockListSnapshotsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         volume_id: str | _Ref[Any] | None = None,
         name: str | None = None,
         tags: list[str] | None = None,
@@ -160,6 +168,7 @@ class SnapshotCollection(_Collection[Snapshot]):
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
+            page_size=page_size,
             volume_id=volume_id,
             name=name,
             tags=tags,
@@ -170,9 +179,29 @@ class SnapshotCollection(_Collection[Snapshot]):
     async def _items(self) -> AsyncIterator[Snapshot]:
         async for data in self._session.api(_BlockAPI).list_snapshots_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Snapshot._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[BlockListSnapshotsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BlockAPI).list_snapshots(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.snapshots or [])
+            if not response.snapshots or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -290,6 +319,7 @@ class VolumeCollection(_Collection[Volume]):
         order_by: ListVolumesRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         product_resource_id: str | _Ref[Any] | None = None,
         tags: list[str] | None = None,
@@ -301,6 +331,7 @@ class VolumeCollection(_Collection[Volume]):
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
+            page_size=page_size,
             name=name,
             product_resource_id=product_resource_id,
             tags=tags,
@@ -313,9 +344,29 @@ class VolumeCollection(_Collection[Volume]):
     async def _items(self) -> AsyncIterator[Volume]:
         async for data in self._session.api(_BlockAPI).list_volumes_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Volume._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListVolumesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BlockAPI).list_volumes(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.volumes or [])
+            if not response.volumes or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -441,6 +492,7 @@ class FileSystemCollection(_Collection[FileSystem]):
         order_by: ListFileSystemsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         filesystem_type: str | None = None,
         tags: list[str] | None = None,
@@ -451,6 +503,7 @@ class FileSystemCollection(_Collection[FileSystem]):
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
+            page_size=page_size,
             name=name,
             filesystem_type=filesystem_type,
             tags=tags,
@@ -461,9 +514,29 @@ class FileSystemCollection(_Collection[FileSystem]):
     async def _items(self) -> AsyncIterator[FileSystem]:
         async for data in self._session.api(_FileAPI).list_file_systems_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FileSystem._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListFileSystemsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FileAPI).list_file_systems(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.filesystems or [])
+            if not response.filesystems or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -586,6 +659,7 @@ class FileSystemSnapshotCollection(_Collection[FileSystemSnapshot]):
         *,
         region: str | None = None,
         order_by: FileListSnapshotsRequestOrderBy | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         tags: list[str] | None = None,
         filesystem_id: str | _Ref[Any] | None = None,
@@ -596,6 +670,7 @@ class FileSystemSnapshotCollection(_Collection[FileSystemSnapshot]):
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             name=name,
             tags=tags,
             filesystem_id=filesystem_id,
@@ -608,9 +683,29 @@ class FileSystemSnapshotCollection(_Collection[FileSystemSnapshot]):
     async def _items(self) -> AsyncIterator[FileSystemSnapshot]:
         async for data in self._session.api(_FileAPI).list_snapshots_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FileSystemSnapshot._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[FileListSnapshotsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FileAPI).list_snapshots(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.snapshots or [])
+            if not response.snapshots or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -650,16 +745,37 @@ class VolumeTypeCollection(_Collection[BlockVolumeType]):
         self,
         *,
         zone: str | None = None,
+        page_size: int | None = None,
     ) -> VolumeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(zone=zone)
+        return self._narrowed(page_size=page_size, zone=zone)
 
     async def _items(self) -> AsyncIterator[BlockVolumeType]:
         async for data in self._session.api(_BlockAPI).list_volume_types_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListVolumeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_BlockAPI).list_volume_types(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.volume_types or [])
+            if not response.volume_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class FileSystemAttachmentCollection(_Collection[Attachment]):
@@ -673,6 +789,7 @@ class FileSystemAttachmentCollection(_Collection[Attachment]):
         resource_id: str | _Ref[Any] | None = None,
         resource_type: AttachmentResourceType | None = None,
         zone: str | None = None,
+        page_size: int | None = None,
     ) -> FileSystemAttachmentCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -680,15 +797,36 @@ class FileSystemAttachmentCollection(_Collection[Attachment]):
             resource_id=resource_id,
             resource_type=resource_type,
             zone=zone,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[Attachment]:
         async for data in self._session.api(_FileAPI).list_attachments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListAttachmentsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FileAPI).list_attachments(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.attachments or [])
+            if not response.attachments or seen >= response.total_count:
+                return
+            number += 1
 
 
 class FileSystemTypeCollection(_Collection[FileFileSystemType]):
@@ -698,16 +836,37 @@ class FileSystemTypeCollection(_Collection[FileFileSystemType]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
     ) -> FileSystemTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(region=region)
+        return self._narrowed(page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[FileFileSystemType]:
         async for data in self._session.api(_FileAPI).list_file_system_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListFileSystemTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_FileAPI).list_file_system_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.filesystem_types or [])
+            if not response.filesystem_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class StorageNamespace(_Namespace):

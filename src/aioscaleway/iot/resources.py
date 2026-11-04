@@ -52,9 +52,13 @@ from aioscaleway.iot.types import (
     HubProductPlan,
     HubTwinsGraphiteConfig,
     ListDevicesRequestOrderBy,
+    ListDevicesResponse,
     ListHubsRequestOrderBy,
+    ListHubsResponse,
     ListNetworksRequestOrderBy,
+    ListNetworksResponse,
     ListRoutesRequestOrderBy,
+    ListRoutesResponse,
     NetworkNetworkType,
     RenewDeviceCertificateResponse,
     SetDeviceCertificateResponse,
@@ -238,6 +242,7 @@ class DeviceCollection(_Collection[Device]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListDevicesRequestOrderBy | None = None,
         name: str | None = None,
         hub_id: str | _Ref[Any] | None = None,
@@ -246,6 +251,7 @@ class DeviceCollection(_Collection[Device]):
     ) -> DeviceCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             name=name,
             hub_id=hub_id,
@@ -257,9 +263,29 @@ class DeviceCollection(_Collection[Device]):
     async def _items(self) -> AsyncIterator[Device]:
         async for data in self._session.api(_IotAPI).list_devices_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Device._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDevicesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IotAPI).list_devices(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.devices or [])
+            if not response.devices or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -458,6 +484,7 @@ class HubCollection(_Collection[Hub]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListHubsRequestOrderBy | None = None,
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
@@ -465,6 +492,7 @@ class HubCollection(_Collection[Hub]):
     ) -> HubCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             project_id=project_id,
             organization_id=organization_id,
@@ -475,9 +503,29 @@ class HubCollection(_Collection[Hub]):
     async def _items(self) -> AsyncIterator[Hub]:
         async for data in self._session.api(_IotAPI).list_hubs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Hub._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListHubsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IotAPI).list_hubs(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.hubs or [])
+            if not response.hubs or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -564,6 +612,7 @@ class NetworkCollection(_Collection[Network]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListNetworksRequestOrderBy | None = None,
         name: str | None = None,
         hub_id: str | _Ref[Any] | None = None,
@@ -571,6 +620,7 @@ class NetworkCollection(_Collection[Network]):
     ) -> NetworkCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
+            page_size=page_size,
             order_by=order_by,
             name=name,
             hub_id=hub_id,
@@ -581,9 +631,29 @@ class NetworkCollection(_Collection[Network]):
     async def _items(self) -> AsyncIterator[Network]:
         async for data in self._session.api(_IotAPI).list_networks_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Network._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListNetworksResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IotAPI).list_networks(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.networks or [])
+            if not response.networks or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -701,21 +771,46 @@ class RouteCollection(_Collection[RouteSummary]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListRoutesRequestOrderBy | None = None,
         hub_id: str | _Ref[Any] | None = None,
         name: str | None = None,
     ) -> RouteCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            order_by=order_by, hub_id=hub_id, name=name, region=region
+            page_size=page_size,
+            order_by=order_by,
+            hub_id=hub_id,
+            name=name,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[RouteSummary]:
         async for data in self._session.api(_IotAPI).list_routes_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield RouteSummary._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListRoutesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_IotAPI).list_routes(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.routes or [])
+            if not response.routes or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,

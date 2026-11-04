@@ -220,3 +220,25 @@ def test_every_operation_is_placed() -> None:
 
     assert len(rows) - 1 >= 1531
     assert len(placed) > 1300
+
+
+async def test_pages_keep_what_only_a_page_carries(
+    scw: Scaleway, recorder: Recorder
+) -> None:
+    line = {"value": {"currency_code": "EUR", "units": 3}, "sku": "a"}
+    page = {
+        "consumptions": [line],
+        "total_count": 2,
+        "total_discount_untaxed_value": 1.5,
+    }
+    recorder.reply(body=page)
+    recorder.reply(body={**page, "consumptions": [{**line, "sku": "b"}]})
+
+    consumptions = scw.billing.consumptions.filter(
+        billing_period="2026-10", page_size=1
+    )
+    pages = [page async for page in consumptions.pages()]
+
+    assert [p.total_discount_untaxed_value for p in pages] == [1.5, 1.5]
+    assert [r.url.params["page"] for r in recorder.requests] == ["1", "2"]
+    assert recorder.requests[0].url.params["page_size"] == "1"

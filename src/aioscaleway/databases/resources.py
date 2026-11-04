@@ -132,8 +132,12 @@ from aioscaleway.databases.types import (
     DatawarehouseEndpointSpec,
     DatawarehouseFile,
     DatawarehouseListDatabasesRequestOrderBy,
+    DatawarehouseListDatabasesResponse,
     DatawarehouseListDeploymentsRequestOrderBy,
+    DatawarehouseListDeploymentsResponse,
     DatawarehouseListUsersRequestOrderBy,
+    DatawarehouseListUsersResponse,
+    DatawarehouseListVersionsResponse,
     DatawarehouseVersion,
     DeleteInstanceACLRulesResponse,
     DeleteInstanceSettingsResponse,
@@ -143,20 +147,33 @@ from aioscaleway.databases.types import (
     HighAvailabilityMode,
     InstanceMetrics,
     ListClustersRequestOrderBy,
+    ListClustersResponse,
+    ListClusterVersionsResponse,
+    ListDatabaseEnginesResponse,
+    ListInstanceACLRulesResponse,
     ListInstanceLogsDetailsResponseInstanceLogDetail,
     ListInstanceLogsRequestOrderBy,
     ListMaintenancesRequestOrderBy,
+    ListMaintenancesResponse,
     ListNodeTypesRequestOrderBy,
+    ListPresetsResponse,
     ListPrivilegesRequestOrderBy,
+    ListPrivilegesResponse,
     ListVersionsRequestOrderBy,
     LogsPolicy,
     Maintenance,
     MongodbEndpointSpec,
     MongodbFile,
     MongodbListDatabasesRequestOrderBy,
+    MongodbListDatabasesResponse,
     MongodbListInstancesRequestOrderBy,
+    MongodbListInstancesResponse,
+    MongodbListNodeTypesResponse,
     MongodbListSnapshotsRequestOrderBy,
+    MongodbListSnapshotsResponse,
     MongodbListUsersRequestOrderBy,
+    MongodbListUsersResponse,
+    MongodbListVersionsResponse,
     MongodbNodeType,
     MongodbVersion,
     MongodbVolume,
@@ -167,26 +184,40 @@ from aioscaleway.databases.types import (
     RdbFile,
     RdbInstanceSetting,
     RdbListDatabaseBackupsRequestOrderBy,
+    RdbListDatabaseBackupsResponse,
     RdbListDatabasesRequestOrderBy,
+    RdbListDatabasesResponse,
     RdbListInstancesRequestOrderBy,
+    RdbListInstancesResponse,
+    RdbListNodeTypesResponse,
     RdbListSnapshotsRequestOrderBy,
+    RdbListSnapshotsResponse,
     RdbListUsersRequestOrderBy,
+    RdbListUsersResponse,
     RdbNodeType,
     RdbPrivilege,
     RdbVolumeType,
     ReadReplicaEndpointSpec,
     RedisEndpointSpec,
     RedisFile,
+    RedisListNodeTypesResponse,
     RedisNodeType,
     SearchdbEndpointSpec,
     SearchdbFile,
     SearchdbListDeploymentsRequestOrderBy,
+    SearchdbListDeploymentsResponse,
+    SearchdbListNodeTypesResponse,
     SearchdbListUsersRequestOrderBy,
+    SearchdbListUsersResponse,
+    SearchdbListVersionsResponse,
     SearchdbNodeType,
     SearchdbVersion,
     SearchdbVolume,
     ServerlessSqldbListDatabaseBackupsRequestOrderBy,
+    ServerlessSqldbListDatabaseBackupsResponse,
     ServerlessSqldbListDatabasesRequestOrderBy,
+    ServerlessSqldbListDatabasesResponse,
+    ServerlessSqldbListVersionsResponse,
     ServerlessSqldbVersion,
     SetAclRulesResponse,
     SetEndpointsResponse,
@@ -359,6 +390,7 @@ class ClickhouseCollection(_Collection[Clickhouse]):
         order_by: DatawarehouseListDeploymentsRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
     ) -> ClickhouseCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -367,15 +399,36 @@ class ClickhouseCollection(_Collection[Clickhouse]):
             order_by=order_by,
             organization_id=organization_id,
             project_id=project_id,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[Clickhouse]:
         async for data in self._session.api(_DatawarehouseAPI).list_deployments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Clickhouse._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[DatawarehouseListDeploymentsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatawarehouseAPI).list_deployments(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.deployments or [])
+            if not response.deployments or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -471,17 +524,41 @@ class ClickhouseDatabaseCollection(_Collection[ClickhouseDatabase]):
         region: str | None = None,
         name: str | None = None,
         order_by: DatawarehouseListDatabasesRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> ClickhouseDatabaseCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(name=name, order_by=order_by, region=region)
+        return self._narrowed(
+            name=name, order_by=order_by, page_size=page_size, region=region
+        )
 
     async def _items(self) -> AsyncIterator[ClickhouseDatabase]:
         async for data in self._session.api(_DatawarehouseAPI).list_databases_iter(
             region=self._criteria.get("region"),
             deployment_id=_required(self._scope, "deployment_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ClickhouseDatabase._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[DatawarehouseListDatabasesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatawarehouseAPI).list_databases(
+                region=self._criteria.get("region"),
+                deployment_id=_required(self._scope, "deployment_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.databases or [])
+            if not response.databases or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -573,17 +650,41 @@ class ClickhouseUserCollection(_Collection[ClickhouseUser]):
         region: str | None = None,
         name: str | None = None,
         order_by: DatawarehouseListUsersRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> ClickhouseUserCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(name=name, order_by=order_by, region=region)
+        return self._narrowed(
+            name=name, order_by=order_by, page_size=page_size, region=region
+        )
 
     async def _items(self) -> AsyncIterator[ClickhouseUser]:
         async for data in self._session.api(_DatawarehouseAPI).list_users_iter(
             region=self._criteria.get("region"),
             deployment_id=_required(self._scope, "deployment_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ClickhouseUser._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[DatawarehouseListUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatawarehouseAPI).list_users(
+                region=self._criteria.get("region"),
+                deployment_id=_required(self._scope, "deployment_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.users or [])
+            if not response.users or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -902,6 +1003,7 @@ class MongodbCollection(_Collection[Mongodb]):
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         has_maintenance: bool | None = None,
+        page_size: int | None = None,
     ) -> MongodbCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -911,15 +1013,36 @@ class MongodbCollection(_Collection[Mongodb]):
             organization_id=organization_id,
             project_id=project_id,
             has_maintenance=has_maintenance,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[Mongodb]:
         async for data in self._session.api(_MongodbAPI).list_instances_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Mongodb._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[MongodbListInstancesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MongodbAPI).list_instances(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.instances or [])
+            if not response.instances or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1027,17 +1150,41 @@ class MongodbUserCollection(_Collection[MongodbUser]):
         region: str | None = None,
         name: str | None = None,
         order_by: MongodbListUsersRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> MongodbUserCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(name=name, order_by=order_by, region=region)
+        return self._narrowed(
+            name=name, order_by=order_by, page_size=page_size, region=region
+        )
 
     async def _items(self) -> AsyncIterator[MongodbUser]:
         async for data in self._session.api(_MongodbAPI).list_users_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MongodbUser._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[MongodbListUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MongodbAPI).list_users(
+                region=self._criteria.get("region"),
+                instance_id=_required(self._scope, "instance_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.users or [])
+            if not response.users or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1072,17 +1219,39 @@ class MongodbDatabaseCollection(_Collection[Database]):
         *,
         region: str | None = None,
         order_by: MongodbListDatabasesRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> MongodbDatabaseCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(order_by=order_by, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[Database]:
         async for data in self._session.api(_MongodbAPI).list_databases_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[MongodbListDatabasesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MongodbAPI).list_databases(
+                region=self._criteria.get("region"),
+                instance_id=_required(self._scope, "instance_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.databases or [])
+            if not response.databases or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MongodbMaintenanceRef(_Ref["MongodbMaintenance"]):
@@ -1143,16 +1312,42 @@ class MongodbMaintenanceCollection(_Collection[MongodbMaintenance]):
         region: str | None = None,
         instance_id: str | _Ref[Any],
         order_by: ListMaintenancesRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> MongodbMaintenanceCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(instance_id=instance_id, order_by=order_by, region=region)
+        return self._narrowed(
+            instance_id=instance_id,
+            order_by=order_by,
+            page_size=page_size,
+            region=region,
+        )
 
     async def _items(self) -> AsyncIterator[MongodbMaintenance]:
         async for data in self._session.api(_MongodbAPI).list_maintenances_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MongodbMaintenance._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListMaintenancesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MongodbAPI).list_maintenances(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.maintenances or [])
+            if not response.maintenances or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MongodbSnapshotRef(_Ref["MongodbSnapshot"]):
@@ -1271,6 +1466,7 @@ class MongodbSnapshotCollection(_Collection[MongodbSnapshot]):
         order_by: MongodbListSnapshotsRequestOrderBy | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
     ) -> MongodbSnapshotCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -1279,15 +1475,36 @@ class MongodbSnapshotCollection(_Collection[MongodbSnapshot]):
             order_by=order_by,
             organization_id=organization_id,
             project_id=project_id,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[MongodbSnapshot]:
         async for data in self._session.api(_MongodbAPI).list_snapshots_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MongodbSnapshot._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[MongodbListSnapshotsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MongodbAPI).list_snapshots(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.snapshots or [])
+            if not response.snapshots or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -1447,6 +1664,7 @@ class PostgresMysqlBackupCollection(_Collection[PostgresMysqlBackup]):
         instance_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
     ) -> PostgresMysqlBackupCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -1455,15 +1673,36 @@ class PostgresMysqlBackupCollection(_Collection[PostgresMysqlBackup]):
             instance_id=instance_id,
             organization_id=organization_id,
             project_id=project_id,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[PostgresMysqlBackup]:
         async for data in self._session.api(_RdbAPI).list_database_backups_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysqlBackup._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[RdbListDatabaseBackupsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_database_backups(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.database_backups or [])
+            if not response.database_backups or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2026,6 +2265,7 @@ class PostgresMysqlCollection(_Collection[PostgresMysql]):
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         has_maintenances: bool | None = None,
+        page_size: int | None = None,
     ) -> PostgresMysqlCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -2035,15 +2275,36 @@ class PostgresMysqlCollection(_Collection[PostgresMysql]):
             organization_id=organization_id,
             project_id=project_id,
             has_maintenances=has_maintenances,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[PostgresMysql]:
         async for data in self._session.api(_RdbAPI).list_instances_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysql._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[RdbListInstancesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_instances(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.instances or [])
+            if not response.instances or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2152,6 +2413,7 @@ class PostgresMysqlDatabaseCollection(_Collection[PostgresMysqlDatabase]):
         owner: str | None = None,
         order_by: RdbListDatabasesRequestOrderBy | None = None,
         skip_size_retrieval: bool | None = None,
+        page_size: int | None = None,
     ) -> PostgresMysqlDatabaseCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -2160,6 +2422,7 @@ class PostgresMysqlDatabaseCollection(_Collection[PostgresMysqlDatabase]):
             owner=owner,
             order_by=order_by,
             skip_size_retrieval=skip_size_retrieval,
+            page_size=page_size,
             region=region,
         )
 
@@ -2167,9 +2430,30 @@ class PostgresMysqlDatabaseCollection(_Collection[PostgresMysqlDatabase]):
         async for data in self._session.api(_RdbAPI).list_databases_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysqlDatabase._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[RdbListDatabasesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_databases(
+                region=self._criteria.get("region"),
+                instance_id=_required(self._scope, "instance_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.databases or [])
+            if not response.databases or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2267,17 +2551,41 @@ class PostgresMysqlUserCollection(_Collection[PostgresMysqlUser]):
         region: str | None = None,
         name: str | None = None,
         order_by: RdbListUsersRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> PostgresMysqlUserCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(name=name, order_by=order_by, region=region)
+        return self._narrowed(
+            name=name, order_by=order_by, page_size=page_size, region=region
+        )
 
     async def _items(self) -> AsyncIterator[PostgresMysqlUser]:
         async for data in self._session.api(_RdbAPI).list_users_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysqlUser._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[RdbListUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_users(
+                region=self._criteria.get("region"),
+                instance_id=_required(self._scope, "instance_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.users or [])
+            if not response.users or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -2354,7 +2662,7 @@ class LogCollection(_Collection[Log]):
         response = await self._session.api(_RdbAPI).list_instance_logs(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.instance_logs or []:
             yield Log._from(self._session, self._scope, data)
@@ -2367,17 +2675,39 @@ class AclRuleCollection(_Collection[ACLRule]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
     ) -> AclRuleCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(region=region)
+        return self._narrowed(page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[ACLRule]:
         async for data in self._session.api(_RdbAPI).list_instance_acl_rules_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListInstanceACLRulesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_instance_acl_rules(
+                region=self._criteria.get("region"),
+                instance_id=_required(self._scope, "instance_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.rules or [])
+            if not response.rules or seen >= response.total_count:
+                return
+            number += 1
 
 
 class LogsDetailCollection(
@@ -2399,7 +2729,7 @@ class LogsDetailCollection(
         response = await self._session.api(_RdbAPI).list_instance_logs_details(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.details or []:
             yield data
@@ -2413,12 +2743,14 @@ class PrivilegeCollection(_Collection[RdbPrivilege]):
         *,
         region: str | None = None,
         order_by: ListPrivilegesRequestOrderBy | None = None,
+        page_size: int | None = None,
         database_name: str | None = None,
         user_name: str | None = None,
     ) -> PrivilegeCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             order_by=order_by,
+            page_size=page_size,
             database_name=database_name,
             user_name=user_name,
             region=region,
@@ -2428,9 +2760,30 @@ class PrivilegeCollection(_Collection[RdbPrivilege]):
         async for data in self._session.api(_RdbAPI).list_privileges_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListPrivilegesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_privileges(
+                region=self._criteria.get("region"),
+                instance_id=_required(self._scope, "instance_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.privileges or [])
+            if not response.privileges or seen >= response.total_count:
+                return
+            number += 1
 
 
 class PostgresMysqlReadReplicaRef(_Ref["PostgresMysqlReadReplica"]):
@@ -2693,6 +3046,7 @@ class PostgresMysqlSnapshotCollection(_Collection[PostgresMysqlSnapshot]):
         instance_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
     ) -> PostgresMysqlSnapshotCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -2701,15 +3055,36 @@ class PostgresMysqlSnapshotCollection(_Collection[PostgresMysqlSnapshot]):
             instance_id=instance_id,
             organization_id=organization_id,
             project_id=project_id,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[PostgresMysqlSnapshot]:
         async for data in self._session.api(_RdbAPI).list_snapshots_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysqlSnapshot._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[RdbListSnapshotsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_snapshots(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.snapshots or [])
+            if not response.snapshots or seen >= response.total_count:
+                return
+            number += 1
 
 
 class PostgresMysqlEncryptionKeyRef(_Ref["PostgresMysqlEncryptionKey"]):
@@ -3050,6 +3425,7 @@ class RedisCollection(_Collection[Redis]):
         project_id: str | _Ref[Any] | None = None,
         organization_id: str | _Ref[Any] | None = None,
         version: str | None = None,
+        page_size: int | None = None,
     ) -> RedisCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -3059,15 +3435,36 @@ class RedisCollection(_Collection[Redis]):
             project_id=project_id,
             organization_id=organization_id,
             version=version,
+            page_size=page_size,
             zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[Redis]:
         async for data in self._session.api(_RedisAPI).list_clusters_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Redis._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListClustersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RedisAPI).list_clusters(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.clusters or [])
+            if not response.clusters or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3392,6 +3789,7 @@ class OpensearchCollection(_Collection[Opensearch]):
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
         order_by: SearchdbListDeploymentsRequestOrderBy | None = None,
+        page_size: int | None = None,
         tags: list[str] | None = None,
         name: str | None = None,
     ) -> OpensearchCollection:
@@ -3400,6 +3798,7 @@ class OpensearchCollection(_Collection[Opensearch]):
             organization_id=organization_id,
             project_id=project_id,
             order_by=order_by,
+            page_size=page_size,
             tags=tags,
             name=name,
             region=region,
@@ -3408,9 +3807,29 @@ class OpensearchCollection(_Collection[Opensearch]):
     async def _items(self) -> AsyncIterator[Opensearch]:
         async for data in self._session.api(_SearchdbAPI).list_deployments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Opensearch._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[SearchdbListDeploymentsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_SearchdbAPI).list_deployments(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.deployments or [])
+            if not response.deployments or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3519,19 +3938,43 @@ class OpensearchUserCollection(_Collection[OpensearchUser]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: SearchdbListUsersRequestOrderBy | None = None,
         name: str | None = None,
     ) -> OpensearchUserCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, name=name, region=region)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, name=name, region=region
+        )
 
     async def _items(self) -> AsyncIterator[OpensearchUser]:
         async for data in self._session.api(_SearchdbAPI).list_users_iter(
             region=self._criteria.get("region"),
             deployment_id=_required(self._scope, "deployment_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield OpensearchUser._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[SearchdbListUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_SearchdbAPI).list_users(
+                region=self._criteria.get("region"),
+                deployment_id=_required(self._scope, "deployment_id"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.users or [])
+            if not response.users or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3688,6 +4131,7 @@ class ServerlessSqlBackupCollection(_Collection[ServerlessSqlBackup]):
         database_id: str | _Ref[Any],
         organization_id: str | _Ref[Any] | None = None,
         project_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         order_by: ServerlessSqldbListDatabaseBackupsRequestOrderBy | None = None,
     ) -> ServerlessSqlBackupCollection:
         """The same collection, narrowed to the items matching these criteria."""
@@ -3695,6 +4139,7 @@ class ServerlessSqlBackupCollection(_Collection[ServerlessSqlBackup]):
             organization_id=organization_id,
             project_id=project_id,
             database_id=database_id,
+            page_size=page_size,
             order_by=order_by,
             region=region,
         )
@@ -3704,9 +4149,31 @@ class ServerlessSqlBackupCollection(_Collection[ServerlessSqlBackup]):
             _ServerlessSqldbAPI
         ).list_database_backups_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ServerlessSqlBackup._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ServerlessSqldbListDatabaseBackupsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _ServerlessSqldbAPI
+            ).list_database_backups(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.backups or [])
+            if not response.backups or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ServerlessSqlRef(_Ref["ServerlessSql"]):
@@ -3821,6 +4288,7 @@ class ServerlessSqlCollection(_Collection[ServerlessSql]):
         region: str | None = None,
         project_id: str | _Ref[Any],
         organization_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         name: str | None = None,
         order_by: ServerlessSqldbListDatabasesRequestOrderBy | None = None,
     ) -> ServerlessSqlCollection:
@@ -3828,6 +4296,7 @@ class ServerlessSqlCollection(_Collection[ServerlessSql]):
         return self._narrowed(
             organization_id=organization_id,
             project_id=project_id,
+            page_size=page_size,
             name=name,
             order_by=order_by,
             region=region,
@@ -3836,9 +4305,29 @@ class ServerlessSqlCollection(_Collection[ServerlessSql]):
     async def _items(self) -> AsyncIterator[ServerlessSql]:
         async for data in self._session.api(_ServerlessSqldbAPI).list_databases_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ServerlessSql._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ServerlessSqldbListDatabasesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ServerlessSqldbAPI).list_databases(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.databases or [])
+            if not response.databases or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -3884,16 +4373,37 @@ class ClickhousePresetCollection(_Collection[Preset]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
     ) -> ClickhousePresetCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(region=region)
+        return self._narrowed(page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[Preset]:
         async for data in self._session.api(_DatawarehouseAPI).list_presets_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListPresetsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatawarehouseAPI).list_presets(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.presets or [])
+            if not response.presets or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ClickhouseVersionCollection(_Collection[DatawarehouseVersion]):
@@ -3904,16 +4414,37 @@ class ClickhouseVersionCollection(_Collection[DatawarehouseVersion]):
         *,
         region: str | None = None,
         version: str | None = None,
+        page_size: int | None = None,
     ) -> ClickhouseVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(version=version, region=region)
+        return self._narrowed(version=version, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[DatawarehouseVersion]:
         async for data in self._session.api(_DatawarehouseAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[DatawarehouseListVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_DatawarehouseAPI).list_versions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MongodbNodeTypeCollection(_Collection[MongodbNodeType]):
@@ -3924,19 +4455,43 @@ class MongodbNodeTypeCollection(_Collection[MongodbNodeType]):
         *,
         region: str | None = None,
         include_disabled: bool | None = None,
+        page_size: int | None = None,
         project_id: str | _Ref[Any] | None = None,
     ) -> MongodbNodeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            include_disabled=include_disabled, project_id=project_id, region=region
+            include_disabled=include_disabled,
+            page_size=page_size,
+            project_id=project_id,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[MongodbNodeType]:
         async for data in self._session.api(_MongodbAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[MongodbListNodeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MongodbAPI).list_node_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.node_types or [])
+            if not response.node_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class MongodbVersionCollection(_Collection[MongodbVersion]):
@@ -3947,16 +4502,37 @@ class MongodbVersionCollection(_Collection[MongodbVersion]):
         *,
         region: str | None = None,
         version: str | None = None,
+        page_size: int | None = None,
     ) -> MongodbVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(version=version, region=region)
+        return self._narrowed(version=version, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[MongodbVersion]:
         async for data in self._session.api(_MongodbAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[MongodbListVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_MongodbAPI).list_versions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class PostgresMysqlEngineCollection(_Collection[DatabaseEngine]):
@@ -3968,16 +4544,39 @@ class PostgresMysqlEngineCollection(_Collection[DatabaseEngine]):
         region: str | None = None,
         name: str | None = None,
         version: str | None = None,
+        page_size: int | None = None,
     ) -> PostgresMysqlEngineCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(name=name, version=version, region=region)
+        return self._narrowed(
+            name=name, version=version, page_size=page_size, region=region
+        )
 
     async def _items(self) -> AsyncIterator[DatabaseEngine]:
         async for data in self._session.api(_RdbAPI).list_database_engines_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListDatabaseEnginesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_database_engines(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.engines or [])
+            if not response.engines or seen >= response.total_count:
+                return
+            number += 1
 
 
 class PostgresMysqlNodeTypeCollection(_Collection[RdbNodeType]):
@@ -3988,18 +4587,41 @@ class PostgresMysqlNodeTypeCollection(_Collection[RdbNodeType]):
         *,
         region: str | None = None,
         include_disabled_types: bool,
+        page_size: int | None = None,
     ) -> PostgresMysqlNodeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            include_disabled_types=include_disabled_types, region=region
+            include_disabled_types=include_disabled_types,
+            page_size=page_size,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[RdbNodeType]:
         async for data in self._session.api(_RdbAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[RdbListNodeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RdbAPI).list_node_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.node_types or [])
+            if not response.node_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class RedisVersionCollection(_Collection[ClusterVersion]):
@@ -4013,6 +4635,7 @@ class RedisVersionCollection(_Collection[ClusterVersion]):
         include_beta: bool,
         include_deprecated: bool,
         version: str | None = None,
+        page_size: int | None = None,
     ) -> RedisVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -4020,15 +4643,36 @@ class RedisVersionCollection(_Collection[ClusterVersion]):
             include_beta=include_beta,
             include_deprecated=include_deprecated,
             version=version,
+            page_size=page_size,
             zone=zone,
         )
 
     async def _items(self) -> AsyncIterator[ClusterVersion]:
         async for data in self._session.api(_RedisAPI).list_cluster_versions_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListClusterVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RedisAPI).list_cluster_versions(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class RedisNodeTypeCollection(_Collection[RedisNodeType]):
@@ -4039,16 +4683,41 @@ class RedisNodeTypeCollection(_Collection[RedisNodeType]):
         *,
         zone: str | None = None,
         include_disabled_types: bool,
+        page_size: int | None = None,
     ) -> RedisNodeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(include_disabled_types=include_disabled_types, zone=zone)
+        return self._narrowed(
+            include_disabled_types=include_disabled_types,
+            page_size=page_size,
+            zone=zone,
+        )
 
     async def _items(self) -> AsyncIterator[RedisNodeType]:
         async for data in self._session.api(_RedisAPI).list_node_types_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[RedisListNodeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_RedisAPI).list_node_types(
+                zone=self._criteria.get("zone"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.node_types or [])
+            if not response.node_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class OpensearchNodeTypeCollection(_Collection[SearchdbNodeType]):
@@ -4059,16 +4728,37 @@ class OpensearchNodeTypeCollection(_Collection[SearchdbNodeType]):
         *,
         region: str | None = None,
         order_by: ListNodeTypesRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> OpensearchNodeTypeCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(order_by=order_by, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[SearchdbNodeType]:
         async for data in self._session.api(_SearchdbAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[SearchdbListNodeTypesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_SearchdbAPI).list_node_types(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.node_types or [])
+            if not response.node_types or seen >= response.total_count:
+                return
+            number += 1
 
 
 class OpensearchVersionCollection(_Collection[SearchdbVersion]):
@@ -4079,17 +4769,40 @@ class OpensearchVersionCollection(_Collection[SearchdbVersion]):
         *,
         region: str | None = None,
         order_by: ListVersionsRequestOrderBy | None = None,
+        page_size: int | None = None,
         version: str | None = None,
     ) -> OpensearchVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, version=version, region=region)
+        return self._narrowed(
+            order_by=order_by, page_size=page_size, version=version, region=region
+        )
 
     async def _items(self) -> AsyncIterator[SearchdbVersion]:
         async for data in self._session.api(_SearchdbAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[SearchdbListVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_SearchdbAPI).list_versions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ServerlessSqlVersionCollection(_Collection[ServerlessSqldbVersion]):
@@ -4100,16 +4813,37 @@ class ServerlessSqlVersionCollection(_Collection[ServerlessSqldbVersion]):
         *,
         region: str | None = None,
         version: str | None = None,
+        page_size: int | None = None,
     ) -> ServerlessSqlVersionCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(version=version, region=region)
+        return self._narrowed(version=version, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[ServerlessSqldbVersion]:
         async for data in self._session.api(_ServerlessSqldbAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ServerlessSqldbListVersionsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_ServerlessSqldbAPI).list_versions(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.versions or [])
+            if not response.versions or seen >= response.total_count:
+                return
+            number += 1
 
 
 class DatabasesNamespace(_Namespace):

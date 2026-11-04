@@ -60,6 +60,7 @@ from aioscaleway.observability.types import (
     CockpitContactPoint,
     CockpitDisableAlertRulesResponse,
     CockpitEnableAlertRulesResponse,
+    CockpitListProductsResponse,
     CockpitProduct,
     ContactPointEmail,
     CustomAlertRuleSeverity,
@@ -77,18 +78,28 @@ from aioscaleway.observability.types import (
     GetRulesCountResponse,
     Grafana,
     GrafanaUserRole,
+    ListAlertRulesResponse,
     ListAuthenticationEventsRequestOrderBy,
     ListCombinedEventsRequestOrderBy,
     ListCombinedEventsResponseCombinedEvent,
+    ListContactPointsResponse,
+    ListCustomAlertRulesResponse,
     ListDataSourcesRequestOrderBy,
+    ListDataSourcesResponse,
     ListEventsRequestOrderBy,
     ListExportersRequestOrderBy,
+    ListExportersResponse,
     ListExportJobsRequestOrderBy,
+    ListExportJobsResponse,
+    ListGrafanaProductDashboardsResponse,
     ListGrafanaUsersRequestOrderBy,
+    ListGrafanaUsersResponse,
     ListPlansRequestOrderBy,
+    ListPlansResponse,
     ListProductsRequestOrderBy,
     ListSystemEventsRequestOrderBy,
     ListTokensRequestOrderBy,
+    ListTokensResponse,
     Plan,
     ResourceType,
     RetrieveAvailableFieldsForCustomAlertRulesResponse,
@@ -189,10 +200,14 @@ class AuditCustomAlertRuleCollection(_Collection[AuditCustomAlertRule]):
         region: str | None = None,
         organization_id: str | _Ref[Any],
         status: CustomAlertRuleStatus | None = None,
+        page_size: int | None = None,
     ) -> AuditCustomAlertRuleCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            organization_id=organization_id, status=status, region=region
+            organization_id=organization_id,
+            status=status,
+            page_size=page_size,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[AuditCustomAlertRule]:
@@ -200,9 +215,29 @@ class AuditCustomAlertRuleCollection(_Collection[AuditCustomAlertRule]):
             _AuditTrailAPI
         ).list_custom_alert_rules_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield AuditCustomAlertRule._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListCustomAlertRulesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_AuditTrailAPI).list_custom_alert_rules(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.custom_alert_rules or [])
+            if not response.custom_alert_rules or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -312,6 +347,7 @@ class AuditExportJobCollection(_Collection[AuditExportJob]):
         organization_id: str | _Ref[Any],
         name: str | None = None,
         tags: list[str] | None = None,
+        page_size: int | None = None,
         order_by: ListExportJobsRequestOrderBy | None = None,
     ) -> AuditExportJobCollection:
         """The same collection, narrowed to the items matching these criteria."""
@@ -319,6 +355,7 @@ class AuditExportJobCollection(_Collection[AuditExportJob]):
             organization_id=organization_id,
             name=name,
             tags=tags,
+            page_size=page_size,
             order_by=order_by,
             region=region,
         )
@@ -326,9 +363,29 @@ class AuditExportJobCollection(_Collection[AuditExportJob]):
     async def _items(self) -> AsyncIterator[AuditExportJob]:
         async for data in self._session.api(_AuditTrailAPI).list_export_jobs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield AuditExportJob._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListExportJobsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_AuditTrailAPI).list_export_jobs(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.export_jobs or [])
+            if not response.export_jobs or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -413,18 +470,40 @@ class GrafanaProductDashboardCollection(_Collection[GrafanaProductDashboard]):
         self,
         *,
         project_id: str | _Ref[Any],
+        page_size: int | None = None,
         tags: list[str] | None = None,
     ) -> GrafanaProductDashboardCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(project_id=project_id, tags=tags)
+        return self._narrowed(project_id=project_id, page_size=page_size, tags=tags)
 
     async def _items(self) -> AsyncIterator[GrafanaProductDashboard]:
         async for data in self._session.api(
             _CockpitGlobalAPI
         ).list_grafana_product_dashboards_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield GrafanaProductDashboard._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListGrafanaProductDashboardsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(
+                _CockpitGlobalAPI
+            ).list_grafana_product_dashboards(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.dashboards or [])
+            if not response.dashboards or seen >= response.total_count:
+                return
+            number += 1
 
 
 class GrafanaUserRef(_Ref["GrafanaUser"]):
@@ -497,16 +576,38 @@ class GrafanaUserCollection(_Collection[GrafanaUser]):
         self,
         *,
         project_id: str | _Ref[Any],
+        page_size: int | None = None,
         order_by: ListGrafanaUsersRequestOrderBy | None = None,
     ) -> GrafanaUserCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, project_id=project_id)
+        return self._narrowed(
+            page_size=page_size, order_by=order_by, project_id=project_id
+        )
 
     async def _items(self) -> AsyncIterator[GrafanaUser]:
         async for data in self._session.api(_CockpitGlobalAPI).list_grafana_users_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield GrafanaUser._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListGrafanaUsersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_CockpitGlobalAPI).list_grafana_users(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.grafana_users or [])
+            if not response.grafana_users or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -616,6 +717,7 @@ class DataSourceCollection(_Collection[DataSource]):
         project_id: str | _Ref[Any],
         origin: DataSourceOrigin | None = None,
         types: list[DataSourceType] | None = None,
+        page_size: int | None = None,
         order_by: ListDataSourcesRequestOrderBy | None = None,
     ) -> DataSourceCollection:
         """The same collection, narrowed to the items matching these criteria."""
@@ -623,6 +725,7 @@ class DataSourceCollection(_Collection[DataSource]):
             project_id=project_id,
             origin=origin,
             types=types,
+            page_size=page_size,
             order_by=order_by,
             region=region,
         )
@@ -630,9 +733,29 @@ class DataSourceCollection(_Collection[DataSource]):
     async def _items(self) -> AsyncIterator[DataSource]:
         async for data in self._session.api(_CockpitRegionalAPI).list_data_sources_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DataSource._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListDataSourcesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_CockpitRegionalAPI).list_data_sources(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.data_sources or [])
+            if not response.data_sources or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -752,12 +875,14 @@ class ExporterCollection(_Collection[Exporter]):
         region: str | None = None,
         project_id: str | _Ref[Any],
         datasource_id: str | _Ref[Any] | None = None,
+        page_size: int | None = None,
         order_by: ListExportersRequestOrderBy | None = None,
     ) -> ExporterCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             project_id=project_id,
             datasource_id=datasource_id,
+            page_size=page_size,
             order_by=order_by,
             region=region,
         )
@@ -765,9 +890,29 @@ class ExporterCollection(_Collection[Exporter]):
     async def _items(self) -> AsyncIterator[Exporter]:
         async for data in self._session.api(_CockpitRegionalAPI).list_exporters_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Exporter._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListExportersResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_CockpitRegionalAPI).list_exporters(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.exporters or [])
+            if not response.exporters or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -860,12 +1005,14 @@ class CockpitTokenCollection(_Collection[CockpitToken]):
         region: str | None = None,
         project_id: str | _Ref[Any],
         token_scopes: list[TokenScope] | None = None,
+        page_size: int | None = None,
         order_by: ListTokensRequestOrderBy | None = None,
     ) -> CockpitTokenCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
             project_id=project_id,
             token_scopes=token_scopes,
+            page_size=page_size,
             order_by=order_by,
             region=region,
         )
@@ -873,9 +1020,29 @@ class CockpitTokenCollection(_Collection[CockpitToken]):
     async def _items(self) -> AsyncIterator[CockpitToken]:
         async for data in self._session.api(_CockpitRegionalAPI).list_tokens_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield CockpitToken._from(self._session, self._scope, data)
+
+    async def pages(self) -> AsyncIterator[ListTokensResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_CockpitRegionalAPI).list_tokens(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.tokens or [])
+            if not response.tokens or seen >= response.total_count:
+                return
+            number += 1
 
     async def create(
         self,
@@ -915,18 +1082,42 @@ class AuditAlertRuleCollection(_Collection[AlertRule]):
         region: str | None = None,
         organization_id: str | _Ref[Any],
         status: AlertRuleStatus | None = None,
+        page_size: int | None = None,
     ) -> AuditAlertRuleCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
-            organization_id=organization_id, status=status, region=region
+            organization_id=organization_id,
+            status=status,
+            page_size=page_size,
+            region=region,
         )
 
     async def _items(self) -> AsyncIterator[AlertRule]:
         async for data in self._session.api(_AuditTrailAPI).list_alert_rules_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListAlertRulesResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_AuditTrailAPI).list_alert_rules(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.alert_rules or [])
+            if not response.alert_rules or seen >= response.total_count:
+                return
+            number += 1
 
 
 class AuditAuthenticationEventCollection(_Collection[AuthenticationEvent]):
@@ -940,6 +1131,7 @@ class AuditAuthenticationEventCollection(_Collection[AuthenticationEvent]):
         recorded_after: Instant | None = None,
         recorded_before: Instant | None = None,
         order_by: ListAuthenticationEventsRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> AuditAuthenticationEventCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -947,13 +1139,14 @@ class AuditAuthenticationEventCollection(_Collection[AuthenticationEvent]):
             recorded_after=recorded_after,
             recorded_before=recorded_before,
             order_by=order_by,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[AuthenticationEvent]:
         response = await self._session.api(_AuditTrailAPI).list_authentication_events(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.events or []:
             yield data
@@ -974,6 +1167,7 @@ class AuditCombinedEventCollection(
         recorded_after: Instant | None = None,
         recorded_before: Instant | None = None,
         order_by: ListCombinedEventsRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> AuditCombinedEventCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -983,13 +1177,14 @@ class AuditCombinedEventCollection(
             recorded_after=recorded_after,
             recorded_before=recorded_before,
             order_by=order_by,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[ListCombinedEventsResponseCombinedEvent]:
         response = await self._session.api(_AuditTrailAPI).list_combined_events(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.events or []:
             yield data
@@ -1010,6 +1205,7 @@ class AuditEventCollection(_Collection[Event]):
         recorded_after: Instant | None = None,
         recorded_before: Instant | None = None,
         order_by: ListEventsRequestOrderBy | None = None,
+        page_size: int | None = None,
         product_name: str | None = None,
         service_name: str | None = None,
         resource_id: str | _Ref[Any] | None = None,
@@ -1026,6 +1222,7 @@ class AuditEventCollection(_Collection[Event]):
             recorded_after=recorded_after,
             recorded_before=recorded_before,
             order_by=order_by,
+            page_size=page_size,
             product_name=product_name,
             service_name=service_name,
             resource_id=resource_id,
@@ -1037,7 +1234,7 @@ class AuditEventCollection(_Collection[Event]):
     async def _items(self) -> AsyncIterator[Event]:
         response = await self._session.api(_AuditTrailAPI).list_events(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.events or []:
             yield data
@@ -1058,7 +1255,7 @@ class AuditProductCollection(_Collection[AuditTrailProduct]):
     async def _items(self) -> AsyncIterator[AuditTrailProduct]:
         response = await self._session.api(_AuditTrailAPI).list_products(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.products or []:
             yield data
@@ -1075,6 +1272,7 @@ class AuditSystemEventCollection(_Collection[SystemEvent]):
         recorded_after: Instant | None = None,
         recorded_before: Instant | None = None,
         order_by: ListSystemEventsRequestOrderBy | None = None,
+        page_size: int | None = None,
     ) -> AuditSystemEventCollection:
         """The same collection, narrowed to the items matching these criteria."""
         return self._narrowed(
@@ -1082,13 +1280,14 @@ class AuditSystemEventCollection(_Collection[SystemEvent]):
             recorded_after=recorded_after,
             recorded_before=recorded_before,
             order_by=order_by,
+            page_size=page_size,
             region=region,
         )
 
     async def _items(self) -> AsyncIterator[SystemEvent]:
         response = await self._session.api(_AuditTrailAPI).list_system_events(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.events or []:
             yield data
@@ -1100,16 +1299,36 @@ class CockpitPlanCollection(_Collection[Plan]):
     def filter(
         self,
         *,
+        page_size: int | None = None,
         order_by: ListPlansRequestOrderBy | None = None,
     ) -> CockpitPlanCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by)
+        return self._narrowed(page_size=page_size, order_by=order_by)
 
     async def _items(self) -> AsyncIterator[Plan]:
         async for data in self._session.api(_CockpitGlobalAPI).list_plans_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListPlansResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_CockpitGlobalAPI).list_plans(
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.plans or [])
+            if not response.plans or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ContactPointCollection(_Collection[CockpitContactPoint]):
@@ -1120,18 +1339,39 @@ class ContactPointCollection(_Collection[CockpitContactPoint]):
         *,
         region: str | None = None,
         project_id: str | _Ref[Any],
+        page_size: int | None = None,
     ) -> ContactPointCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(project_id=project_id, region=region)
+        return self._narrowed(project_id=project_id, page_size=page_size, region=region)
 
     async def _items(self) -> AsyncIterator[CockpitContactPoint]:
         async for data in self._session.api(
             _CockpitRegionalAPI
         ).list_contact_points_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[ListContactPointsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_CockpitRegionalAPI).list_contact_points(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.contact_points or [])
+            if not response.contact_points or seen >= response.total_count:
+                return
+            number += 1
 
 
 class CockpitAlertCollection(_Collection[Alert]):
@@ -1160,7 +1400,7 @@ class CockpitAlertCollection(_Collection[Alert]):
     async def _items(self) -> AsyncIterator[Alert]:
         response = await self._session.api(_CockpitRegionalAPI).list_alerts(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.alerts or []:
             yield data
@@ -1173,17 +1413,38 @@ class CockpitProductCollection(_Collection[CockpitProduct]):
         self,
         *,
         region: str | None = None,
+        page_size: int | None = None,
         order_by: ListProductsRequestOrderBy | None = None,
     ) -> CockpitProductCollection:
         """The same collection, narrowed to the items matching these criteria."""
-        return self._narrowed(order_by=order_by, region=region)
+        return self._narrowed(page_size=page_size, order_by=order_by, region=region)
 
     async def _items(self) -> AsyncIterator[CockpitProduct]:
         async for data in self._session.api(_CockpitRegionalAPI).list_products_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
+
+    async def pages(self) -> AsyncIterator[CockpitListProductsResponse]:
+        """Each page as the API returns it, totals and sums included."""
+        number = 1
+        seen = 0
+        while True:
+            response = await self._session.api(_CockpitRegionalAPI).list_products(
+                region=self._criteria.get("region"),
+                **{
+                    k: v
+                    for k, v in self._criteria.items()
+                    if k not in {"region", "zone"}
+                },
+                page=number,
+            )
+            yield response
+            seen += len(response.products_list or [])
+            if not response.products_list or seen >= response.total_count:
+                return
+            number += 1
 
 
 class ObservabilityNamespace(_Namespace):

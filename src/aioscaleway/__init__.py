@@ -19,6 +19,7 @@ from aioscaleway._errors import (
     TransientStateError,
 )
 from aioscaleway._models import Money, ScalewayModel
+from aioscaleway._root import Scaleway
 from aioscaleway._settings import ScalewaySettings
 
 __all__ = [
@@ -33,6 +34,7 @@ __all__ = [
     "QuotasExceededError",
     "ResourceExpiredError",
     "ResourceNotFoundError",
+    "Scaleway",
     "ScalewayAPIError",
     "ScalewayClient",
     "ScalewayModel",

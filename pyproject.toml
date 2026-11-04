@@ -29,6 +29,7 @@ dependencies = [
     "pydantic>=2.14.1",
     "pydantic-settings>=2.16.0",
     "stamina>=26.1.0",
+    "whenever>=0.11.0",
 ]
 
 [project.urls]
@@ -61,7 +62,11 @@ target-version = "py312"
 select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
 
 [tool.ruff.lint.per-file-ignores]
-"src/aioscaleway/*/*/*.py" = ["E501"]
+"src/aioscaleway/_operations/**/*.py" = ["E501"]
+"src/aioscaleway/*/resources.py" = ["E501"]
+"src/aioscaleway/*/types.py" = ["E501"]
+# the generators hold code templates, whose lines are those of the output
+"scripts/*.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"

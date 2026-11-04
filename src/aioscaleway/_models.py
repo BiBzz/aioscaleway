@@ -1,6 +1,7 @@
 from decimal import Decimal
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, PrivateAttr
 
 
 class ScalewayModel(BaseModel):
@@ -13,6 +14,9 @@ class ScalewayModel(BaseModel):
         use_enum_values=False,
         protected_namespaces=(),
     )
+
+    _session: Any = PrivateAttr(default=None)
+    _key: dict[str, str | None] = PrivateAttr(default_factory=dict)
 
 
 class Money(ScalewayModel):

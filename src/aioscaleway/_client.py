@@ -1,5 +1,4 @@
 from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
-from datetime import date, datetime
 from enum import Enum
 from http import HTTPStatus
 from types import TracebackType
@@ -16,6 +15,7 @@ from httpx2 import (
 )
 from pydantic import BaseModel
 from stamina import retry_context
+from whenever import Date, Instant
 
 from aioscaleway._errors import (
     ScalewayAPIError,
@@ -37,7 +37,7 @@ RETRYABLE_STATUSES = frozenset(
 NEVER_PROCESSED_STATUSES = frozenset(
     {HTTPStatus.TOO_MANY_REQUESTS, HTTPStatus.SERVICE_UNAVAILABLE}
 )
-type QueryValue = str | int | float | bool | Enum | datetime | date | None
+type QueryValue = str | int | float | bool | Enum | Instant | Date | None
 type Query = Mapping[str, QueryValue | list[Any]]
 type QueryPairs = list[tuple[str, str | int | float | bool | None]]
 
@@ -65,8 +65,8 @@ def query_value(value: Any) -> str:
         return "true" if value else "false"
     if isinstance(value, Enum):
         return str(value.value)
-    if isinstance(value, datetime | date):
-        return value.isoformat()
+    if isinstance(value, Instant | Date):
+        return value.format_iso()
     return str(value)
 
 
@@ -85,8 +85,8 @@ def encode_body(value: Any) -> Any:
         return value.model_dump(mode="json", by_alias=True, exclude_unset=True)
     if isinstance(value, Enum):
         return value.value
-    if isinstance(value, datetime | date):
-        return value.isoformat()
+    if isinstance(value, Instant | Date):
+        return value.format_iso()
     if isinstance(value, dict):
         return {
             key: encode_body(item) for key, item in value.items() if item is not None
@@ -97,11 +97,7 @@ def encode_body(value: Any) -> Any:
 
 
 class ScalewayClient:
-    """Authenticated, retrying HTTP access to the Scaleway API.
-
-    Every generated API class takes this client, as the official SDK does:
-    `BillingV2Beta1API(client)`.
-    """
+    """Authenticated, retrying HTTP access to the Scaleway API (`Scaleway().raw`)."""
 
     def __init__(
         self,
@@ -118,9 +114,9 @@ class ScalewayClient:
             timeout=self.settings.timeout,
         )
 
-    @classmethod
-    def from_values(cls, **values: Any) -> Self:
-        return cls(ScalewaySettings(**values))
+    @property
+    def http_client(self) -> AsyncClient:
+        return self._http
 
     async def __aenter__(self) -> Self:
         return self

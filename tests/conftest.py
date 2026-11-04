@@ -6,7 +6,8 @@ import pytest
 import stamina
 from httpx2 import MockTransport, Request, Response
 
-from aioscaleway import ScalewayClient, ScalewaySettings
+from aioscaleway import Scaleway, ScalewaySettings
+from aioscaleway._client import ScalewayClient
 
 type Handler = Callable[[Request], Response]
 
@@ -51,13 +52,20 @@ def recorder() -> Recorder:
     return Recorder()
 
 
+SETTINGS = ScalewaySettings(
+    secret_key="secret",
+    default_region="fr-par",
+    default_zone="fr-par-1",
+    default_project_id="project-1",
+    default_organization_id="organization-1",
+)
+
+
 @pytest.fixture
 def client(recorder: Recorder) -> ScalewayClient:
-    settings = ScalewaySettings(
-        secret_key="secret",
-        default_region="fr-par",
-        default_zone="fr-par-1",
-        default_project_id="project-1",
-        default_organization_id="organization-1",
-    )
-    return ScalewayClient(settings, transport=MockTransport(recorder))
+    return ScalewayClient(SETTINGS, transport=MockTransport(recorder))
+
+
+@pytest.fixture
+def scw(recorder: Recorder) -> Scaleway:
+    return Scaleway(settings=SETTINGS, transport=MockTransport(recorder))

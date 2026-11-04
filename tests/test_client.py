@@ -9,14 +9,14 @@ from aioscaleway import (
     Money,
     QuotasExceededError,
     ResourceNotFoundError,
-    ScalewayClient,
     ScalewayConfigurationError,
     ScalewaySettings,
     ScalewayTransportError,
     ServerError,
     TooManyRequestsError,
 )
-from aioscaleway.instance.v1 import Arch
+from aioscaleway._client import ScalewayClient
+from aioscaleway.compute.types import Arch
 from tests.conftest import Recorder
 
 

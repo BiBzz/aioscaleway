@@ -1,32 +1,35 @@
 import importlib
 import inspect
-import pkgutil
-from datetime import UTC, datetime
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 from pydantic import BaseModel
+from whenever import Instant
 
 import aioscaleway
-from aioscaleway import ScalewayClient
-from aioscaleway.billing.v2beta1 import (
+from aioscaleway._client import ScalewayClient
+from aioscaleway._operations.billing.v2beta1 import (
     BillingV2Beta1API,
     ListConsumptionsRequestOrderBy,
     ListConsumptionsResponse,
 )
-from aioscaleway.instance.v1 import InstanceV1API, ServerState
-from aioscaleway.k8s.v1 import K8SV1API
+from aioscaleway._operations.instance.v1 import InstanceV1API, ServerState
+from aioscaleway._operations.k8s.v1 import K8SV1API
 from tests.conftest import Recorder
 
+PACKAGE = Path(aioscaleway.__file__).parent
 GENERATED_MODULES = sorted(
-    info.name
-    for info in pkgutil.walk_packages(aioscaleway.__path__, "aioscaleway.")
-    if info.name.count(".") == 3 and info.name.endswith(".models")
+    "aioscaleway." + ".".join(path.relative_to(PACKAGE).with_suffix("").parts)
+    for path in [
+        *PACKAGE.glob("_operations/*/*/models.py"),
+        *PACKAGE.glob("*/resources.py"),
+    ]
 )
 
 
-def test_every_product_is_generated() -> None:
-    assert len(GENERATED_MODULES) >= 59
+def test_every_api_version_and_namespace_is_generated() -> None:
+    assert len(GENERATED_MODULES) >= 59 + 18
 
 
 @pytest.mark.parametrize("module_name", GENERATED_MODULES)
@@ -77,7 +80,7 @@ async def test_a_call_maps_arguments_and_parses_the_response(
     )
 
     assert isinstance(result, ListConsumptionsResponse)
-    assert result.updated_at == datetime(2026, 11, 1, tzinfo=UTC)
+    assert result.updated_at == Instant.from_utc(2026, 11, 1)
     assert result.consumptions[0].value is not None
     assert result.consumptions[0].value.to_decimal() == Decimal("1.5")
     query = recorder.requests[0].url.params

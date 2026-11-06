@@ -179,7 +179,7 @@ class SnapshotCollection(_Collection[Snapshot]):
     async def _items(self) -> AsyncIterator[Snapshot]:
         async for data in self._session.api(_BlockAPI).list_snapshots_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Snapshot._from(self._session, self._scope, data)
 
@@ -193,7 +193,7 @@ class SnapshotCollection(_Collection[Snapshot]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -344,7 +344,7 @@ class VolumeCollection(_Collection[Volume]):
     async def _items(self) -> AsyncIterator[Volume]:
         async for data in self._session.api(_BlockAPI).list_volumes_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Volume._from(self._session, self._scope, data)
 
@@ -358,7 +358,7 @@ class VolumeCollection(_Collection[Volume]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -514,7 +514,7 @@ class FileSystemCollection(_Collection[FileSystem]):
     async def _items(self) -> AsyncIterator[FileSystem]:
         async for data in self._session.api(_FileAPI).list_file_systems_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FileSystem._from(self._session, self._scope, data)
 
@@ -528,7 +528,7 @@ class FileSystemCollection(_Collection[FileSystem]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -683,7 +683,7 @@ class FileSystemSnapshotCollection(_Collection[FileSystemSnapshot]):
     async def _items(self) -> AsyncIterator[FileSystemSnapshot]:
         async for data in self._session.api(_FileAPI).list_snapshots_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FileSystemSnapshot._from(self._session, self._scope, data)
 
@@ -697,7 +697,7 @@ class FileSystemSnapshotCollection(_Collection[FileSystemSnapshot]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -753,7 +753,7 @@ class VolumeTypeCollection(_Collection[BlockVolumeType]):
     async def _items(self) -> AsyncIterator[BlockVolumeType]:
         async for data in self._session.api(_BlockAPI).list_volume_types_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -767,7 +767,7 @@ class VolumeTypeCollection(_Collection[BlockVolumeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -804,7 +804,7 @@ class FileSystemAttachmentCollection(_Collection[Attachment]):
     async def _items(self) -> AsyncIterator[Attachment]:
         async for data in self._session.api(_FileAPI).list_attachments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -818,7 +818,7 @@ class FileSystemAttachmentCollection(_Collection[Attachment]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -844,7 +844,7 @@ class FileSystemTypeCollection(_Collection[FileFileSystemType]):
     async def _items(self) -> AsyncIterator[FileFileSystemType]:
         async for data in self._session.api(_FileAPI).list_file_system_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -858,7 +858,7 @@ class FileSystemTypeCollection(_Collection[FileFileSystemType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )

@@ -1,0 +1,1727 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="aioscaleway, every Scaleway API in Python, fully async and strongly typed.">
+      
+      
+      
+        <link rel="canonical" href="https://aioscaleway.businessagile.eu/objects/">
+      
+      
+      
+        <link rel="prev" href="../design/">
+      
+      
+        <link rel="next" href="../architecture/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/icon-white.svg">
+      <meta name="generator" content="zensical-0.0.71">
+    
+    
+      
+        <title>Object tree - aioscaleway</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/classic/main.68ef4dbf.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/classic/palette.813d4b3f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../css/custom.css">
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "aioscaleway",
+  "url": "https://aioscaleway.businessagile.eu/",
+  "creator": {
+    "@type": "Organization",
+    "name": "Business Agile",
+    "url": "https://businessagile.eu",
+    "identifier": {"@type": "PropertyValue", "propertyID": "SIREN", "value": "817753155"},
+    "address": {"@type": "PostalAddress", "streetAddress": "9 bis boulevard Jean Jaurès", "postalCode": "92100", "addressLocality": "Boulogne-Billancourt", "addressCountry": "FR"}
+  }
+}
+</script>
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-hidden="true"></label>
+    <div data-md-component="skip">
+      <a href="#__skip" class="md-skip">
+        Skip to content
+      </a>
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="aioscaleway" class="md-header__button md-logo" aria-label="aioscaleway" data-md-component="logo">
+      
+  <img src="../img/icon-white.svg" alt="aioscaleway">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            aioscaleway
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Object tree
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 2C5.13 2 2 5.13 2 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7M6 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H6zm13-8h-2l-3.2 9h1.9l.7-2h3.2l.7 2h1.9zm-2.15 5.65L18 15l1.15 3.65z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://gitlab.com/businessagile/libraries/aioscaleway" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>GitLab</title><path d="m23.6 9.593-.033-.086L20.3.98a.85.85 0 0 0-.336-.405.875.875 0 0 0-1 .054.88.88 0 0 0-.29.44L16.47 7.818H7.537L5.333 1.07a.86.86 0 0 0-.29-.441.875.875 0 0 0-1-.054.86.86 0 0 0-.336.405L.433 9.502l-.032.086a6.066 6.066 0 0 0 2.012 7.01l.01.009.03.021 4.977 3.727 2.462 1.863 1.5 1.132a1.01 1.01 0 0 0 1.22 0l1.499-1.132 2.461-1.863 5.006-3.75.013-.01a6.07 6.07 0 0 0 2.01-7.002"/></svg>
+  </div>
+  <div class="md-source__repository">
+    businessagile/libraries/aioscaleway
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="./.." class="md-tabs__link">
+        
+  
+  aioscaleway
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../features/" class="md-tabs__link">
+        
+  
+  Features
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../design/" class="md-tabs__link">
+        
+  
+  Design and roadmap
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+      
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="././" class="md-tabs__link">
+          
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../about/legal-notice/" class="md-tabs__link">
+          
+  
+  About
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="aioscaleway" class="md-nav__button md-logo" aria-label="aioscaleway" data-md-component="logo">
+      
+  <img src="../img/icon-white.svg" alt="aioscaleway">
+
+    </a>
+    aioscaleway
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://gitlab.com/businessagile/libraries/aioscaleway" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>GitLab</title><path d="m23.6 9.593-.033-.086L20.3.98a.85.85 0 0 0-.336-.405.875.875 0 0 0-1 .054.88.88 0 0 0-.29.44L16.47 7.818H7.537L5.333 1.07a.86.86 0 0 0-.29-.441.875.875 0 0 0-1-.054.86.86 0 0 0-.336.405L.433 9.502l-.032.086a6.066 6.066 0 0 0 2.012 7.01l.01.009.03.021 4.977 3.727 2.462 1.863 1.5 1.132a1.01 1.01 0 0 0 1.22 0l1.499-1.132 2.461-1.863 5.006-3.75.013-.01a6.07 6.07 0 0 0 2.01-7.002"/></svg>
+  </div>
+  <div class="md-source__repository">
+    businessagile/libraries/aioscaleway
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  aioscaleway
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Features
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Design and roadmap
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Reference
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+  Reference
+
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
+              
+                
+                  
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+        <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Object tree
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Object tree
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#account" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        account
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        ai
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        analytics
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#billing" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        billing
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        compute
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#databases" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        databases
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        domains
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#email" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        email
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iam" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        iam
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iot" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        iot
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        kubernetes
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        messaging
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        network
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        observability
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orders" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        orders
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serverless" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        serverless
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        storage
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#web_hosting" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        web_hosting
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Architecture
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coverage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Coverage
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            </ul>
+          </nav>
+        
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  About
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_5">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+  About
+
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/legal-notice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Legal notice
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Privacy and cookies
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            </ul>
+          </nav>
+        
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#account" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        account
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        ai
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        analytics
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#billing" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        billing
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        compute
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#databases" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        databases
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        domains
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#email" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        email
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iam" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        iam
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iot" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        iot
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        kubernetes
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        messaging
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        network
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        observability
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orders" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        orders
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serverless" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        serverless
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        storage
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#web_hosting" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        web_hosting
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                <a id="__skip" tabindex="-1"></a>
+                
+                  
+
+  
+  
+
+
+<h1 id="object-tree">Object tree<a class="headerlink" href="#object-tree" title="Permanent link">&para;</a></h1>
+<p>Generated by scripts/generate.py from specs/ and mapping.yaml.</p>
+<h2 id="account">account<a class="headerlink" href="#account" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>accounts</code>: <code>Account</code>, from <code>account:accounts</code> (create, notify)</li>
+<li><code>annotation_bindings</code>: <code>AnnotationBinding</code>, from <code>annotations:bindings</code> (create, delete)</li>
+<li><code>annotation_keys</code>: <code>AnnotationKey</code>, from <code>annotations:keys</code> (create, delete, update)</li>
+<li><code>annotation_values</code>: <code>AnnotationValue</code>, from <code>annotations:values</code> (create, delete, update)</li>
+<li><code>annotations</code>: listing, from <code>annotations:all_keys_and_values</code></li>
+<li><code>contract_signatures</code>: <code>ContractSignature</code>, from <code>account:contract_signatures</code> (create, download, validate_contract_signature)</li>
+<li><code>countries</code>: <code>Country</code>, from <code>account:iso_codes_countries</code></li>
+<li><code>subdivisions</code>: listing, from <code>account:iso_codes_countries/subdivisions</code></li>
+<li><code>mfa_otps</code>: <code>MfaOtp</code>, from <code>account:mfa_otps</code> (create, delete, validate_mfaotp)</li>
+<li><code>partner_organizations</code>: <code>PartnerOrganization</code>, from <code>partner:organizations</code> (create, lock, request_admin_role, unlock, update)</li>
+<li><code>phone_validations</code>: <code>PhoneValidation</code>, from <code>account:phone_validations</code> (confirm, send)</li>
+<li><code>projects</code>: <code>Project</code>, from <code>account:projects</code> (create, delete, delete_with_resources, set_qualification, update)</li>
+<li><code>reseller_consumptions</code>: listing, from <code>reseller:consumptions</code></li>
+<li><code>reseller_organizations</code>: <code>ResellerOrganization</code>, from <code>reseller:organizations</code> (create, lock, request_admin_role, unlock, update)</li>
+<li><code>users</code>: <code>User</code>, from <code>account:users</code> (change_email, change_password, get_preferences, reject_email_update, update, update_preferences, validate_email_update)</li>
+<li><code>mailing_list_subscriptions</code>: listing, from <code>account:users/mailing_list_subscriptions</code> (set_mailing_list_subscriptions)</li>
+<li><code>organizations</code>: <code>Organization</code>, from <code>account:organizations</code> (close, get_active_support_plan, reopen, set_picture, skip_onboarding_billing_details, update_billing_details, update_details)<ul>
+<li><code>support_plans</code>: listing, from <code>account:organizations/support_plans</code> (change)</li>
+</ul>
+</li>
+<li><code>web_authn_authenticators</code>: listing, from <code>account:users/web_authn_authenticators</code></li>
+<li>methods: <code>check_contract_signature</code>, <code>compute_password_strength</code>, <code>create_login_session</code>, <code>delete_all_bindings_matching_srn</code>, <code>delete_all_bindings_matching_value</code>, <code>delete_all_values_matching_key</code>, <code>delete_web_authn_authenticator</code>, <code>finish_web_authn_authentication</code>, <code>finish_web_authn_authenticator_upgrade</code>, <code>finish_web_authn_registration</code>, <code>initiate_authentication_code_login</code>, <code>initiate_oidc_login</code>, <code>initiate_oidc_signup</code>, <code>initiate_passwordless_login</code>, <code>log_in</code>, <code>log_in_organizations</code>, <code>resend_authentication_code</code>, <code>reset_password</code>, <code>search_resources</code>, <code>send_reset_password_email</code>, <code>set_organization_use_cases</code>, <code>start_web_authn_authentication</code>, <code>start_web_authn_authenticator_upgrade</code>, <code>start_web_authn_registration</code>, <code>update_web_authn_authenticator</code>, <code>validate_account</code>, <code>validate_authentication_code_sign_up</code>, <code>validate_oidc_signup</code></li>
+</ul>
+<h2 id="ai">ai<a class="headerlink" href="#ai" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>batches</code>: <code>Batch</code>, from <code>generative_apis:batches</code> (batch, cancel, create, delete, get)</li>
+<li><code>consumption_limits</code>: listing, from <code>generative_apis:consumption_limits</code> (set_consumption_limits)</li>
+<li><code>deployments</code>: <code>Deployment</code>, from <code>inference:deployments</code> (create, delete, get_certificate, update)</li>
+<li><code>inference_endpoints</code>: <code>InferenceEndpoint</code>, from <code>inference:endpoints</code> (create, delete, update)</li>
+<li><code>inference_node_types</code>: listing, from <code>inference:node_types</code></li>
+<li><code>models</code>: <code>Model</code>, from <code>inference:models</code> (create, delete, get_eula)</li>
+<li><code>quantum_applications</code>: <code>QuantumApplication</code>, from <code>qaas:applications</code></li>
+<li><code>quantum_bookings</code>: <code>QuantumBooking</code>, from <code>qaas:bookings</code> (update)</li>
+<li><code>quantum_jobs</code>: <code>QuantumJob</code>, from <code>qaas:jobs</code> (cancel, create, delete, get_circuit, update)</li>
+<li><code>results</code>: listing, from <code>qaas:jobs/results</code></li>
+<li><code>quantum_models</code>: <code>QuantumModel</code>, from <code>qaas:models</code> (create)</li>
+<li><code>quantum_platforms</code>: <code>QuantumPlatform</code>, from <code>qaas:platforms</code></li>
+<li><code>quantum_processes</code>: <code>QuantumProcess</code>, from <code>qaas:processes</code> (cancel, create, delete, update)</li>
+<li><code>results</code>: listing, from <code>qaas:processes/results</code></li>
+<li><code>quantum_sessions</code>: <code>QuantumSession</code>, from <code>qaas:sessions</code> (create, delete, terminate, update)</li>
+<li><code>ac_ls</code>: listing, from <code>qaas:sessions/ac_ls</code></li>
+<li>methods: <code>create_audio_transcription</code>, <code>create_chat_completion</code>, <code>create_embedding</code>, <code>create_rerank</code>, <code>create_response</code>, <code>models</code>, <code>verify_model</code></li>
+</ul>
+<h2 id="analytics">analytics<a class="headerlink" href="#analytics" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>spark_clusters</code>: <code>SparkCluster</code>, from <code>datalab:datalabs</code> (create, delete, update)</li>
+<li><code>spark_node_types</code>: listing, from <code>datalab:node_types</code></li>
+<li><code>spark_notebook_versions</code>: listing, from <code>datalab:notebook_versions</code></li>
+<li><code>spark_versions</code>: listing, from <code>datalab:cluster_versions</code></li>
+</ul>
+<h2 id="billing">billing<a class="headerlink" href="#billing" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>charges</code>: listing, from <code>billing:charges</code></li>
+<li><code>consumptions</code>: listing, from <code>billing:consumptions</code></li>
+<li><code>discounts</code>: listing, from <code>billing:discounts</code></li>
+<li><code>invoices</code>: <code>Invoice</code>, from <code>billing:invoices</code> (download)</li>
+<li><code>taxes</code>: listing, from <code>billing:taxes</code></li>
+<li>methods: <code>download_impact_report</code>, <code>export_invoices</code>, <code>get_impact_data</code>, <code>get_impact_report_availability</code>, <code>redeem_coupon</code></li>
+</ul>
+<h2 id="compute">compute<a class="headerlink" href="#compute" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>autoscaling_alerts</code>: listing, from <code>autoscaling:alerts</code></li>
+<li><code>autoscaling_groups</code>: <code>AutoscalingGroup</code>, from <code>autoscaling:groups</code> (create, delete, refresh_group, update)</li>
+<li><code>autoscaling_logs</code>: listing, from <code>autoscaling:logs</code></li>
+<li><code>autoscaling_servers</code>: listing, from <code>autoscaling:servers</code></li>
+<li><code>dedibox_offers</code>: <code>DediboxOffer</code>, from <code>dedibox:offers</code></li>
+<li><code>dedibox_ordered_services</code>: <code>DediboxOrderedService</code>, from <code>dedibox:ordered_services</code></li>
+<li><code>dedibox_os</code>: <code>DediboxOs</code>, from <code>dedibox:os</code> (get)</li>
+<li><code>dedibox_reverses</code>: <code>DediboxReverse</code>, from <code>dedibox:reverses</code> (update)</li>
+<li><code>dedibox_servers</code>: <code>DediboxServer</code>, from <code>dedibox:servers</code> (cancel_install, create, delete, get_backup, get_bmc_access, get_install, get_raid, get_rescue, install, reboot, start, start_bmc_access, start_rescue, stop, stop_bmc_access, stop_rescue, subscribe_option, subscribe_storage_options, update, update_backup, update_raid, update_tags)</li>
+<li><code>disks</code>: listing, from <code>dedibox:servers/disks</code></li>
+<li><code>events</code>: listing, from <code>dedibox:servers/events</code></li>
+<li><code>partitioning</code>: <code>Partitioning</code>, from <code>dedibox:servers/partitioning</code></li>
+<li><code>subscribable_options</code>: listing, from <code>dedibox:servers/subscribable_options</code></li>
+<li><code>dedibox_services</code>: <code>DediboxService</code>, from <code>dedibox:services</code> (delete, update)</li>
+<li><code>default_security_group_rules</code>: listing, from <code>instance:default_security_group_rules</code></li>
+<li><code>elastic_metal_offers</code>: <code>ElasticMetalOffer</code>, from <code>baremetal:offers</code></li>
+<li><code>elastic_metal_options</code>: <code>ElasticMetalOption</code>, from <code>baremetal:options</code></li>
+<li><code>elastic_metal_os</code>: <code>ElasticMetalOs</code>, from <code>baremetal:os</code></li>
+<li><code>elastic_metal_private_networks</code>: listing, from <code>baremetal:server_private_networks</code></li>
+<li><code>elastic_metal_servers</code>: <code>ElasticMetalServer</code>, from <code>baremetal:servers</code> (create, delete, get_bmc_access, get_metrics, install_os, migrate_to_monthly_offer, reboot, start, start_bmc_access, stop, stop_bmc_access, update, update_commitment, upgrade_commitment)</li>
+<li><code>attached_options</code>: <code>AttachedOption</code>, from <code>baremetal:servers/options</code> (add_server, delete)</li>
+<li><code>events</code>: listing, from <code>baremetal:servers/events</code></li>
+<li><code>ip_addresses</code>: <code>IpAddress</code>, from <code>baremetal:servers/ips</code> (update)</li>
+<li><code>private_networks</code>: <code>ElasticMetalServerPrivateNetwork</code>, from <code>baremetal:servers/private_networks</code> (add_server, delete, set_server)</li>
+<li><code>elastic_metal_settings</code>: <code>ElasticMetalSetting</code>, from <code>baremetal:settings</code> (update)</li>
+<li><code>failover_ips</code>: <code>FailoverIp</code>, from <code>dedibox:failover_ips</code> (attach_to_mac_address, create, delete, detach_from_mac_address)</li>
+<li><code>images</code>: <code>Image</code>, from <code>instance:images</code> (create, delete, replace, update)</li>
+<li><code>local_snapshots</code>: <code>LocalSnapshot</code>, from <code>instance:snapshots</code> (create, delete, export, replace, update)</li>
+<li><code>local_volume_types</code>: listing, from <code>instance:volumes_types</code></li>
+<li><code>local_volumes</code>: <code>LocalVolume</code>, from <code>instance:volumes</code> (create, delete, replace, update)</li>
+<li><code>mac_connectivity_diagnostics</code>: <code>MacConnectivityDiagnostic</code>, from <code>applesilicon:connectivity_diagnostics</code> (start)</li>
+<li><code>mac_os</code>: <code>MacOs</code>, from <code>applesilicon:os</code></li>
+<li><code>mac_private_networks</code>: listing, from <code>applesilicon:server_private_networks</code></li>
+<li><code>mac_runners</code>: <code>MacRunner</code>, from <code>applesilicon:runners</code> (create, delete, update)</li>
+<li><code>mac_server_type</code>: <code>ApplesiliconMacServerType</code>, from <code>applesilicon:server_type</code></li>
+<li><code>mac_server_types</code>: listing, from <code>applesilicon:server_types</code></li>
+<li><code>mac_servers</code>: <code>MacServer</code>, from <code>applesilicon:servers</code> (create, delete, reboot, reinstall, update)</li>
+<li><code>private_networks</code>: <code>MacServerPrivateNetwork</code>, from <code>applesilicon:servers/private_networks</code> (add_server, delete, set_server)</li>
+<li><code>marketplace_categories</code>: <code>MarketplaceCategory</code>, from <code>marketplace:categories</code></li>
+<li><code>marketplace_full_images</code>: listing, from <code>marketplace:full_images</code></li>
+<li><code>marketplace_images</code>: <code>MarketplaceImage</code>, from <code>marketplace:images</code></li>
+<li><code>marketplace_local_images</code>: <code>MarketplaceLocalImage</code>, from <code>marketplace:local_images</code></li>
+<li><code>marketplace_versions</code>: <code>MarketplaceVersion</code>, from <code>marketplace:versions</code></li>
+<li><code>placement_groups</code>: <code>PlacementGroup</code>, from <code>instance:placement_groups</code> (create, delete, get_servers, replace, set_servers, update, update_servers)</li>
+<li><code>public_ips</code>: <code>PublicIp</code>, from <code>instance:ips</code> (create, delete, release_to_ipam, update)</li>
+<li><code>security_groups</code>: <code>SecurityGroup</code>, from <code>instance:security_groups</code> (create, delete, replace, update)</li>
+<li><code>rules</code>: <code>Rule</code>, from <code>instance:security_groups/rules</code> (create, delete, replace, set_security_group, update)</li>
+<li><code>server_types</code>: listing, from <code>instance:servers_types</code></li>
+<li><code>servers</code>: <code>Server</code>, from <code>instance:servers</code> (action, attach_file_system, attach_volume, create, delete, detach_file_system, detach_volume, get_compatible_types, update)</li>
+<li><code>actions</code>: listing, from <code>instance:servers/actions</code></li>
+<li><code>nics</code>: <code>Nic</code>, from <code>instance:servers/private_nics</code> (create, delete, update)</li>
+<li><code>user_data</code>: <code>UserData</code>, from <code>instance:servers/user_data</code> (delete, update)</li>
+<li>methods: <code>attach_failover_i_ps</code>, <code>baremetal_batch_create_servers</code>, <code>batch_create_servers</code>, <code>check_block_migration_organization_quotas</code>, <code>detach_failover_i_ps</code>, <code>get_dashboard</code>, <code>get_default_partitioning_schema</code>, <code>get_remaining_quota</code>, <code>get_server_types_availability</code>, <code>get_user_configuration</code>, <code>update_runner_configuration_status</code>, <code>validate_partitioning_schema</code></li>
+</ul>
+<h2 id="databases">databases<a class="headerlink" href="#databases" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>clickhouse</code>: <code>Clickhouse</code>, from <code>datawarehouse:deployments</code> (create, delete, get_certificate, start, stop, update)</li>
+<li><code>databases</code>: <code>ClickhouseDatabase</code>, from <code>datawarehouse:deployments/databases</code> (create, delete)</li>
+<li><code>users</code>: <code>ClickhouseUser</code>, from <code>datawarehouse:deployments/users</code> (create, delete, update)</li>
+<li><code>clickhouse_endpoints</code>: <code>ClickhouseEndpoint</code>, from <code>datawarehouse:endpoints</code> (create, delete)</li>
+<li><code>clickhouse_presets</code>: listing, from <code>datawarehouse:presets</code></li>
+<li><code>clickhouse_versions</code>: listing, from <code>datawarehouse:versions</code></li>
+<li><code>mongodb</code>: <code>Mongodb</code>, from <code>mongodb:instances</code> (create, delete, get_certificate, set_user_role, update, upgrade)</li>
+<li><code>databases</code>: listing, from <code>mongodb:instances/databases</code></li>
+<li><code>users</code>: <code>MongodbUser</code>, from <code>mongodb:instances/users</code> (create, delete, update)</li>
+<li><code>mongodb_endpoints</code>: <code>MongodbEndpoint</code>, from <code>mongodb:endpoints</code> (create, delete)</li>
+<li><code>mongodb_maintenances</code>: <code>MongodbMaintenance</code>, from <code>mongodb:maintenances</code> (apply)</li>
+<li><code>mongodb_node_types</code>: listing, from <code>mongodb:node_types</code></li>
+<li><code>mongodb_snapshots</code>: <code>MongodbSnapshot</code>, from <code>mongodb:snapshots</code> (create, delete, restore, update)</li>
+<li><code>mongodb_versions</code>: listing, from <code>mongodb:versions</code></li>
+<li><code>opensearch</code>: <code>Opensearch</code>, from <code>searchdb:deployments</code> (create, delete, download_certificate_authority, update, upgrade)</li>
+<li><code>users</code>: <code>OpensearchUser</code>, from <code>searchdb:deployments/users</code> (create, delete, update)</li>
+<li><code>opensearch_endpoints</code>: <code>OpensearchEndpoint</code>, from <code>searchdb:endpoints</code> (create, delete)</li>
+<li><code>opensearch_node_types</code>: listing, from <code>searchdb:node_types</code></li>
+<li><code>opensearch_versions</code>: listing, from <code>searchdb:versions</code></li>
+<li><code>postgres_mysql</code>: <code>PostgresMysql</code>, from <code>rdb:instances</code> (add_acl_rules, add_settings, apply_maintenance, clone, create, create_endpoint, create_snapshot, delete, delete_acl_rules, delete_settings, get_certificate, get_metrics, prepare_logs, purge_logs, renew_certificate, restart, set_acl_rules, set_settings, update, upgrade)</li>
+<li><code>acl_rules</code>: listing, from <code>rdb:instances/acl_rules</code></li>
+<li><code>databases</code>: <code>PostgresMysqlDatabase</code>, from <code>rdb:instances/databases</code> (create, delete)</li>
+<li><code>logs</code>: <code>Log</code>, from <code>rdb:logs</code></li>
+<li><code>logs_details</code>: listing, from <code>rdb:instances/logs_details</code></li>
+<li><code>privileges</code>: listing, from <code>rdb:instances/privileges</code> (set_privilege)</li>
+<li><code>users</code>: <code>PostgresMysqlUser</code>, from <code>rdb:instances/users</code> (create, delete, update)</li>
+<li><code>postgres_mysql_backups</code>: <code>PostgresMysqlBackup</code>, from <code>rdb:backups</code> (create, delete, export_database, restore_database, update)</li>
+<li><code>postgres_mysql_encryption_key</code>: <code>PostgresMysqlEncryptionKey</code>, from <code>rdb:encryption_key</code></li>
+<li><code>postgres_mysql_endpoints</code>: <code>PostgresMysqlEndpoint</code>, from <code>rdb:endpoints</code> (delete, migrate)</li>
+<li><code>postgres_mysql_engines</code>: listing, from <code>rdb:database_engines</code></li>
+<li><code>postgres_mysql_node_types</code>: listing, from <code>rdb:node_types</code></li>
+<li><code>postgres_mysql_read_replicas</code>: <code>PostgresMysqlReadReplica</code>, from <code>rdb:read_replicas</code> (create, create_endpoint, delete, promote, reset)</li>
+<li><code>postgres_mysql_snapshots</code>: <code>PostgresMysqlSnapshot</code>, from <code>rdb:snapshots</code> (create_instance_from, delete, update)</li>
+<li><code>redis</code>: <code>Redis</code>, from <code>redis:clusters</code> (add_acl_rules, add_endpoints, create, delete, get_certificate, get_metrics, migrate, renew_certificate, set_acl_rules, set_endpoints, update)</li>
+<li><code>settings</code>: <code>Setting</code>, from <code>redis:clusters/settings</code> (add_cluster, delete, set_cluster)</li>
+<li><code>redis_acls</code>: <code>RedisAcl</code>, from <code>redis:acls</code> (delete)</li>
+<li><code>redis_endpoints</code>: <code>RedisEndpoint</code>, from <code>redis:endpoints</code> (delete, update)</li>
+<li><code>redis_node_types</code>: listing, from <code>redis:node_types</code></li>
+<li><code>redis_versions</code>: listing, from <code>redis:cluster_versions</code></li>
+<li><code>serverless_sql</code>: <code>ServerlessSql</code>, from <code>serverless_sqldb:databases</code> (create, delete, restore_from_backup, update)</li>
+<li><code>serverless_sql_backups</code>: <code>ServerlessSqlBackup</code>, from <code>serverless_sqldb:backups</code> (export_database)</li>
+<li><code>serverless_sql_versions</code>: listing, from <code>serverless_sqldb:versions</code></li>
+</ul>
+<h2 id="domains">domains<a class="headerlink" href="#domains" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>contacts</code>: <code>Contact</code>, from <code>domain:contacts</code> (update)</li>
+<li><code>dns_zones</code>: <code>DnsZone</code>, from <code>domain:dns_zones</code> (clone, create, delete, delete_tsig_key, export_raw, get_tsig_key, import_provider, import_raw, refresh_dns_zone, update)</li>
+<li><code>nameservers</code>: listing, from <code>domain:dns_zones/nameservers</code> (update_dns_zone)</li>
+<li><code>records</code>: listing, from <code>domain:dns_zones/records</code> (clear_dns_zone, update_dns_zone)</li>
+<li><code>versions</code>: listing, from <code>domain:dns_zones/versions</code></li>
+<li><code>dns_zones_version</code>: <code>DnsZonesVersion</code>, from <code>domain:dns_zones_version</code> (get_diff, records, restore)</li>
+<li><code>domains</code>: <code>Domain</code>, from <code>domain:domains</code> (disable_auto_renew, disable_dnssec, enable_auto_renew, enable_dnssec, get_auth_code, lock_transfer, trade, unlock_transfer, update)</li>
+<li><code>hosts</code>: <code>Host</code>, from <code>domain:domains/hosts</code> (create, delete, update)</li>
+<li><code>external_domains</code>: <code>ExternalDomain</code>, from <code>domain:external_domains</code> (delete, register)</li>
+<li><code>inbound_transfers</code>: listing, from <code>domain:inbound_transfers</code></li>
+<li><code>renewable_domains</code>: listing, from <code>domain:renewable_domains</code></li>
+<li><code>ssl_certificates</code>: <code>SslCertificate</code>, from <code>domain:ssl_certificates</code> (create, delete)</li>
+<li><code>suggestions</code>: listing, from <code>domain:suggestions</code></li>
+<li><code>tasks</code>: listing, from <code>domain:tasks</code></li>
+<li><code>tlds</code>: listing, from <code>domain:tlds</code></li>
+<li>methods: <code>buy_domains</code>, <code>check_contacts_compatibility</code>, <code>renew_domains</code>, <code>retry_inbound_transfer</code>, <code>search_available_domains</code>, <code>transfer_in_domain</code></li>
+</ul>
+<h2 id="email">email<a class="headerlink" href="#email" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>aliases</code>: <code>Alias</code>, from <code>mailbox:aliases</code> (create, delete, update)</li>
+<li><code>blocklists</code>: <code>Blocklist</code>, from <code>tem:blocklists</code> (bulk_create, delete)</li>
+<li><code>emails</code>: <code>Email</code>, from <code>tem:emails</code> (cancel, create)</li>
+<li><code>forwardings</code>: <code>Forwarding</code>, from <code>mailbox:forwardings</code> (create, delete, update)</li>
+<li><code>mail_domains</code>: <code>MailDomain</code>, from <code>mailbox:domains</code> (create, delete, get_records, validate_records)</li>
+<li><code>mailboxes</code>: <code>Mailbox</code>, from <code>mailbox:mailboxes</code> (delete, get_forwarding, restore, update, update_forwarding)</li>
+<li><code>offer_subscriptions</code>: listing, from <code>tem:offer_subscriptions</code> (update_offer_subscription)</li>
+<li><code>offers</code>: listing, from <code>tem:offers</code></li>
+<li><code>pools</code>: listing, from <code>tem:pools</code></li>
+<li><code>project</code>: <code>Project</code>, from <code>tem:project</code> (get_settings, update_settings)</li>
+<li><code>sending_domains</code>: <code>SendingDomain</code>, from <code>tem:domains</code> (check, create, get_last_status, revoke, update)</li>
+<li><code>webhooks</code>: <code>Webhook</code>, from <code>tem:webhooks</code> (create, delete, update)</li>
+<li><code>events</code>: listing, from <code>tem:webhooks/events</code></li>
+<li>methods: <code>batch_create_mailboxes</code>, <code>get_project_consumption</code>, <code>get_statistics</code></li>
+</ul>
+<h2 id="iam">iam<a class="headerlink" href="#iam" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>algorithms</code>: listing, from <code>key_manager:algorithms</code></li>
+<li><code>api_keys</code>: <code>ApiKey</code>, from <code>iam:api_keys</code> (create, delete, update)</li>
+<li><code>applications</code>: <code>Application</code>, from <code>iam:applications</code> (create, delete, update)</li>
+<li><code>encryption_keys</code>: <code>EncryptionKey</code>, from <code>key_manager:keys</code> (create, decrypt, delete, delete_material, disable, enable, encrypt, generate_data, generate_material_import_parameters, get_public, import_material, protect, restore, rotate, sign, unprotect, unwrap, update, verify, wrap)</li>
+<li><code>rotations</code>: listing, from <code>key_manager:keys/rotations</code></li>
+<li><code>grace_periods</code>: listing, from <code>iam:grace_periods</code></li>
+<li><code>groups</code>: <code>Group</code>, from <code>iam:groups</code> (add_member, add_members, create, delete, remove_member, set_members, update)</li>
+<li><code>jwts</code>: <code>Jwt</code>, from <code>iam:jwts</code> (delete, renew)</li>
+<li><code>login</code>: <code>Login</code>, from <code>iam:login</code> (check_mfaotp, commit, finish_mfa_web_authn, start_mfa_web_authn)</li>
+<li><code>logs</code>: <code>Log</code>, from <code>iam:logs</code></li>
+<li><code>organizations</code>: <code>Organization</code>, from <code>iam:organizations</code> (enable_saml, enable_scim, get_saml, get_scim, get_security_settings, set_alias, update_login_methods, update_security_settings)</li>
+<li><code>permission_sets</code>: listing, from <code>iam:permission_sets</code></li>
+<li><code>policies</code>: <code>Policy</code>, from <code>iam:policies</code> (clone, create, delete, update)</li>
+<li><code>quotas</code>: <code>Quota</code>, from <code>iam:quota</code> (get_quotum)</li>
+<li><code>rules</code>: listing, from <code>iam:rules</code> (set_rules)</li>
+<li><code>saml</code>: <code>Saml</code>, from <code>iam:saml</code> (delete, get_metadata, update)</li>
+<li><code>certificates</code>: listing, from <code>iam:saml/certificates</code> (add_saml)</li>
+<li><code>saml_certificates</code>: <code>SamlCertificate</code>, from <code>iam:saml_certificates</code> (delete)</li>
+<li><code>scim</code>: <code>Scim</code>, from <code>iam:scim</code> (delete)</li>
+<li><code>tokens</code>: listing, from <code>iam:scim/tokens</code> (create)</li>
+<li><code>scim_tokens</code>: <code>ScimToken</code>, from <code>iam:scim_tokens</code> (delete)</li>
+<li><code>secret_versions_by_path</code>: <code>SecretVersionsByPath</code>, from <code>secret:secrets_by_path_versions</code> (access)</li>
+<li><code>secrets</code>: <code>Secret</code>, from <code>secret:secrets</code> (add_owner, create, delete, protect, restore, unprotect, update)</li>
+<li><code>versions</code>: <code>Version</code>, from <code>secret:secrets/versions</code> (access_secret, create, delete, disable_secret, enable_secret, restore_secret, update)</li>
+<li><code>ssh_keys</code>: <code>SshKey</code>, from <code>iam:ssh_keys</code> (create, delete, update)</li>
+<li><code>users</code>: <code>User</code>, from <code>iam:users</code> (create, create_mfaotp, delete, delete_mfaotp, get_connections, initiate_connection, join_connection, lock, remove_connection, unlock, update, update_password, update_username, validate_mfaotp)</li>
+<li>methods: <code>check_permissions</code>, <code>create_magic_code_login</code>, <code>create_o_auth2_login</code>, <code>create_password_login</code>, <code>create_saml_login</code>, <code>initiate_magic_code_login</code>, <code>initiate_o_auth2_login</code>, <code>initiate_saml_login</code>, <code>search_organization</code></li>
+</ul>
+<h2 id="iot">iot<a class="headerlink" href="#iot" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>devices</code>: <code>Device</code>, from <code>iot:devices</code> (create, delete, disable, enable, get_certificate, get_metrics, renew_certificate, set_certificate, update)</li>
+<li><code>hubs</code>: <code>Hub</code>, from <code>iot:hubs</code> (create, delete, disable, enable, get_ca, get_metrics, set_ca, update)</li>
+<li><code>networks</code>: <code>Network</code>, from <code>iot:networks</code> (create, delete)</li>
+<li><code>routes</code>: <code>Route</code>, from <code>iot:routes</code> (create, delete, update)</li>
+<li><code>twins</code>: <code>Twin</code>, from <code>iot:twins</code> (delete, documents)</li>
+<li><code>documents</code>: <code>Document</code>, from <code>iot:twins/documents</code> (delete, patch_twin, update)</li>
+</ul>
+<h2 id="kubernetes">kubernetes<a class="headerlink" href="#kubernetes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>cluster_types</code>: listing, from <code>k8s:cluster_types</code></li>
+<li><code>clusters</code>: <code>Cluster</code>, from <code>k8s:clusters</code> (create, delete, get_kube_config, reset_admin_token, set_type, update, upgrade)</li>
+<li><code>acls</code>: <code>Acl</code>, from <code>k8s:acls</code> (add_cluster_rules, delete, set_cluster_rules)</li>
+<li><code>available_types</code>: listing, from <code>k8s:clusters/available_types</code></li>
+<li><code>available_versions</code>: listing, from <code>k8s:clusters/available_versions</code></li>
+<li><code>nodes</code>: <code>Node</code>, from <code>k8s:nodes</code> (delete, reboot, replace_node)</li>
+<li><code>pools</code>: <code>Pool</code>, from <code>k8s:pools</code> (create, delete, set_labels, set_startup_taints, set_taints, update, upgrade)<ul>
+<li><code>user_data</code>: <code>UserData</code>, from <code>k8s:pools/user_data</code></li>
+</ul>
+</li>
+<li><code>registries</code>: <code>Registry</code>, from <code>registry:namespaces</code> (create, delete, update)</li>
+<li><code>registry_images</code>: <code>RegistryImage</code>, from <code>registry:images</code> (delete, update)</li>
+<li><code>tags</code>: <code>Tag</code>, from <code>registry:tags</code> (delete)</li>
+<li><code>versions</code>: <code>Version</code>, from <code>k8s:versions</code></li>
+</ul>
+<h2 id="messaging">messaging<a class="headerlink" href="#messaging" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>kafka</code>: <code>Kafka</code>, from <code>kafka:clusters</code> (create, delete, get_certificate_authority, renew_certificate_authority, update)</li>
+<li><code>users</code>: <code>KafkaUser</code>, from <code>kafka:clusters/users</code> (update)</li>
+<li><code>kafka_endpoints</code>: <code>KafkaEndpoint</code>, from <code>kafka:endpoints</code> (create, delete)</li>
+<li><code>kafka_node_types</code>: listing, from <code>kafka:node_types</code></li>
+<li><code>kafka_versions</code>: listing, from <code>kafka:versions</code></li>
+<li><code>message_queue_endpoints</code>: <code>MessageQueueEndpoint</code>, from <code>messageq:endpoints</code> (create, delete)</li>
+<li><code>message_queue_node_types</code>: listing, from <code>messageq:node_types</code></li>
+<li><code>message_queue_versions</code>: listing, from <code>messageq:versions</code></li>
+<li><code>message_queues</code>: <code>MessageQueue</code>, from <code>messageq:deployments</code> (create, delete, download_certificate_authority, update, upgrade)</li>
+<li><code>users</code>: <code>MessageQueueUser</code>, from <code>messageq:deployments/users</code> (create, delete, update)</li>
+<li><code>nats_accounts</code>: <code>NatsAccount</code>, from <code>mnq:nats_accounts</code> (create, delete, update)</li>
+<li><code>nats_credentials</code>: <code>NatsCredential</code>, from <code>mnq:nats_credentials</code> (create, delete)</li>
+<li><code>sns_credentials</code>: <code>SnsCredential</code>, from <code>mnq:sns_credentials</code> (create, delete, update)</li>
+<li><code>sqs_credentials</code>: <code>SqsCredential</code>, from <code>mnq:sqs_credentials</code> (create, delete, update)</li>
+<li>methods: <code>activate_sns</code>, <code>activate_sqs</code>, <code>deactivate_sns</code>, <code>deactivate_sqs</code>, <code>get_protocols</code>, <code>get_sns_info</code>, <code>get_sqs_info</code></li>
+</ul>
+<h2 id="network">network<a class="headerlink" href="#network" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>dedicated_connections</code>: <code>DedicatedConnection</code>, from <code>interlink:dedicated_connections</code></li>
+<li><code>edge_billing</code>: <code>EdgeBilling</code>, from <code>edge_services:billing</code></li>
+<li><code>edge_current_plan</code>: <code>EdgeCurrentPlan</code>, from <code>edge_services:current_plan</code> (delete, select)</li>
+<li><code>edge_nodes</code>: listing, from <code>edge_services:nodes</code></li>
+<li><code>edge_pipelines</code>: <code>EdgePipeline</code>, from <code>edge_services:pipelines</code> (create, delete, set_head_stage, update)</li>
+<li><code>backend_stages</code>: <code>BackendStage</code>, from <code>edge_services:backend_stages</code> (create, delete, update)</li>
+<li><code>cache_stages</code>: <code>CacheStage</code>, from <code>edge_services:cache_stages</code> (create, delete, update)</li>
+<li><code>dns_stages</code>: <code>DnsStage</code>, from <code>edge_services:dns_stages</code> (create, delete, update)</li>
+<li><code>head_stages</code>: listing, from <code>edge_services:pipelines/head_stages</code></li>
+<li><code>route_stages</code>: <code>RouteStage</code>, from <code>edge_services:route_stages</code> (add_rules, create, delete, set_rules, update)<ul>
+<li><code>rules</code>: listing, from <code>edge_services:route_stages/rules</code></li>
+</ul>
+</li>
+<li><code>tls_stages</code>: <code>TlsStage</code>, from <code>edge_services:tls_stages</code> (create, delete, update)</li>
+<li><code>waf_stages</code>: <code>WafStage</code>, from <code>edge_services:waf_stages</code> (create, delete, update)</li>
+<li><code>edge_plans</code>: listing, from <code>edge_services:plans</code></li>
+<li><code>edge_purge_requests</code>: <code>EdgePurgeRequest</code>, from <code>edge_services:purge_requests</code> (create)</li>
+<li><code>flexible_ips</code>: <code>FlexibleIp</code>, from <code>flexibleip:fips</code> (create, delete, delete_mac_addr, duplicate_mac_addr, generate_mac_addr, move_mac_addr, update)</li>
+<li><code>gateway_ips</code>: <code>GatewayIp</code>, from <code>vpcgw:ips</code> (create, delete, update)</li>
+<li><code>gateway_networks</code>: <code>GatewayNetwork</code>, from <code>vpcgw:gateway_networks</code> (create, delete, update)</li>
+<li><code>gateway_types</code>: listing, from <code>vpcgw:gateway_types</code></li>
+<li><code>gateways</code>: <code>Gateway</code>, from <code>vpcgw:gateways</code> (create, delete, refresh_ssh_keys, update, upgrade)</li>
+<li><code>bastion_ips</code>: <code>BastionIp</code>, from <code>vpcgw:gateways/bastion_allowed_ips</code> (add_i_ps, delete, set_i_ps)</li>
+<li><code>ingress_rules</code>: <code>IngressRule</code>, from <code>vpc:ingress_rules</code> (create, delete, update)</li>
+<li><code>interconnect_partners</code>: <code>InterconnectPartner</code>, from <code>interlink:partners</code></li>
+<li><code>interconnect_pops</code>: <code>InterconnectPop</code>, from <code>interlink:pops</code></li>
+<li><code>interconnect_routing_policies</code>: <code>InterconnectRoutingPolicy</code>, from <code>interlink:routing_policies</code> (create, delete, update)</li>
+<li><code>interconnects</code>: <code>Interconnect</code>, from <code>interlink:links</code> (attach_routing_policy, attach_vpc, create, delete, detach_routing_policy, detach_vpc, disable_propagation, enable_propagation, set_routing_policy, update)</li>
+<li><code>ips</code>: <code>Ip</code>, from <code>ipam:ips</code> (attach, book, delete, detach, move, update)</li>
+<li><code>lb</code>: <code>Lb</code>, from <code>lb:lb</code> (subscribe_to, unsubscribe_from)</li>
+<li><code>load_balancer_ips</code>: <code>LoadBalancerIp</code>, from <code>lb:ips</code> (create, delete, update)</li>
+<li><code>load_balancer_routes</code>: <code>LoadBalancerRoute</code>, from <code>lb:routes</code> (create, delete, update)</li>
+<li><code>load_balancer_subscribers</code>: <code>LoadBalancerSubscriber</code>, from <code>lb:subscribers</code> (create, update)</li>
+<li><code>load_balancer_subscriptions</code>: <code>LoadBalancerSubscription</code>, from <code>lb:lb_subscription</code> (delete)</li>
+<li><code>load_balancer_types</code>: listing, from <code>lb:lb_types</code></li>
+<li><code>load_balancers</code>: <code>LoadBalancer</code>, from <code>lb:lbs</code> (attach_private_network, create, delete, detach_private_network, get_stats, migrate, update)</li>
+<li><code>backend_stats</code>: listing, from <code>lb:lbs/backend_stats</code></li>
+<li><code>backends</code>: <code>Backend</code>, from <code>lb:backends</code> (add_servers, create, delete, remove_servers, set_servers, update, update_health_check)</li>
+<li><code>certificates</code>: <code>Certificate</code>, from <code>lb:certificates</code> (create, delete, update)</li>
+<li><code>frontends</code>: <code>Frontend</code>, from <code>lb:frontends</code> (create, delete, update)<ul>
+<li><code>acls</code>: <code>Acl</code>, from <code>lb:acls</code> (create, delete, set_acls, update)</li>
+</ul>
+</li>
+<li><code>private_networks</code>: listing, from <code>lb:lbs/private_networks</code></li>
+<li><code>object_storage_private_access</code>: <code>ObjectStoragePrivateAccess</code>, from <code>vpc:object_storage_private_access</code> (disable, enable)</li>
+<li><code>private_networks</code>: <code>ObjectStoragePrivateAccessPrivateNetwork</code>, from <code>vpc:object_storage_private_access/private_networks</code> (add_object_storage_access, delete, set_object_storage_access)</li>
+<li><code>pat_rules</code>: <code>PatRule</code>, from <code>vpcgw:pat_rules</code> (create, delete, replace_all, update)</li>
+<li><code>private_networks</code>: <code>PrivateNetwork</code>, from <code>vpc:private_networks</code> (create, delete, enable_dhcp, update)</li>
+<li><code>private_networks_with_nics</code>: <code>PrivateNetworksWithNic</code>, from <code>vpc:private_networks_with_nics</code></li>
+<li><code>routes</code>: <code>Route</code>, from <code>vpc:routes</code> (create, delete, update)</li>
+<li><code>routes_with_nexthop</code>: listing, from <code>vpc:routes_with_nexthop</code></li>
+<li><code>subnets</code>: listing, from <code>vpc:subnets</code></li>
+<li><code>vpc_connectors</code>: <code>VpcConnector</code>, from <code>vpc:vpc_connectors</code> (create, delete, update)</li>
+<li><code>subnet_overlaps</code>: listing, from <code>vpc:vpc_connectors/subnet_overlaps</code></li>
+<li><code>vpcs</code>: <code>Vpc</code>, from <code>vpc:vpcs</code> (create, delete, enable_routing, get_acl, set_acl, update)</li>
+<li><code>vpn_connections</code>: <code>VpnConnection</code>, from <code>s2s_vpn:connections</code> (change_psk, create, delete, detach_routing_policy, disable_route_propagation, enable_route_propagation, renew_psk, set_routing_policy, update)</li>
+<li><code>vpn_customer_gateways</code>: <code>VpnCustomerGateway</code>, from <code>s2s_vpn:customer_gateways</code> (create, delete, update)</li>
+<li><code>vpn_gateway_types</code>: listing, from <code>s2s_vpn:vpn_gateway_types</code></li>
+<li><code>vpn_gateways</code>: <code>VpnGateway</code>, from <code>s2s_vpn:vpn_gateways</code> (create, delete, update)</li>
+<li><code>vpn_routing_policies</code>: <code>VpnRoutingPolicy</code>, from <code>s2s_vpn:routing_policies</code> (create, delete, update)</li>
+<li>methods: <code>attach_flexible_ip</code>, <code>detach_flexible_ip</code>, <code>release_ip_set</code></li>
+</ul>
+<h2 id="observability">observability<a class="headerlink" href="#observability" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>audit_alert_rules</code>: listing, from <code>audit_trail:alert_rules</code> (set_enabled)</li>
+<li><code>audit_authentication_events</code>: listing, from <code>audit_trail:authentication_events</code></li>
+<li><code>audit_combined_events</code>: listing, from <code>audit_trail:combined_events</code></li>
+<li><code>audit_custom_alert_rules</code>: <code>AuditCustomAlertRule</code>, from <code>audit_trail:custom_alert_rules</code> (create, delete, set_enabled, update)</li>
+<li><code>audit_events</code>: listing, from <code>audit_trail:events</code></li>
+<li><code>audit_export_jobs</code>: <code>AuditExportJob</code>, from <code>audit_trail:export_jobs</code> (create, delete)</li>
+<li><code>audit_products</code>: listing, from <code>audit_trail:products</code></li>
+<li><code>audit_system_events</code>: listing, from <code>audit_trail:system_events</code></li>
+<li><code>cockpit_alerts</code>: listing, from <code>cockpit:alerts</code></li>
+<li><code>cockpit_plans</code>: listing, from <code>cockpit:plans</code> (select)</li>
+<li><code>cockpit_products</code>: listing, from <code>cockpit:products</code></li>
+<li><code>cockpit_tokens</code>: <code>CockpitToken</code>, from <code>cockpit:tokens</code> (create, delete)</li>
+<li><code>contact_points</code>: listing, from <code>cockpit:contact_points</code></li>
+<li><code>data_sources</code>: <code>DataSource</code>, from <code>cockpit:data_sources</code> (create, delete, update)</li>
+<li><code>exporters</code>: <code>Exporter</code>, from <code>cockpit:exporters</code> (create, delete, update)</li>
+<li><code>grafana_product_dashboards</code>: <code>GrafanaProductDashboard</code>, from <code>cockpit:grafana_product_dashboards</code> (get)</li>
+<li><code>grafana_users</code>: <code>GrafanaUser</code>, from <code>cockpit:grafana_users</code> (create, delete, reset_password)</li>
+<li>methods: <code>cockpit_disable_alert_rules</code>, <code>cockpit_enable_alert_rules</code>, <code>create_contact_point</code>, <code>delete_contact_point</code>, <code>disable_alert_manager</code>, <code>disable_alert_rules</code>, <code>disable_custom_alert_rules</code>, <code>disable_managed_alerts</code>, <code>enable_alert_manager</code>, <code>enable_alert_rules</code>, <code>enable_custom_alert_rules</code>, <code>enable_managed_alerts</code>, <code>get_alert_manager</code>, <code>get_config</code>, <code>get_current_plan</code>, <code>get_grafana</code>, <code>get_last_events_overview</code>, <code>get_rules_count</code>, <code>get_usage_overview</code>, <code>retrieve_available_fields_for_custom_alert_rules</code>, <code>sync_grafana_data_sources</code>, <code>test_custom_alert_rule</code>, <code>trigger_test_alert</code>, <code>update_contact_point</code></li>
+</ul>
+<h2 id="orders">orders<a class="headerlink" href="#orders" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>public_catalog_products</code>: listing, from <code>product_catalog:public_catalog_products</code></li>
+</ul>
+<h2 id="serverless">serverless<a class="headerlink" href="#serverless" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>container_domains</code>: <code>ContainerDomain</code>, from <code>container:domains</code> (create, delete, update)</li>
+<li><code>container_namespaces</code>: <code>ContainerNamespace</code>, from <code>container:namespaces</code> (create, delete, update)</li>
+<li><code>container_triggers</code>: <code>ContainerTrigger</code>, from <code>container:triggers</code> (create, delete, update)</li>
+<li><code>containers</code>: <code>Container</code>, from <code>container:containers</code> (create, delete, redeploy, update)</li>
+<li><code>function_crons</code>: <code>FunctionCron</code>, from <code>function:crons</code> (create, delete, update)</li>
+<li><code>function_domains</code>: <code>FunctionDomain</code>, from <code>function:domains</code> (create, delete)</li>
+<li><code>function_namespaces</code>: <code>FunctionNamespace</code>, from <code>function:namespaces</code> (create, delete, update)</li>
+<li><code>function_runtimes</code>: listing, from <code>function:function_runtimes</code></li>
+<li><code>function_tokens</code>: <code>FunctionToken</code>, from <code>function:tokens</code> (create, delete)</li>
+<li><code>function_triggers</code>: <code>FunctionTrigger</code>, from <code>function:triggers</code> (create, delete, update)</li>
+<li><code>functions</code>: <code>Function</code>, from <code>function:functions</code> (create, delete, deploy, get_download_url, get_upload_url, update)</li>
+<li><code>job_runs</code>: <code>JobRun</code>, from <code>jobs:job_runs</code> (stop)</li>
+<li><code>job_secrets</code>: <code>JobSecret</code>, from <code>jobs:secrets</code> (create, delete, update)</li>
+<li><code>job_triggers</code>: <code>JobTrigger</code>, from <code>jobs:triggers</code> (create, delete, update)</li>
+<li><code>jobs</code>: <code>Job</code>, from <code>jobs:job_definitions</code> (create, delete, start, update)</li>
+<li>methods: <code>get_private_endpoint_certificate_authority</code></li>
+</ul>
+<h2 id="storage">storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>file_system_attachments</code>: listing, from <code>file:attachments</code></li>
+<li><code>file_system_snapshots</code>: <code>FileSystemSnapshot</code>, from <code>file:snapshots</code> (create, delete, update)</li>
+<li><code>file_system_types</code>: listing, from <code>file:file_system_types</code></li>
+<li><code>file_systems</code>: <code>FileSystem</code>, from <code>file:filesystems</code> (create, delete, update)</li>
+<li><code>snapshots</code>: <code>Snapshot</code>, from <code>block:snapshots</code> (create, delete, export_to_object_storage, update)</li>
+<li><code>volume_types</code>: listing, from <code>block:volume_types</code></li>
+<li><code>volumes</code>: <code>Volume</code>, from <code>block:volumes</code> (create, delete, update)</li>
+<li>methods: <code>import_snapshot_from_object_storage</code></li>
+</ul>
+<h2 id="web_hosting">web_hosting<a class="headerlink" href="#web_hosting" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>control_panels</code>: listing, from <code>webhosting:control_panels</code></li>
+<li><code>dedibox_hostings</code>: <code>DediboxHosting</code>, from <code>webhosting:dedibox_hostings</code> (migrate)</li>
+<li><code>domains</code>: <code>Domain</code>, from <code>webhosting:domains</code> (check_user_owns, get, get_dns_records, sync_dns_records)</li>
+<li><code>free_root_domains</code>: listing, from <code>webhosting:free_root_domains</code></li>
+<li><code>hostings</code>: <code>Hosting</code>, from <code>webhosting:hostings</code> (add_custom_domain, change_mail_account_password, create, create_session, delete, delete_domains, get_resource_summary, migrate_control_panel, remove_custom_domain, remove_mail_account, reset, reset_password, restore_backup_items, update, update_free_domain)</li>
+<li><code>backup_items</code>: listing, from <code>webhosting:hostings/backup_items</code></li>
+<li><code>backups</code>: <code>Backup</code>, from <code>webhosting:hostings/backups</code> (restore)</li>
+<li><code>database_users</code>: <code>DatabaseUser</code>, from <code>webhosting:hostings/database_users</code> (delete)</li>
+<li><code>databases</code>: <code>Database</code>, from <code>webhosting:hostings/databases</code> (assign_user, create, delete, unassign_user)</li>
+<li><code>databases_users</code>: <code>DatabasesUser</code>, from <code>webhosting:hostings/databases_users</code> (change_password, create)</li>
+<li><code>ftp_accounts</code>: <code>FtpAccount</code>, from <code>webhosting:hostings/ftp_accounts</code> (change_password, create, delete)</li>
+<li><code>mail_accounts</code>: listing, from <code>webhosting:hostings/mail_accounts</code> (create)</li>
+<li><code>progresses</code>: <code>Progress</code>, from <code>webhosting:hostings/progresses</code></li>
+<li><code>websites</code>: <code>Website</code>, from <code>webhosting:hostings/websites</code> (create, delete, reset)</li>
+<li><code>offers</code>: listing, from <code>webhosting:offers</code></li>
+<li>methods: <code>check_free_domain_availability</code>, <code>search_domains</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../design/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Design and roadmap">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Design and roadmap
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../architecture/" class="md-footer__link md-footer__link--next" aria-label="Next: Architecture">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Architecture
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      <span class="ba-credit">Made by <span class="ba-logo"><a href="https://businessagile.eu" target="_blank" rel="noopener"><img src="/img/business-agile-logo.png" alt="Business Agile" height="40"></a>,</span> European custom development studio</span> <span class="ba-legal"><a href="/about/legal-notice/">Legal notice</a> · <a href="/about/privacy/">Privacy and cookies</a></span>
+    </div>
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog" role="status" aria-atomic="true">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      
+      
+        
+        
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["content.code.annotate","content.code.copy","navigation.footer","navigation.indexes","navigation.instant","navigation.tabs","navigation.top","navigation.tracking","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a2388154.min.js"></script>
+      
+    
+  </body>
+</html>

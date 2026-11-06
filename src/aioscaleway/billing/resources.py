@@ -126,7 +126,7 @@ class InvoiceCollection(_Collection[Invoice]):
 
     async def _items(self) -> AsyncIterator[Invoice]:
         async for data in self._session.api(_BillingAPI).list_invoices_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Invoice._from(self._session, self._scope, data)
 
@@ -139,7 +139,7 @@ class InvoiceCollection(_Collection[Invoice]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -175,7 +175,7 @@ class ConsumptionCollection(_Collection[ListConsumptionsResponseConsumption]):
 
     async def _items(self) -> AsyncIterator[ListConsumptionsResponseConsumption]:
         async for data in self._session.api(_BillingAPI).list_consumptions_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
 
@@ -188,7 +188,7 @@ class ConsumptionCollection(_Collection[ListConsumptionsResponseConsumption]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -216,7 +216,7 @@ class DiscountCollection(_Collection[BillingDiscount]):
 
     async def _items(self) -> AsyncIterator[BillingDiscount]:
         async for data in self._session.api(_BillingAPI).list_discounts_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
 
@@ -229,7 +229,7 @@ class DiscountCollection(_Collection[BillingDiscount]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -261,7 +261,7 @@ class TaxCollection(_Collection[ListTaxesResponseTax]):
 
     async def _items(self) -> AsyncIterator[ListTaxesResponseTax]:
         async for data in self._session.api(_BillingAPI).list_taxes_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
 
@@ -274,7 +274,7 @@ class TaxCollection(_Collection[ListTaxesResponseTax]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -320,7 +320,7 @@ class ChargeCollection(_Collection[BillingCharge]):
 
     async def _items(self) -> AsyncIterator[BillingCharge]:
         response = await self._session.api(_BillingFinOpsAPI).list_charges(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.charges or []:
             yield data

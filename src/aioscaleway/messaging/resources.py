@@ -253,7 +253,7 @@ class KafkaCollection(_Collection[Kafka]):
     async def _items(self) -> AsyncIterator[Kafka]:
         async for data in self._session.api(_KafkaAPI).list_clusters_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Kafka._from(self._session, self._scope, data)
 
@@ -267,7 +267,7 @@ class KafkaCollection(_Collection[Kafka]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -385,7 +385,7 @@ class KafkaUserCollection(_Collection[KafkaUser]):
         async for data in self._session.api(_KafkaAPI).list_users_iter(
             region=self._criteria.get("region"),
             cluster_id=_required(self._scope, "cluster_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield KafkaUser._from(self._session, self._scope, data)
 
@@ -400,7 +400,7 @@ class KafkaUserCollection(_Collection[KafkaUser]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -622,7 +622,7 @@ class MessageQueueCollection(_Collection[MessageQueue]):
     async def _items(self) -> AsyncIterator[MessageQueue]:
         async for data in self._session.api(_MessageqAPI).list_deployments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MessageQueue._from(self._session, self._scope, data)
 
@@ -636,7 +636,7 @@ class MessageQueueCollection(_Collection[MessageQueue]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -764,7 +764,7 @@ class MessageQueueUserCollection(_Collection[MessageQueueUser]):
         async for data in self._session.api(_MessageqAPI).list_users_iter(
             region=self._criteria.get("region"),
             deployment_id=_required(self._scope, "deployment_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MessageQueueUser._from(self._session, self._scope, data)
 
@@ -779,7 +779,7 @@ class MessageQueueUserCollection(_Collection[MessageQueueUser]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -970,7 +970,7 @@ class NatsAccountCollection(_Collection[NatsAccount]):
     async def _items(self) -> AsyncIterator[NatsAccount]:
         async for data in self._session.api(_MnqNatsAPI).list_nats_accounts_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield NatsAccount._from(self._session, self._scope, data)
 
@@ -984,7 +984,7 @@ class NatsAccountCollection(_Collection[NatsAccount]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1098,7 +1098,7 @@ class NatsCredentialCollection(_Collection[NatsCredential]):
     async def _items(self) -> AsyncIterator[NatsCredential]:
         async for data in self._session.api(_MnqNatsAPI).list_nats_credentials_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield NatsCredential._from(self._session, self._scope, data)
 
@@ -1112,7 +1112,7 @@ class NatsCredentialCollection(_Collection[NatsCredential]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1246,7 +1246,7 @@ class SnsCredentialCollection(_Collection[SnsCredential]):
     async def _items(self) -> AsyncIterator[SnsCredential]:
         async for data in self._session.api(_MnqSnsAPI).list_sns_credentials_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield SnsCredential._from(self._session, self._scope, data)
 
@@ -1260,7 +1260,7 @@ class SnsCredentialCollection(_Collection[SnsCredential]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1397,7 +1397,7 @@ class SqsCredentialCollection(_Collection[SqsCredential]):
     async def _items(self) -> AsyncIterator[SqsCredential]:
         async for data in self._session.api(_MnqSqsAPI).list_sqs_credentials_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield SqsCredential._from(self._session, self._scope, data)
 
@@ -1411,7 +1411,7 @@ class SqsCredentialCollection(_Collection[SqsCredential]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1470,7 +1470,7 @@ class KafkaNodeTypeCollection(_Collection[KafkaNodeType]):
     async def _items(self) -> AsyncIterator[KafkaNodeType]:
         async for data in self._session.api(_KafkaAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1484,7 +1484,7 @@ class KafkaNodeTypeCollection(_Collection[KafkaNodeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1511,7 +1511,7 @@ class KafkaVersionCollection(_Collection[KafkaVersion]):
     async def _items(self) -> AsyncIterator[KafkaVersion]:
         async for data in self._session.api(_KafkaAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1525,7 +1525,7 @@ class KafkaVersionCollection(_Collection[KafkaVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1552,7 +1552,7 @@ class MessageQueueNodeTypeCollection(_Collection[MessageqNodeType]):
     async def _items(self) -> AsyncIterator[MessageqNodeType]:
         async for data in self._session.api(_MessageqAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1566,7 +1566,7 @@ class MessageQueueNodeTypeCollection(_Collection[MessageqNodeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1596,7 +1596,7 @@ class MessageQueueVersionCollection(_Collection[MessageqVersion]):
     async def _items(self) -> AsyncIterator[MessageqVersion]:
         async for data in self._session.api(_MessageqAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1610,7 +1610,7 @@ class MessageQueueVersionCollection(_Collection[MessageqVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )

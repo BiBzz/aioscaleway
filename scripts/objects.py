@@ -2,6 +2,7 @@
 
 import re
 from collections import Counter, defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -487,6 +488,11 @@ class Builder:
             if item in models:
                 return item
         return None
+
+
+def set_literal(values: Iterable[str]) -> str:
+    """A set written in a stable order, so that the generated code never drifts."""
+    return "{" + ", ".join(repr(value) for value in sorted(values)) + "}"
 
 
 def is_identifier(param: Param) -> bool:
@@ -1034,7 +1040,7 @@ class Renderer:
                 arguments.append(f"{param.name}={value}")
         criteria = (
             "**{k: v for k, v in self._criteria.items() if k not in "
-            + repr(set(LOCALITIES))
+            + set_literal(LOCALITIES)
             + "}"
         )
         arguments.append(criteria)

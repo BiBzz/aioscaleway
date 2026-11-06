@@ -273,7 +273,7 @@ class ApiKeyCollection(_Collection[ApiKey]):
 
     async def _items(self) -> AsyncIterator[ApiKey]:
         async for data in self._session.api(_IamAPI).list_api_keys_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield ApiKey._from(self._session, self._scope, data)
 
@@ -286,7 +286,7 @@ class ApiKeyCollection(_Collection[ApiKey]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -431,7 +431,7 @@ class ApplicationCollection(_Collection[Application]):
 
     async def _items(self) -> AsyncIterator[Application]:
         async for data in self._session.api(_IamAPI).list_applications_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Application._from(self._session, self._scope, data)
 
@@ -444,7 +444,7 @@ class ApplicationCollection(_Collection[Application]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -687,7 +687,7 @@ class GroupCollection(_Collection[Group]):
 
     async def _items(self) -> AsyncIterator[Group]:
         async for data in self._session.api(_IamAPI).list_groups_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Group._from(self._session, self._scope, data)
 
@@ -700,7 +700,7 @@ class GroupCollection(_Collection[Group]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -810,7 +810,7 @@ class JwtCollection(_Collection[Jwt]):
 
     async def _items(self) -> AsyncIterator[Jwt]:
         async for data in self._session.api(_IamAPI).list_jw_ts_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Jwt._from(self._session, self._scope, data)
 
@@ -823,7 +823,7 @@ class JwtCollection(_Collection[Jwt]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -892,7 +892,7 @@ class LogCollection(_Collection[Log]):
 
     async def _items(self) -> AsyncIterator[Log]:
         async for data in self._session.api(_IamAPI).list_logs_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Log._from(self._session, self._scope, data)
 
@@ -905,7 +905,7 @@ class LogCollection(_Collection[Log]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1216,7 +1216,7 @@ class PolicyCollection(_Collection[Policy]):
 
     async def _items(self) -> AsyncIterator[Policy]:
         async for data in self._session.api(_IamAPI).list_policies_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Policy._from(self._session, self._scope, data)
 
@@ -1229,7 +1229,7 @@ class PolicyCollection(_Collection[Policy]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1344,7 +1344,7 @@ class QuotaCollection(_Collection[Quota]):
 
     async def _items(self) -> AsyncIterator[Quota]:
         async for data in self._session.api(_IamAPI).list_quota_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield Quota._from(self._session, self._scope, data)
 
@@ -1357,7 +1357,7 @@ class QuotaCollection(_Collection[Quota]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1478,7 +1478,7 @@ class CertificateCollection(_Collection[_IamSamlCertificate]):
     async def _items(self) -> AsyncIterator[_IamSamlCertificate]:
         response = await self._session.api(_IamAPI).list_saml_certificates(
             saml_id=_required(self._scope, "saml_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.certificates or []:
             yield data
@@ -1574,7 +1574,7 @@ class TokenCollection(_Collection[_IamScimToken]):
     async def _items(self) -> AsyncIterator[_IamScimToken]:
         async for data in self._session.api(_IamAPI).list_scim_tokens_iter(
             scim_id=_required(self._scope, "scim_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1588,7 +1588,7 @@ class TokenCollection(_Collection[_IamScimToken]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1692,7 +1692,7 @@ class SshKeyCollection(_Collection[SshKey]):
 
     async def _items(self) -> AsyncIterator[SshKey]:
         async for data in self._session.api(_IamAPI).list_ssh_keys_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield SshKey._from(self._session, self._scope, data)
 
@@ -1705,7 +1705,7 @@ class SshKeyCollection(_Collection[SshKey]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1999,7 +1999,7 @@ class UserCollection(_Collection[User]):
 
     async def _items(self) -> AsyncIterator[User]:
         async for data in self._session.api(_IamAPI).list_users_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield User._from(self._session, self._scope, data)
 
@@ -2012,7 +2012,7 @@ class UserCollection(_Collection[User]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2613,7 +2613,7 @@ class EncryptionKeyCollection(_Collection[EncryptionKey]):
     async def _items(self) -> AsyncIterator[EncryptionKey]:
         async for data in self._session.api(_KeyManagerAPI).list_keys_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield EncryptionKey._from(self._session, self._scope, data)
 
@@ -2627,7 +2627,7 @@ class EncryptionKeyCollection(_Collection[EncryptionKey]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2699,7 +2699,7 @@ class RotationCollection(_Collection[KeyRotation]):
         async for data in self._session.api(_KeyManagerAPI).list_key_rotations_iter(
             region=self._criteria.get("region"),
             key_id=_required(self._scope, "key_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -2714,7 +2714,7 @@ class RotationCollection(_Collection[KeyRotation]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2960,7 +2960,7 @@ class SecretCollection(_Collection[Secret]):
     async def _items(self) -> AsyncIterator[Secret]:
         async for data in self._session.api(_SecretAPI).list_secrets_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Secret._from(self._session, self._scope, data)
 
@@ -2974,7 +2974,7 @@ class SecretCollection(_Collection[Secret]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3196,7 +3196,7 @@ class VersionCollection(_Collection[Version]):
         async for data in self._session.api(_SecretAPI).list_secret_versions_iter(
             region=self._criteria.get("region"),
             secret_id=_required(self._scope, "secret_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Version._from(self._session, self._scope, data)
 
@@ -3211,7 +3211,7 @@ class VersionCollection(_Collection[Version]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3265,7 +3265,7 @@ class GracePeriodCollection(_Collection[IamGracePeriod]):
 
     async def _items(self) -> AsyncIterator[IamGracePeriod]:
         response = await self._session.api(_IamAPI).list_grace_periods(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.grace_periods or []:
             yield data
@@ -3288,7 +3288,7 @@ class PermissionSetCollection(_Collection[IamPermissionSet]):
 
     async def _items(self) -> AsyncIterator[IamPermissionSet]:
         async for data in self._session.api(_IamAPI).list_permission_sets_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
 
@@ -3301,7 +3301,7 @@ class PermissionSetCollection(_Collection[IamPermissionSet]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3326,7 +3326,7 @@ class RuleCollection(_Collection[IamRule]):
 
     async def _items(self) -> AsyncIterator[IamRule]:
         async for data in self._session.api(_IamAPI).list_rules_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
 
@@ -3339,7 +3339,7 @@ class RuleCollection(_Collection[IamRule]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3365,7 +3365,7 @@ class AlgorithmCollection(_Collection[ListAlgorithmsResponseAlgorithm]):
     async def _items(self) -> AsyncIterator[ListAlgorithmsResponseAlgorithm]:
         response = await self._session.api(_KeyManagerAPI).list_algorithms(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.algorithms or []:
             yield data

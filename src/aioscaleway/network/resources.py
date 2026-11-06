@@ -569,7 +569,7 @@ class EdgePipelineCollection(_Collection[EdgePipeline]):
 
     async def _items(self) -> AsyncIterator[EdgePipeline]:
         async for data in self._session.api(_EdgeServicesAPI).list_pipelines_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield EdgePipeline._from(self._session, self._scope, data)
 
@@ -582,7 +582,7 @@ class EdgePipelineCollection(_Collection[EdgePipeline]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -722,7 +722,7 @@ class BackendStageCollection(_Collection[BackendStage]):
     async def _items(self) -> AsyncIterator[BackendStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_backend_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield BackendStage._from(self._session, self._scope, data)
 
@@ -736,7 +736,7 @@ class BackendStageCollection(_Collection[BackendStage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -875,7 +875,7 @@ class CacheStageCollection(_Collection[CacheStage]):
     async def _items(self) -> AsyncIterator[CacheStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_cache_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield CacheStage._from(self._session, self._scope, data)
 
@@ -889,7 +889,7 @@ class CacheStageCollection(_Collection[CacheStage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1031,7 +1031,7 @@ class DnsStageCollection(_Collection[DnsStage]):
     async def _items(self) -> AsyncIterator[DnsStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_dns_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DnsStage._from(self._session, self._scope, data)
 
@@ -1045,7 +1045,7 @@ class DnsStageCollection(_Collection[DnsStage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1222,7 +1222,7 @@ class RouteStageCollection(_Collection[RouteStage]):
     async def _items(self) -> AsyncIterator[RouteStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_route_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield RouteStage._from(self._session, self._scope, data)
 
@@ -1236,7 +1236,7 @@ class RouteStageCollection(_Collection[RouteStage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1281,7 +1281,7 @@ class RuleCollection(_Collection[RouteRule]):
     async def _items(self) -> AsyncIterator[RouteRule]:
         response = await self._session.api(_EdgeServicesAPI).list_route_rules(
             route_stage_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.route_rules or []:
             yield data
@@ -1393,7 +1393,7 @@ class TlsStageCollection(_Collection[TlsStage]):
     async def _items(self) -> AsyncIterator[TlsStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_tls_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield TlsStage._from(self._session, self._scope, data)
 
@@ -1407,7 +1407,7 @@ class TlsStageCollection(_Collection[TlsStage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1550,7 +1550,7 @@ class WafStageCollection(_Collection[WafStage]):
     async def _items(self) -> AsyncIterator[WafStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_waf_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield WafStage._from(self._session, self._scope, data)
 
@@ -1564,7 +1564,7 @@ class WafStageCollection(_Collection[WafStage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1619,7 +1619,7 @@ class HeadStageCollection(_Collection[ListHeadStagesResponseHeadStage]):
     async def _items(self) -> AsyncIterator[ListHeadStagesResponseHeadStage]:
         async for data in self._session.api(_EdgeServicesAPI).list_head_stages_iter(
             pipeline_id=_required(self._scope, "pipeline_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1633,7 +1633,7 @@ class HeadStageCollection(_Collection[ListHeadStagesResponseHeadStage]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1701,7 +1701,7 @@ class EdgePurgeRequestCollection(_Collection[EdgePurgeRequest]):
 
     async def _items(self) -> AsyncIterator[EdgePurgeRequest]:
         async for data in self._session.api(_EdgeServicesAPI).list_purge_requests_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield EdgePurgeRequest._from(self._session, self._scope, data)
 
@@ -1714,7 +1714,7 @@ class EdgePurgeRequestCollection(_Collection[EdgePurgeRequest]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1934,7 +1934,7 @@ class FlexibleIpCollection(_Collection[FlexibleIp]):
     async def _items(self) -> AsyncIterator[FlexibleIp]:
         async for data in self._session.api(_FlexibleipAPI).list_flexible_i_ps_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FlexibleIp._from(self._session, self._scope, data)
 
@@ -1948,7 +1948,7 @@ class FlexibleIpCollection(_Collection[FlexibleIp]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2064,7 +2064,7 @@ class DedicatedConnectionCollection(_Collection[DedicatedConnection]):
             _InterlinkAPI
         ).list_dedicated_connections_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DedicatedConnection._from(self._session, self._scope, data)
 
@@ -2080,7 +2080,7 @@ class DedicatedConnectionCollection(_Collection[DedicatedConnection]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2375,7 +2375,7 @@ class InterconnectCollection(_Collection[Interconnect]):
     async def _items(self) -> AsyncIterator[Interconnect]:
         async for data in self._session.api(_InterlinkAPI).list_links_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Interconnect._from(self._session, self._scope, data)
 
@@ -2389,7 +2389,7 @@ class InterconnectCollection(_Collection[Interconnect]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2509,7 +2509,7 @@ class InterconnectPartnerCollection(_Collection[InterconnectPartner]):
     async def _items(self) -> AsyncIterator[InterconnectPartner]:
         async for data in self._session.api(_InterlinkAPI).list_partners_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield InterconnectPartner._from(self._session, self._scope, data)
 
@@ -2523,7 +2523,7 @@ class InterconnectPartnerCollection(_Collection[InterconnectPartner]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2599,7 +2599,7 @@ class InterconnectPopCollection(_Collection[InterconnectPop]):
     async def _items(self) -> AsyncIterator[InterconnectPop]:
         async for data in self._session.api(_InterlinkAPI).list_pops_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield InterconnectPop._from(self._session, self._scope, data)
 
@@ -2613,7 +2613,7 @@ class InterconnectPopCollection(_Collection[InterconnectPop]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2737,7 +2737,7 @@ class InterconnectRoutingPolicyCollection(_Collection[InterconnectRoutingPolicy]
     async def _items(self) -> AsyncIterator[InterconnectRoutingPolicy]:
         async for data in self._session.api(_InterlinkAPI).list_routing_policies_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield InterconnectRoutingPolicy._from(self._session, self._scope, data)
 
@@ -2751,7 +2751,7 @@ class InterconnectRoutingPolicyCollection(_Collection[InterconnectRoutingPolicy]
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2993,7 +2993,7 @@ class IpCollection(_Collection[Ip]):
     async def _items(self) -> AsyncIterator[Ip]:
         async for data in self._session.api(_IpamAPI).list_i_ps_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Ip._from(self._session, self._scope, data)
 
@@ -3007,7 +3007,7 @@ class IpCollection(_Collection[Ip]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3145,7 +3145,7 @@ class LoadBalancerIpCollection(_Collection[LoadBalancerIp]):
     async def _items(self) -> AsyncIterator[LoadBalancerIp]:
         async for data in self._session.api(_LbZonedAPI).list_i_ps_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LoadBalancerIp._from(self._session, self._scope, data)
 
@@ -3159,7 +3159,7 @@ class LoadBalancerIpCollection(_Collection[LoadBalancerIp]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3483,7 +3483,7 @@ class LoadBalancerCollection(_Collection[LoadBalancer]):
     async def _items(self) -> AsyncIterator[LoadBalancer]:
         async for data in self._session.api(_LbZonedAPI).list_lbs_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LoadBalancer._from(self._session, self._scope, data)
 
@@ -3497,7 +3497,7 @@ class LoadBalancerCollection(_Collection[LoadBalancer]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3782,7 +3782,7 @@ class BackendCollection(_Collection[Backend]):
         async for data in self._session.api(_LbZonedAPI).list_backends_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Backend._from(self._session, self._scope, data)
 
@@ -3797,7 +3797,7 @@ class BackendCollection(_Collection[Backend]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3961,7 +3961,7 @@ class CertificateCollection(_Collection[Certificate]):
         async for data in self._session.api(_LbZonedAPI).list_certificates_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Certificate._from(self._session, self._scope, data)
 
@@ -3976,7 +3976,7 @@ class CertificateCollection(_Collection[Certificate]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4122,7 +4122,7 @@ class FrontendCollection(_Collection[Frontend]):
         async for data in self._session.api(_LbZonedAPI).list_frontends_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Frontend._from(self._session, self._scope, data)
 
@@ -4137,7 +4137,7 @@ class FrontendCollection(_Collection[Frontend]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4281,7 +4281,7 @@ class AclCollection(_Collection[Acl]):
         async for data in self._session.api(_LbZonedAPI).list_acls_iter(
             zone=self._criteria.get("zone"),
             frontend_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Acl._from(self._session, self._scope, data)
 
@@ -4296,7 +4296,7 @@ class AclCollection(_Collection[Acl]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4374,7 +4374,7 @@ class BackendStatCollection(_Collection[BackendServerStats]):
         async for data in self._session.api(_LbZonedAPI).list_backend_stats_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4389,7 +4389,7 @@ class BackendStatCollection(_Collection[BackendServerStats]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4417,7 +4417,7 @@ class LoadBalancerPrivateNetworkCollection(_Collection[LbPrivateNetwork]):
         async for data in self._session.api(_LbZonedAPI).list_lb_private_networks_iter(
             zone=self._criteria.get("zone"),
             lb_id=_required(self._scope, "lb_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4432,7 +4432,7 @@ class LoadBalancerPrivateNetworkCollection(_Collection[LbPrivateNetwork]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4530,7 +4530,7 @@ class LoadBalancerRouteCollection(_Collection[LoadBalancerRoute]):
     async def _items(self) -> AsyncIterator[LoadBalancerRoute]:
         async for data in self._session.api(_LbZonedAPI).list_routes_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LoadBalancerRoute._from(self._session, self._scope, data)
 
@@ -4544,7 +4544,7 @@ class LoadBalancerRouteCollection(_Collection[LoadBalancerRoute]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4666,7 +4666,7 @@ class LoadBalancerSubscriberCollection(_Collection[LoadBalancerSubscriber]):
     async def _items(self) -> AsyncIterator[LoadBalancerSubscriber]:
         async for data in self._session.api(_LbZonedAPI).list_subscriber_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield LoadBalancerSubscriber._from(self._session, self._scope, data)
 
@@ -4680,7 +4680,7 @@ class LoadBalancerSubscriberCollection(_Collection[LoadBalancerSubscriber]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4979,7 +4979,7 @@ class VpnConnectionCollection(_Collection[VpnConnection]):
     async def _items(self) -> AsyncIterator[VpnConnection]:
         async for data in self._session.api(_S2SVpnAPI).list_connections_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpnConnection._from(self._session, self._scope, data)
 
@@ -4993,7 +4993,7 @@ class VpnConnectionCollection(_Collection[VpnConnection]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -5154,7 +5154,7 @@ class VpnCustomerGatewayCollection(_Collection[VpnCustomerGateway]):
     async def _items(self) -> AsyncIterator[VpnCustomerGateway]:
         async for data in self._session.api(_S2SVpnAPI).list_customer_gateways_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpnCustomerGateway._from(self._session, self._scope, data)
 
@@ -5168,7 +5168,7 @@ class VpnCustomerGatewayCollection(_Collection[VpnCustomerGateway]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -5320,7 +5320,7 @@ class VpnRoutingPolicyCollection(_Collection[VpnRoutingPolicy]):
     async def _items(self) -> AsyncIterator[VpnRoutingPolicy]:
         async for data in self._session.api(_S2SVpnAPI).list_routing_policies_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpnRoutingPolicy._from(self._session, self._scope, data)
 
@@ -5334,7 +5334,7 @@ class VpnRoutingPolicyCollection(_Collection[VpnRoutingPolicy]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -5491,7 +5491,7 @@ class VpnGatewayCollection(_Collection[VpnGateway]):
     async def _items(self) -> AsyncIterator[VpnGateway]:
         async for data in self._session.api(_S2SVpnAPI).list_vpn_gateways_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpnGateway._from(self._session, self._scope, data)
 
@@ -5505,7 +5505,7 @@ class VpnGatewayCollection(_Collection[VpnGateway]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -5665,7 +5665,7 @@ class IngressRuleCollection(_Collection[IngressRule]):
     async def _items(self) -> AsyncIterator[IngressRule]:
         async for data in self._session.api(_VpcAPI).list_ingress_rules_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield IngressRule._from(self._session, self._scope, data)
 
@@ -5679,7 +5679,7 @@ class IngressRuleCollection(_Collection[IngressRule]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -5986,7 +5986,7 @@ class PrivateNetworkCollection(_Collection[PrivateNetwork]):
     async def _items(self) -> AsyncIterator[PrivateNetwork]:
         async for data in self._session.api(_VpcAPI).list_private_networks_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PrivateNetwork._from(self._session, self._scope, data)
 
@@ -6000,7 +6000,7 @@ class PrivateNetworkCollection(_Collection[PrivateNetwork]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -6274,7 +6274,7 @@ class VpcConnectorCollection(_Collection[VpcConnector]):
     async def _items(self) -> AsyncIterator[VpcConnector]:
         async for data in self._session.api(_VpcAPI).list_vpc_connectors_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield VpcConnector._from(self._session, self._scope, data)
 
@@ -6288,7 +6288,7 @@ class VpcConnectorCollection(_Collection[VpcConnector]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -6344,7 +6344,7 @@ class SubnetOverlapCollection(_Collection[ListSubnetOverlapsResponseSubnetOverla
         async for data in self._session.api(_VpcAPI).list_subnet_overlaps_iter(
             region=self._criteria.get("region"),
             vpc_connector_id=_required(self._scope, "vpc_connector_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -6359,7 +6359,7 @@ class SubnetOverlapCollection(_Collection[ListSubnetOverlapsResponseSubnetOverla
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -6522,7 +6522,7 @@ class VpcCollection(_Collection[Vpc]):
     async def _items(self) -> AsyncIterator[Vpc]:
         async for data in self._session.api(_VpcAPI).list_vp_cs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Vpc._from(self._session, self._scope, data)
 
@@ -6536,7 +6536,7 @@ class VpcCollection(_Collection[Vpc]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -6650,7 +6650,7 @@ class PrivateNetworksWithNicCollection(_Collection[PrivateNetworksWithNic]):
             _VpcPrivateNetworkWithNicsAPI
         ).list_private_networks_with_nics_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PrivateNetworksWithNic._from(self._session, self._scope, data)
 
@@ -6666,7 +6666,7 @@ class PrivateNetworksWithNicCollection(_Collection[PrivateNetworksWithNic]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -6786,7 +6786,7 @@ class GatewayNetworkCollection(_Collection[GatewayNetwork]):
     async def _items(self) -> AsyncIterator[GatewayNetwork]:
         async for data in self._session.api(_VpcgwAPI).list_gateway_networks_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield GatewayNetwork._from(self._session, self._scope, data)
 
@@ -6800,7 +6800,7 @@ class GatewayNetworkCollection(_Collection[GatewayNetwork]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -7007,7 +7007,7 @@ class GatewayCollection(_Collection[Gateway]):
     async def _items(self) -> AsyncIterator[Gateway]:
         async for data in self._session.api(_VpcgwAPI).list_gateways_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Gateway._from(self._session, self._scope, data)
 
@@ -7021,7 +7021,7 @@ class GatewayCollection(_Collection[Gateway]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -7231,7 +7231,7 @@ class GatewayIpCollection(_Collection[GatewayIp]):
     async def _items(self) -> AsyncIterator[GatewayIp]:
         async for data in self._session.api(_VpcgwAPI).list_i_ps_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield GatewayIp._from(self._session, self._scope, data)
 
@@ -7245,7 +7245,7 @@ class GatewayIpCollection(_Collection[GatewayIp]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -7377,7 +7377,7 @@ class PatRuleCollection(_Collection[PatRule]):
     async def _items(self) -> AsyncIterator[PatRule]:
         async for data in self._session.api(_VpcgwAPI).list_pat_rules_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PatRule._from(self._session, self._scope, data)
 
@@ -7391,7 +7391,7 @@ class PatRuleCollection(_Collection[PatRule]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -7457,7 +7457,7 @@ class EdgeNodeCollection(_Collection[Node]):
 
     async def _items(self) -> AsyncIterator[Node]:
         response = await self._session.api(_EdgeServicesAPI).list_nodes(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.nodes or []:
             yield data
@@ -7468,7 +7468,7 @@ class EdgePlanCollection(_Collection[PlanDetails]):
 
     async def _items(self) -> AsyncIterator[PlanDetails]:
         response = await self._session.api(_EdgeServicesAPI).list_plans(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         )
         for data in response.plans or []:
             yield data
@@ -7489,7 +7489,7 @@ class LoadBalancerTypeCollection(_Collection[LbType]):
     async def _items(self) -> AsyncIterator[LbType]:
         async for data in self._session.api(_LbZonedAPI).list_lb_types_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -7503,7 +7503,7 @@ class LoadBalancerTypeCollection(_Collection[LbType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -7529,7 +7529,7 @@ class VpnGatewayTypeCollection(_Collection[S2SVpnGatewayType]):
     async def _items(self) -> AsyncIterator[S2SVpnGatewayType]:
         async for data in self._session.api(_S2SVpnAPI).list_vpn_gateway_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -7543,7 +7543,7 @@ class VpnGatewayTypeCollection(_Collection[S2SVpnGatewayType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -7582,7 +7582,7 @@ class SubnetCollection(_Collection[VpcSubnet]):
     async def _items(self) -> AsyncIterator[VpcSubnet]:
         async for data in self._session.api(_VpcAPI).list_subnets_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -7596,7 +7596,7 @@ class SubnetCollection(_Collection[VpcSubnet]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -7645,7 +7645,7 @@ class RoutesWithNexthopCollection(_Collection[RouteWithNexthop]):
             _VpcRoutesWithNexthopAPI
         ).list_routes_with_nexthop_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -7661,7 +7661,7 @@ class RoutesWithNexthopCollection(_Collection[RouteWithNexthop]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -7686,7 +7686,7 @@ class GatewayTypeCollection(_Collection[VpcgwGatewayType]):
     async def _items(self) -> AsyncIterator[VpcgwGatewayType]:
         response = await self._session.api(_VpcgwAPI).list_gateway_types(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.types or []:
             yield data

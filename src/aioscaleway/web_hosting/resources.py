@@ -486,7 +486,7 @@ class HostingCollection(_Collection[HostingSummary]):
     async def _items(self) -> AsyncIterator[HostingSummary]:
         async for data in self._session.api(_WebhostingHostingAPI).list_hostings_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield HostingSummary._from(self._session, self._scope, data)
 
@@ -500,7 +500,7 @@ class HostingCollection(_Collection[HostingSummary]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -618,7 +618,7 @@ class BackupCollection(_Collection[Backup]):
         async for data in self._session.api(_WebhostingBackupAPI).list_backups_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Backup._from(self._session, self._scope, data)
 
@@ -633,7 +633,7 @@ class BackupCollection(_Collection[Backup]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -707,7 +707,7 @@ class ProgressCollection(_Collection[ProgressSummary]):
         response = await self._session.api(_WebhostingBackupAPI).list_recent_progresses(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.progresses or []:
             yield ProgressSummary._from(self._session, self._scope, data)
@@ -774,7 +774,7 @@ class DatabaseUserCollection(_Collection[DatabaseUser]):
         ).list_database_users_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DatabaseUser._from(self._session, self._scope, data)
 
@@ -791,7 +791,7 @@ class DatabaseUserCollection(_Collection[DatabaseUser]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -991,7 +991,7 @@ class DatabaseCollection(_Collection[Database]):
         async for data in self._session.api(_WebhostingDatabaseAPI).list_databases_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Database._from(self._session, self._scope, data)
 
@@ -1006,7 +1006,7 @@ class DatabaseCollection(_Collection[Database]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1118,7 +1118,7 @@ class FtpAccountCollection(_Collection[FtpAccount]):
         ).list_ftp_accounts_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FtpAccount._from(self._session, self._scope, data)
 
@@ -1135,7 +1135,7 @@ class FtpAccountCollection(_Collection[FtpAccount]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1239,7 +1239,7 @@ class WebsiteCollection(_Collection[Website]):
         async for data in self._session.api(_WebhostingWebsiteAPI).list_websites_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Website._from(self._session, self._scope, data)
 
@@ -1254,7 +1254,7 @@ class WebsiteCollection(_Collection[Website]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1300,7 +1300,7 @@ class BackupItemCollection(_Collection[BackupItemGroup]):
         response = await self._session.api(_WebhostingBackupAPI).list_backup_items(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.groups or []:
             yield data
@@ -1328,7 +1328,7 @@ class MailAccountCollection(_Collection[WebhostingMailAccount]):
         ).list_mail_accounts_iter(
             region=self._criteria.get("region"),
             hosting_id=_required(self._scope, "hosting_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1345,7 +1345,7 @@ class MailAccountCollection(_Collection[WebhostingMailAccount]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1495,7 +1495,7 @@ class ControlPanelCollection(_Collection[WebhostingControlPanel]):
             _WebhostingControlPanelAPI
         ).list_control_panels_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1511,7 +1511,7 @@ class ControlPanelCollection(_Collection[WebhostingControlPanel]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1539,7 +1539,7 @@ class FreeRootDomainCollection(_Collection[str]):
             _WebhostingFreeDomainAPI
         ).list_free_root_domains_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1555,7 +1555,7 @@ class FreeRootDomainCollection(_Collection[str]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1590,7 +1590,7 @@ class OfferCollection(_Collection[WebhostingOffer]):
     async def _items(self) -> AsyncIterator[WebhostingOffer]:
         async for data in self._session.api(_WebhostingOfferAPI).list_offers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1604,7 +1604,7 @@ class OfferCollection(_Collection[WebhostingOffer]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )

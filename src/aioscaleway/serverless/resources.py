@@ -305,7 +305,7 @@ class ContainerCollection(_Collection[Container]):
     async def _items(self) -> AsyncIterator[Container]:
         async for data in self._session.api(_ContainerAPI).list_containers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Container._from(self._session, self._scope, data)
 
@@ -319,7 +319,7 @@ class ContainerCollection(_Collection[Container]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -499,7 +499,7 @@ class ContainerDomainCollection(_Collection[ContainerDomain]):
     async def _items(self) -> AsyncIterator[ContainerDomain]:
         async for data in self._session.api(_ContainerAPI).list_domains_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ContainerDomain._from(self._session, self._scope, data)
 
@@ -513,7 +513,7 @@ class ContainerDomainCollection(_Collection[ContainerDomain]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -651,7 +651,7 @@ class ContainerNamespaceCollection(_Collection[ContainerNamespace]):
     async def _items(self) -> AsyncIterator[ContainerNamespace]:
         async for data in self._session.api(_ContainerAPI).list_namespaces_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ContainerNamespace._from(self._session, self._scope, data)
 
@@ -665,7 +665,7 @@ class ContainerNamespaceCollection(_Collection[ContainerNamespace]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -821,7 +821,7 @@ class ContainerTriggerCollection(_Collection[ContainerTrigger]):
     async def _items(self) -> AsyncIterator[ContainerTrigger]:
         async for data in self._session.api(_ContainerAPI).list_triggers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ContainerTrigger._from(self._session, self._scope, data)
 
@@ -835,7 +835,7 @@ class ContainerTriggerCollection(_Collection[ContainerTrigger]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -979,7 +979,7 @@ class FunctionCronCollection(_Collection[FunctionCron]):
     async def _items(self) -> AsyncIterator[FunctionCron]:
         async for data in self._session.api(_FunctionAPI).list_crons_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionCron._from(self._session, self._scope, data)
 
@@ -993,7 +993,7 @@ class FunctionCronCollection(_Collection[FunctionCron]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1107,7 +1107,7 @@ class FunctionDomainCollection(_Collection[FunctionDomain]):
     async def _items(self) -> AsyncIterator[FunctionDomain]:
         async for data in self._session.api(_FunctionAPI).list_domains_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionDomain._from(self._session, self._scope, data)
 
@@ -1121,7 +1121,7 @@ class FunctionDomainCollection(_Collection[FunctionDomain]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1346,7 +1346,7 @@ class FunctionCollection(_Collection[Function]):
     async def _items(self) -> AsyncIterator[Function]:
         async for data in self._session.api(_FunctionAPI).list_functions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Function._from(self._session, self._scope, data)
 
@@ -1360,7 +1360,7 @@ class FunctionCollection(_Collection[Function]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1535,7 +1535,7 @@ class FunctionNamespaceCollection(_Collection[FunctionNamespace]):
     async def _items(self) -> AsyncIterator[FunctionNamespace]:
         async for data in self._session.api(_FunctionAPI).list_namespaces_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionNamespace._from(self._session, self._scope, data)
 
@@ -1549,7 +1549,7 @@ class FunctionNamespaceCollection(_Collection[FunctionNamespace]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1669,7 +1669,7 @@ class FunctionTokenCollection(_Collection[FunctionToken]):
     async def _items(self) -> AsyncIterator[FunctionToken]:
         async for data in self._session.api(_FunctionAPI).list_tokens_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionToken._from(self._session, self._scope, data)
 
@@ -1683,7 +1683,7 @@ class FunctionTokenCollection(_Collection[FunctionToken]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1829,7 +1829,7 @@ class FunctionTriggerCollection(_Collection[FunctionTrigger]):
     async def _items(self) -> AsyncIterator[FunctionTrigger]:
         async for data in self._session.api(_FunctionAPI).list_triggers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield FunctionTrigger._from(self._session, self._scope, data)
 
@@ -1843,7 +1843,7 @@ class FunctionTriggerCollection(_Collection[FunctionTrigger]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2028,7 +2028,7 @@ class JobCollection(_Collection[Job]):
     async def _items(self) -> AsyncIterator[Job]:
         async for data in self._session.api(_JobsAPI).list_job_definitions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Job._from(self._session, self._scope, data)
 
@@ -2042,7 +2042,7 @@ class JobCollection(_Collection[Job]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2180,7 +2180,7 @@ class JobRunCollection(_Collection[JobRun]):
     async def _items(self) -> AsyncIterator[JobRun]:
         async for data in self._session.api(_JobsAPI).list_job_runs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield JobRun._from(self._session, self._scope, data)
 
@@ -2194,7 +2194,7 @@ class JobRunCollection(_Collection[JobRun]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2288,7 +2288,7 @@ class JobSecretCollection(_Collection[JobSecret]):
     async def _items(self) -> AsyncIterator[JobSecret]:
         response = await self._session.api(_JobsAPI).list_secrets(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.secrets or []:
             yield JobSecret._from(self._session, self._scope, data)
@@ -2403,7 +2403,7 @@ class JobTriggerCollection(_Collection[JobTrigger]):
     async def _items(self) -> AsyncIterator[JobTrigger]:
         async for data in self._session.api(_JobsAPI).list_triggers_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield JobTrigger._from(self._session, self._scope, data)
 
@@ -2417,7 +2417,7 @@ class JobTriggerCollection(_Collection[JobTrigger]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2466,7 +2466,7 @@ class FunctionRuntimeCollection(_Collection[Runtime]):
     async def _items(self) -> AsyncIterator[Runtime]:
         response = await self._session.api(_FunctionAPI).list_function_runtimes(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.runtimes or []:
             yield data

@@ -406,7 +406,7 @@ class ClickhouseCollection(_Collection[Clickhouse]):
     async def _items(self) -> AsyncIterator[Clickhouse]:
         async for data in self._session.api(_DatawarehouseAPI).list_deployments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Clickhouse._from(self._session, self._scope, data)
 
@@ -420,7 +420,7 @@ class ClickhouseCollection(_Collection[Clickhouse]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -535,7 +535,7 @@ class ClickhouseDatabaseCollection(_Collection[ClickhouseDatabase]):
         async for data in self._session.api(_DatawarehouseAPI).list_databases_iter(
             region=self._criteria.get("region"),
             deployment_id=_required(self._scope, "deployment_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ClickhouseDatabase._from(self._session, self._scope, data)
 
@@ -550,7 +550,7 @@ class ClickhouseDatabaseCollection(_Collection[ClickhouseDatabase]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -661,7 +661,7 @@ class ClickhouseUserCollection(_Collection[ClickhouseUser]):
         async for data in self._session.api(_DatawarehouseAPI).list_users_iter(
             region=self._criteria.get("region"),
             deployment_id=_required(self._scope, "deployment_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ClickhouseUser._from(self._session, self._scope, data)
 
@@ -676,7 +676,7 @@ class ClickhouseUserCollection(_Collection[ClickhouseUser]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1020,7 +1020,7 @@ class MongodbCollection(_Collection[Mongodb]):
     async def _items(self) -> AsyncIterator[Mongodb]:
         async for data in self._session.api(_MongodbAPI).list_instances_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Mongodb._from(self._session, self._scope, data)
 
@@ -1034,7 +1034,7 @@ class MongodbCollection(_Collection[Mongodb]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1161,7 +1161,7 @@ class MongodbUserCollection(_Collection[MongodbUser]):
         async for data in self._session.api(_MongodbAPI).list_users_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MongodbUser._from(self._session, self._scope, data)
 
@@ -1176,7 +1176,7 @@ class MongodbUserCollection(_Collection[MongodbUser]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1228,7 +1228,7 @@ class MongodbDatabaseCollection(_Collection[Database]):
         async for data in self._session.api(_MongodbAPI).list_databases_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1243,7 +1243,7 @@ class MongodbDatabaseCollection(_Collection[Database]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1325,7 +1325,7 @@ class MongodbMaintenanceCollection(_Collection[MongodbMaintenance]):
     async def _items(self) -> AsyncIterator[MongodbMaintenance]:
         async for data in self._session.api(_MongodbAPI).list_maintenances_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MongodbMaintenance._from(self._session, self._scope, data)
 
@@ -1339,7 +1339,7 @@ class MongodbMaintenanceCollection(_Collection[MongodbMaintenance]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1482,7 +1482,7 @@ class MongodbSnapshotCollection(_Collection[MongodbSnapshot]):
     async def _items(self) -> AsyncIterator[MongodbSnapshot]:
         async for data in self._session.api(_MongodbAPI).list_snapshots_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield MongodbSnapshot._from(self._session, self._scope, data)
 
@@ -1496,7 +1496,7 @@ class MongodbSnapshotCollection(_Collection[MongodbSnapshot]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1680,7 +1680,7 @@ class PostgresMysqlBackupCollection(_Collection[PostgresMysqlBackup]):
     async def _items(self) -> AsyncIterator[PostgresMysqlBackup]:
         async for data in self._session.api(_RdbAPI).list_database_backups_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysqlBackup._from(self._session, self._scope, data)
 
@@ -1694,7 +1694,7 @@ class PostgresMysqlBackupCollection(_Collection[PostgresMysqlBackup]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2282,7 +2282,7 @@ class PostgresMysqlCollection(_Collection[PostgresMysql]):
     async def _items(self) -> AsyncIterator[PostgresMysql]:
         async for data in self._session.api(_RdbAPI).list_instances_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysql._from(self._session, self._scope, data)
 
@@ -2296,7 +2296,7 @@ class PostgresMysqlCollection(_Collection[PostgresMysql]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2430,7 +2430,7 @@ class PostgresMysqlDatabaseCollection(_Collection[PostgresMysqlDatabase]):
         async for data in self._session.api(_RdbAPI).list_databases_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysqlDatabase._from(self._session, self._scope, data)
 
@@ -2445,7 +2445,7 @@ class PostgresMysqlDatabaseCollection(_Collection[PostgresMysqlDatabase]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2562,7 +2562,7 @@ class PostgresMysqlUserCollection(_Collection[PostgresMysqlUser]):
         async for data in self._session.api(_RdbAPI).list_users_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysqlUser._from(self._session, self._scope, data)
 
@@ -2577,7 +2577,7 @@ class PostgresMysqlUserCollection(_Collection[PostgresMysqlUser]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2662,7 +2662,7 @@ class LogCollection(_Collection[Log]):
         response = await self._session.api(_RdbAPI).list_instance_logs(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.instance_logs or []:
             yield Log._from(self._session, self._scope, data)
@@ -2684,7 +2684,7 @@ class AclRuleCollection(_Collection[ACLRule]):
         async for data in self._session.api(_RdbAPI).list_instance_acl_rules_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -2699,7 +2699,7 @@ class AclRuleCollection(_Collection[ACLRule]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -2729,7 +2729,7 @@ class LogsDetailCollection(
         response = await self._session.api(_RdbAPI).list_instance_logs_details(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.details or []:
             yield data
@@ -2760,7 +2760,7 @@ class PrivilegeCollection(_Collection[RdbPrivilege]):
         async for data in self._session.api(_RdbAPI).list_privileges_iter(
             region=self._criteria.get("region"),
             instance_id=_required(self._scope, "instance_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -2775,7 +2775,7 @@ class PrivilegeCollection(_Collection[RdbPrivilege]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3062,7 +3062,7 @@ class PostgresMysqlSnapshotCollection(_Collection[PostgresMysqlSnapshot]):
     async def _items(self) -> AsyncIterator[PostgresMysqlSnapshot]:
         async for data in self._session.api(_RdbAPI).list_snapshots_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield PostgresMysqlSnapshot._from(self._session, self._scope, data)
 
@@ -3076,7 +3076,7 @@ class PostgresMysqlSnapshotCollection(_Collection[PostgresMysqlSnapshot]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3442,7 +3442,7 @@ class RedisCollection(_Collection[Redis]):
     async def _items(self) -> AsyncIterator[Redis]:
         async for data in self._session.api(_RedisAPI).list_clusters_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Redis._from(self._session, self._scope, data)
 
@@ -3456,7 +3456,7 @@ class RedisCollection(_Collection[Redis]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3807,7 +3807,7 @@ class OpensearchCollection(_Collection[Opensearch]):
     async def _items(self) -> AsyncIterator[Opensearch]:
         async for data in self._session.api(_SearchdbAPI).list_deployments_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Opensearch._from(self._session, self._scope, data)
 
@@ -3821,7 +3821,7 @@ class OpensearchCollection(_Collection[Opensearch]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -3951,7 +3951,7 @@ class OpensearchUserCollection(_Collection[OpensearchUser]):
         async for data in self._session.api(_SearchdbAPI).list_users_iter(
             region=self._criteria.get("region"),
             deployment_id=_required(self._scope, "deployment_id"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield OpensearchUser._from(self._session, self._scope, data)
 
@@ -3966,7 +3966,7 @@ class OpensearchUserCollection(_Collection[OpensearchUser]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4149,7 +4149,7 @@ class ServerlessSqlBackupCollection(_Collection[ServerlessSqlBackup]):
             _ServerlessSqldbAPI
         ).list_database_backups_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ServerlessSqlBackup._from(self._session, self._scope, data)
 
@@ -4165,7 +4165,7 @@ class ServerlessSqlBackupCollection(_Collection[ServerlessSqlBackup]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4305,7 +4305,7 @@ class ServerlessSqlCollection(_Collection[ServerlessSql]):
     async def _items(self) -> AsyncIterator[ServerlessSql]:
         async for data in self._session.api(_ServerlessSqldbAPI).list_databases_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield ServerlessSql._from(self._session, self._scope, data)
 
@@ -4319,7 +4319,7 @@ class ServerlessSqlCollection(_Collection[ServerlessSql]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4381,7 +4381,7 @@ class ClickhousePresetCollection(_Collection[Preset]):
     async def _items(self) -> AsyncIterator[Preset]:
         async for data in self._session.api(_DatawarehouseAPI).list_presets_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4395,7 +4395,7 @@ class ClickhousePresetCollection(_Collection[Preset]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4422,7 +4422,7 @@ class ClickhouseVersionCollection(_Collection[DatawarehouseVersion]):
     async def _items(self) -> AsyncIterator[DatawarehouseVersion]:
         async for data in self._session.api(_DatawarehouseAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4436,7 +4436,7 @@ class ClickhouseVersionCollection(_Collection[DatawarehouseVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4469,7 +4469,7 @@ class MongodbNodeTypeCollection(_Collection[MongodbNodeType]):
     async def _items(self) -> AsyncIterator[MongodbNodeType]:
         async for data in self._session.api(_MongodbAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4483,7 +4483,7 @@ class MongodbNodeTypeCollection(_Collection[MongodbNodeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4510,7 +4510,7 @@ class MongodbVersionCollection(_Collection[MongodbVersion]):
     async def _items(self) -> AsyncIterator[MongodbVersion]:
         async for data in self._session.api(_MongodbAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4524,7 +4524,7 @@ class MongodbVersionCollection(_Collection[MongodbVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4554,7 +4554,7 @@ class PostgresMysqlEngineCollection(_Collection[DatabaseEngine]):
     async def _items(self) -> AsyncIterator[DatabaseEngine]:
         async for data in self._session.api(_RdbAPI).list_database_engines_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4568,7 +4568,7 @@ class PostgresMysqlEngineCollection(_Collection[DatabaseEngine]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4599,7 +4599,7 @@ class PostgresMysqlNodeTypeCollection(_Collection[RdbNodeType]):
     async def _items(self) -> AsyncIterator[RdbNodeType]:
         async for data in self._session.api(_RdbAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4613,7 +4613,7 @@ class PostgresMysqlNodeTypeCollection(_Collection[RdbNodeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4650,7 +4650,7 @@ class RedisVersionCollection(_Collection[ClusterVersion]):
     async def _items(self) -> AsyncIterator[ClusterVersion]:
         async for data in self._session.api(_RedisAPI).list_cluster_versions_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4664,7 +4664,7 @@ class RedisVersionCollection(_Collection[ClusterVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4695,7 +4695,7 @@ class RedisNodeTypeCollection(_Collection[RedisNodeType]):
     async def _items(self) -> AsyncIterator[RedisNodeType]:
         async for data in self._session.api(_RedisAPI).list_node_types_iter(
             zone=self._criteria.get("zone"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4709,7 +4709,7 @@ class RedisNodeTypeCollection(_Collection[RedisNodeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4736,7 +4736,7 @@ class OpensearchNodeTypeCollection(_Collection[SearchdbNodeType]):
     async def _items(self) -> AsyncIterator[SearchdbNodeType]:
         async for data in self._session.api(_SearchdbAPI).list_node_types_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4750,7 +4750,7 @@ class OpensearchNodeTypeCollection(_Collection[SearchdbNodeType]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4780,7 +4780,7 @@ class OpensearchVersionCollection(_Collection[SearchdbVersion]):
     async def _items(self) -> AsyncIterator[SearchdbVersion]:
         async for data in self._session.api(_SearchdbAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4794,7 +4794,7 @@ class OpensearchVersionCollection(_Collection[SearchdbVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -4821,7 +4821,7 @@ class ServerlessSqlVersionCollection(_Collection[ServerlessSqldbVersion]):
     async def _items(self) -> AsyncIterator[ServerlessSqldbVersion]:
         async for data in self._session.api(_ServerlessSqldbAPI).list_versions_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -4835,7 +4835,7 @@ class ServerlessSqlVersionCollection(_Collection[ServerlessSqldbVersion]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )

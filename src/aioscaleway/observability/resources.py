@@ -215,7 +215,7 @@ class AuditCustomAlertRuleCollection(_Collection[AuditCustomAlertRule]):
             _AuditTrailAPI
         ).list_custom_alert_rules_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield AuditCustomAlertRule._from(self._session, self._scope, data)
 
@@ -229,7 +229,7 @@ class AuditCustomAlertRuleCollection(_Collection[AuditCustomAlertRule]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -363,7 +363,7 @@ class AuditExportJobCollection(_Collection[AuditExportJob]):
     async def _items(self) -> AsyncIterator[AuditExportJob]:
         async for data in self._session.api(_AuditTrailAPI).list_export_jobs_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield AuditExportJob._from(self._session, self._scope, data)
 
@@ -377,7 +377,7 @@ class AuditExportJobCollection(_Collection[AuditExportJob]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -480,7 +480,7 @@ class GrafanaProductDashboardCollection(_Collection[GrafanaProductDashboard]):
         async for data in self._session.api(
             _CockpitGlobalAPI
         ).list_grafana_product_dashboards_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield GrafanaProductDashboard._from(self._session, self._scope, data)
 
@@ -495,7 +495,7 @@ class GrafanaProductDashboardCollection(_Collection[GrafanaProductDashboard]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -586,7 +586,7 @@ class GrafanaUserCollection(_Collection[GrafanaUser]):
 
     async def _items(self) -> AsyncIterator[GrafanaUser]:
         async for data in self._session.api(_CockpitGlobalAPI).list_grafana_users_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield GrafanaUser._from(self._session, self._scope, data)
 
@@ -599,7 +599,7 @@ class GrafanaUserCollection(_Collection[GrafanaUser]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -733,7 +733,7 @@ class DataSourceCollection(_Collection[DataSource]):
     async def _items(self) -> AsyncIterator[DataSource]:
         async for data in self._session.api(_CockpitRegionalAPI).list_data_sources_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield DataSource._from(self._session, self._scope, data)
 
@@ -747,7 +747,7 @@ class DataSourceCollection(_Collection[DataSource]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -890,7 +890,7 @@ class ExporterCollection(_Collection[Exporter]):
     async def _items(self) -> AsyncIterator[Exporter]:
         async for data in self._session.api(_CockpitRegionalAPI).list_exporters_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield Exporter._from(self._session, self._scope, data)
 
@@ -904,7 +904,7 @@ class ExporterCollection(_Collection[Exporter]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1020,7 +1020,7 @@ class CockpitTokenCollection(_Collection[CockpitToken]):
     async def _items(self) -> AsyncIterator[CockpitToken]:
         async for data in self._session.api(_CockpitRegionalAPI).list_tokens_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield CockpitToken._from(self._session, self._scope, data)
 
@@ -1034,7 +1034,7 @@ class CockpitTokenCollection(_Collection[CockpitToken]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1095,7 +1095,7 @@ class AuditAlertRuleCollection(_Collection[AlertRule]):
     async def _items(self) -> AsyncIterator[AlertRule]:
         async for data in self._session.api(_AuditTrailAPI).list_alert_rules_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1109,7 +1109,7 @@ class AuditAlertRuleCollection(_Collection[AlertRule]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1146,7 +1146,7 @@ class AuditAuthenticationEventCollection(_Collection[AuthenticationEvent]):
     async def _items(self) -> AsyncIterator[AuthenticationEvent]:
         response = await self._session.api(_AuditTrailAPI).list_authentication_events(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.events or []:
             yield data
@@ -1184,7 +1184,7 @@ class AuditCombinedEventCollection(
     async def _items(self) -> AsyncIterator[ListCombinedEventsResponseCombinedEvent]:
         response = await self._session.api(_AuditTrailAPI).list_combined_events(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.events or []:
             yield data
@@ -1234,7 +1234,7 @@ class AuditEventCollection(_Collection[Event]):
     async def _items(self) -> AsyncIterator[Event]:
         response = await self._session.api(_AuditTrailAPI).list_events(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.events or []:
             yield data
@@ -1255,7 +1255,7 @@ class AuditProductCollection(_Collection[AuditTrailProduct]):
     async def _items(self) -> AsyncIterator[AuditTrailProduct]:
         response = await self._session.api(_AuditTrailAPI).list_products(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.products or []:
             yield data
@@ -1287,7 +1287,7 @@ class AuditSystemEventCollection(_Collection[SystemEvent]):
     async def _items(self) -> AsyncIterator[SystemEvent]:
         response = await self._session.api(_AuditTrailAPI).list_system_events(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.events or []:
             yield data
@@ -1307,7 +1307,7 @@ class CockpitPlanCollection(_Collection[Plan]):
 
     async def _items(self) -> AsyncIterator[Plan]:
         async for data in self._session.api(_CockpitGlobalAPI).list_plans_iter(
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}}
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}}
         ):
             yield data
 
@@ -1320,7 +1320,7 @@ class CockpitPlanCollection(_Collection[Plan]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1349,7 +1349,7 @@ class ContactPointCollection(_Collection[CockpitContactPoint]):
             _CockpitRegionalAPI
         ).list_contact_points_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1363,7 +1363,7 @@ class ContactPointCollection(_Collection[CockpitContactPoint]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )
@@ -1400,7 +1400,7 @@ class CockpitAlertCollection(_Collection[Alert]):
     async def _items(self) -> AsyncIterator[Alert]:
         response = await self._session.api(_CockpitRegionalAPI).list_alerts(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         )
         for data in response.alerts or []:
             yield data
@@ -1422,7 +1422,7 @@ class CockpitProductCollection(_Collection[CockpitProduct]):
     async def _items(self) -> AsyncIterator[CockpitProduct]:
         async for data in self._session.api(_CockpitRegionalAPI).list_products_iter(
             region=self._criteria.get("region"),
-            **{k: v for k, v in self._criteria.items() if k not in {"zone", "region"}},
+            **{k: v for k, v in self._criteria.items() if k not in {"region", "zone"}},
         ):
             yield data
 
@@ -1436,7 +1436,7 @@ class CockpitProductCollection(_Collection[CockpitProduct]):
                 **{
                     k: v
                     for k, v in self._criteria.items()
-                    if k not in {"zone", "region"}
+                    if k not in {"region", "zone"}
                 },
                 page=number,
             )

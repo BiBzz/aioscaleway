@@ -157,7 +157,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and
 
 The source lives on
 [GitLab](https://gitlab.com/businessagile/libraries/aioscaleway), mirrored to
-[GitHub](https://github.com/BiBzz/aioscaleway).
+[GitHub](https://github.com/BiBzz/aioscaleway), where
+[issues](https://github.com/BiBzz/aioscaleway/issues) and pull requests are welcome.
 
 ## Author
 

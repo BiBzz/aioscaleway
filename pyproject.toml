@@ -40,7 +40,7 @@ Homepage = "https://aioscaleway.businessagile.eu"
 Documentation = "https://aioscaleway.businessagile.eu"
 Repository = "https://gitlab.com/businessagile/libraries/aioscaleway"
 Mirror = "https://github.com/BiBzz/aioscaleway"
-Issues = "https://gitlab.com/businessagile/libraries/aioscaleway/-/issues"
+Issues = "https://github.com/BiBzz/aioscaleway/issues"
 Changelog = "https://gitlab.com/businessagile/libraries/aioscaleway/-/blob/development/CHANGELOG.md"
 
 [dependency-groups]

@@ -22,6 +22,8 @@
 
 **Source Code**: <a href="https://gitlab.com/businessagile/libraries/aioscaleway" target="_blank">https://gitlab.com/businessagile/libraries/aioscaleway</a>
 
+**Issues and pull requests**: <a href="https://github.com/BiBzz/aioscaleway" target="_blank">github.com/BiBzz/aioscaleway</a>
+
 **Created by**: <a href="https://businessagile.eu/en/about" target="_blank">Alexandre BERREBI</a>, maintained by <a href="https://businessagile.eu" target="_blank">Business Agile</a>
 
 ---

@@ -159,6 +159,11 @@ The source lives on
 [GitLab](https://gitlab.com/businessagile/libraries/aioscaleway), mirrored to
 [GitHub](https://github.com/BiBzz/aioscaleway).
 
+## Author
+
+Created by [Alexandre BERREBI](https://businessagile.eu/en/about), maintained by
+[Business Agile](https://businessagile.eu).
+
 ## License
 
 MIT, see [LICENSE](LICENSE).

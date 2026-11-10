@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: If you use aioscaleway in your work, please cite it as below.
+type: software
+title: aioscaleway
+abstract: Asynchronous, fully typed client for every Scaleway API, on httpx2 and pydantic.
+authors:
+  - given-names: Alexandre
+    family-names: BERREBI
+    email: alexandre.berrebi@businessagile.eu
+    affiliation: Business Agile
+    website: https://businessagile.eu/en/about
+version: 0.1.0
+date-released: 2026-11-10
+license: MIT
+url: https://aioscaleway.businessagile.eu
+repository-code: https://gitlab.com/businessagile/libraries/aioscaleway
+keywords:
+  - scaleway
+  - asyncio
+  - httpx
+  - pydantic
+  - sdk
+  - api
+  - cloud

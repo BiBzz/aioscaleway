@@ -22,6 +22,8 @@
 
 **Source Code**: <a href="https://gitlab.com/businessagile/libraries/aioscaleway" target="_blank">https://gitlab.com/businessagile/libraries/aioscaleway</a>
 
+**Created by**: <a href="https://businessagile.eu/en/about" target="_blank">Alexandre BERREBI</a>, maintained by <a href="https://businessagile.eu" target="_blank">Business Agile</a>
+
 ---
 
 aioscaleway is a client for the **Scaleway APIs**, organised around what you manipulate (servers, volumes, clusters, invoices) rather than where Scaleway files it. It is **async from end to end** and **strongly typed**, and covers **every published API**, not only the popular ones.

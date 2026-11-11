@@ -13,7 +13,7 @@ version: 0.1.0
 date-released: 2026-11-11
 license: MIT
 url: https://aioscaleway.businessagile.eu
-repository-code: https://gitlab.com/businessagile/libraries/aioscaleway
+repository-code: https://github.com/BiBzz/aioscaleway
 keywords:
   - scaleway
   - asyncio

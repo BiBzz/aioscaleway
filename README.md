@@ -155,9 +155,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and
 [docs/architecture.md](docs/architecture.md). The full object tree is in
 [docs/objects.md](docs/objects.md).
 
-The source lives on
-[GitLab](https://gitlab.com/businessagile/libraries/aioscaleway), mirrored to
-[GitHub](https://github.com/BiBzz/aioscaleway), where
+The source is on [GitHub](https://github.com/BiBzz/aioscaleway), where
 [issues](https://github.com/BiBzz/aioscaleway/issues) and pull requests are welcome.
 
 ## Author

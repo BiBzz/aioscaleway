@@ -30,5 +30,5 @@ First version published on PyPI.
 - `scw.raw`, the underlying HTTP client, for anything else.
 - Type information shipped with the package (`py.typed`).
 
-[Unreleased]: https://gitlab.com/businessagile/libraries/aioscaleway/-/compare/v0.1.0...development
-[0.1.0]: https://gitlab.com/businessagile/libraries/aioscaleway/-/tags/v0.1.0
+[Unreleased]: https://github.com/BiBzz/aioscaleway/compare/v0.1.0...development
+[0.1.0]: https://github.com/BiBzz/aioscaleway/releases/tag/v0.1.0

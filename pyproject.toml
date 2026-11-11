@@ -38,10 +38,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://aioscaleway.businessagile.eu"
 Documentation = "https://aioscaleway.businessagile.eu"
-Repository = "https://gitlab.com/businessagile/libraries/aioscaleway"
-Mirror = "https://github.com/BiBzz/aioscaleway"
+Repository = "https://github.com/BiBzz/aioscaleway"
 Issues = "https://github.com/BiBzz/aioscaleway/issues"
-Changelog = "https://gitlab.com/businessagile/libraries/aioscaleway/-/blob/development/CHANGELOG.md"
+Changelog = "https://github.com/BiBzz/aioscaleway/blob/development/CHANGELOG.md"
 
 [dependency-groups]
 dev = [

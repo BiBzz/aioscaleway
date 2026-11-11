@@ -1,3 +1,7 @@
+---
+description: "What aioscaleway does: async down to the socket, typed models, collections, awaitable references and one method per action, across every Scaleway API."
+---
+
 # Features
 
 ## Async down to the socket

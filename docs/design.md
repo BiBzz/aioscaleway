@@ -1,6 +1,10 @@
+---
+description: "Design principles, scope and roadmap of aioscaleway, the asynchronous and fully typed Python client for Scaleway."
+---
+
 # Design and roadmap
 
-aioscaleway is developed in the open. This page states what it aims at, what it leaves out, and what comes next. Discussion happens in the [GitLab issues](https://gitlab.com/businessagile/libraries/aioscaleway/-/issues).
+aioscaleway is developed in the open. This page states what it aims at, what it leaves out, and what comes next. Discussion happens in the [GitHub issues](https://github.com/BiBzz/aioscaleway/issues).
 
 ## Principles
 
